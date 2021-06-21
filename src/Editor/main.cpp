@@ -1,11 +1,18 @@
 #include <iostream>
 #include "Reborn.h"
 
+Reborn::WindowConfiguration defaultConfig = {
+    "Editor",
+    100,
+    100,
+    600,
+    500,
+};
+
 class EditorApp : public Reborn::Application 
 {
 public:
-    EditorApp() {
-
+    EditorApp(): Application(defaultConfig) {
     }
 
     ~EditorApp() {
