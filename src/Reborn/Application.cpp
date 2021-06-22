@@ -1,11 +1,10 @@
 #include "Application.h"
 #include <SDL.h>
-#include <iostream>
 
 SDL_Event event;
 
 Reborn::Application::Application(WindowConfiguration windowConfig):
-	window(Window::CreateWindow(windowConfig))
+	window(Window::CreateSDLWindow(windowConfig))
 {
 	if (!window) {
 		shouldClose = true;

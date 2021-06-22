@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Reborn.h"
 
 Reborn::WindowConfiguration defaultConfig = {

@@ -1,7 +1,7 @@
 #pragma once
 #include "System.h"
 #include "Application.h"
-#include "easylogging++.h"
+#include "Log.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -14,6 +14,7 @@ void configureLogger()
 	defaultConf.set(el::Level::Global, el::ConfigurationType::Format, "[%datetime{%h:%m:%s,%g}] %level : %msg");
 	defaultConf.set(el::Level::Global, el::ConfigurationType::ToStandardOutput, "true");
 	el::Loggers::reconfigureLogger("default", defaultConf);
+	el::Loggers::addFlag(el::LoggingFlag::ColoredTerminalOutput);
 }
 
 int main(int argc, char* argv[]) {
@@ -21,17 +22,15 @@ int main(int argc, char* argv[]) {
 
 	configureLogger();
 
-	LOG(DEBUG) << "START";
+	LOG_INFO << "Application started";
 	if (Reborn::System::get().Init() != 0) {
 		return 0;
 	}
 
-	LOG(DEBUG) << "INIT";
 	Reborn::Application* app = CreateApplication();
-	LOG(DEBUG) << "CreateApplication";
 	app->Run();
 	delete app;
 
-	LOG(DEBUG) << "STOP";
+	LOG_INFO << "Application finished";
 	return 0;
 }

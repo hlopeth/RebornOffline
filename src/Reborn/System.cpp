@@ -1,6 +1,6 @@
 #include "System.h"
 #include <SDL.h>
-#include <iostream>
+#include "Log.h"
 
 Reborn::System* Reborn::System::systemInstance = nullptr;
 
@@ -12,7 +12,7 @@ Reborn::System& Reborn::System::get()
 int Reborn::System::Init() {
     Uint32 sdlInitFlags = SDL_INIT_VIDEO;
     if (SDL_Init(sdlInitFlags) != 0) {
-        std::cout << "error while sdl init. \n" << SDL_GetError() << std::endl;
+        LOG_ERROR << "Error while sdl init. \n" << SDL_GetError();
         return 1;
     }
     return 0;

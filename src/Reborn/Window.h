@@ -18,7 +18,7 @@ namespace Reborn {
 		Window(SDL_Window* sdlWindow);
 		void Update();
 		~Window();
-		static std::shared_ptr<Window> CreateWindow(WindowConfiguration configuration);
+		static std::shared_ptr<Window> CreateSDLWindow(WindowConfiguration configuration);
 	private:
 		SDL_Window* _id = nullptr;
 	};

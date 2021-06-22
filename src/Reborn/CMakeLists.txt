@@ -5,7 +5,7 @@ include_directories(${ELPP_SOURCE_DIR})
 
 set(SOURCE_FILES
 	"Reborn.h"
-	"Reborn.cpp" 
+	 
 	"Application.h"
 	"Application.cpp" 
 	"EntryPoint.h"
@@ -21,5 +21,5 @@ set(SOURCE_FILES
 	${ELPP_SOURCE_DIR}/easylogging++.cc
 )
 
-add_library(Reborn ${SOURCE_FILES} )
+add_library(Reborn ${SOURCE_FILES}  "Log.h")
 target_link_libraries(Reborn SDL2)
