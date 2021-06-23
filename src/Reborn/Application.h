@@ -1,5 +1,8 @@
 #pragma once
 #include "Window.h"
+#include "Event/ApplicationCloseEvent.h"
+#include <memory>
+#include "System.h"
 
 namespace Reborn {
 	class Application
@@ -9,11 +12,13 @@ namespace Reborn {
 		void Run();
 		void Close();
 		virtual ~Application();
+		void onApplicationClose(const IEvent& evt);
 
 	protected:
 		std::shared_ptr<Window> window;
 	private: 
 		void PoolEvents();
-		bool shouldClose = false;
+		bool shouldClose = false; 
+		t_EventHandler closeHandler;
 	};
 }

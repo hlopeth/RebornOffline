@@ -4,8 +4,15 @@
 
 Reborn::System* Reborn::System::systemInstance = nullptr;
 
+Reborn::System::System() {
+
+}
+
 Reborn::System& Reborn::System::get()
 {
+    if (systemInstance == nullptr) {
+        systemInstance = new System();
+    }
     return *systemInstance;
 }
 
@@ -21,5 +28,11 @@ int Reborn::System::Init() {
 void Reborn::System::Shutdown()
 {
     SDL_Quit();
+    delete systemInstance;
     systemInstance = nullptr;
+}
+
+Reborn::EventDispatcher& Reborn::System::eventDispatcher()
+{
+    return _eventDispatcher;
 }
