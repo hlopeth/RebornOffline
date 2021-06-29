@@ -5,7 +5,7 @@ namespace Reborn {
 	class ApplicationCloseEvent : public IEvent
 	{
 	public:
-		const EventType& GetType() const override {
+		const EventType GetType() const override {
 			return TYPE();
 		};
 		const char* GetName() const override {

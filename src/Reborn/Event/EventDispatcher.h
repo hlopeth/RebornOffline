@@ -1,9 +1,5 @@
 #pragma once
 #include "IEvent.h"
-#include <memory>
-#include <unordered_map>
-#include <vector>
-#include <functional>
 
 namespace Reborn {
 	typedef std::function<void(const IEvent&)> t_EventHandler;

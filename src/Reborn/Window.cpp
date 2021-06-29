@@ -1,5 +1,5 @@
+#include "Core.h"
 #include "Window.h"
-#include "Log.h"
 
 Reborn::Window::Window(SDL_Window* sdlWindow)
 {

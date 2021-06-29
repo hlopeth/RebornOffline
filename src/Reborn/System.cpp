@@ -1,6 +1,6 @@
+#include "Core.h"
 #include "System.h"
 #include <SDL.h>
-#include "Log.h"
 
 Reborn::System* Reborn::System::systemInstance = nullptr;
 

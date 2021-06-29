@@ -1,6 +1,6 @@
+#include "Core.h"
 #include "Application.h"
 #include <SDL.h>
-#include "Log.h"
 
 SDL_Event event;
 Reborn::t_EventHandler lambdaHandler;

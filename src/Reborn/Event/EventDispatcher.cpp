@@ -1,6 +1,6 @@
+#include "Core.h"
 #include "EventDispatcher.h"
 #include <algorithm>
-#include "Log.h"
 
 Reborn::EventDispatcher::EventDispatcher()
 {

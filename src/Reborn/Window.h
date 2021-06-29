@@ -1,6 +1,5 @@
 #pragma once
 #include "SDL_video.h"
-#include <memory>
 
 namespace Reborn {
 	struct WindowConfiguration {
