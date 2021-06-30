@@ -14,21 +14,22 @@ set(SOURCE_FILES
 	"System.h" 
 	"System.cpp" 
 	"Event/IEvent.h"  
-	"IEventHandler.h" 
+	 
 	"Window.h"  
 	"Window.cpp"
 	${ELPP_SOURCE_DIR}/easylogging++.h
 	${ELPP_SOURCE_DIR}/easylogging++.cc
 	"Event/EventDispatcher.cpp" 
-	"Event/ApplicationCloseEvent.h" 
-	"IEventHandler.h"
+	"Event/ApplicationShouldCloseEvent.h" 
 	"Log.h"
 	"Core.h"
-  )
-#add_compile_definitions(PCH="cmake_pch.h")
+   "Event/KeyPressedEvent.h" 
+   "KeyCodes.h"
+   "SDLUtils.h"
+   "SDLUtils.cpp"
+   )
 
-add_library(Reborn ${SOURCE_FILES})
-#target_compile_definitions(Reborn PUBLIC REBORN_PCH="cmake_pch.hxx")
+add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
 	Reborn
 	PRIVATE

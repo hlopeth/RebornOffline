@@ -1,11 +1,22 @@
 #include "Core.h"
 #include "Application.h"
 #include <SDL.h>
+#include "Event/KeyPressedEvent.h"
+#include "Event/ApplicationShouldCloseEvent.h"
+#include "SDLUtils.h"
 
 SDL_Event event;
-Reborn::t_EventHandler lambdaHandler;
+Reborn::t_EventHandler keyPressedHandler = [](const Reborn::IEvent& evt) {  
+	auto keyEvent = static_cast<const Reborn::KeyPressedEvent&>(evt);
+	if (keyEvent.key == KeyCode::key_escape) {
+		Reborn::System::get().eventDispatcher().triggerEvent(Reborn::ApplicationShouldCloseEvent());
+	}
+	else {
+		LOG_DEBUG << (char)keyEvent.key;
+	}
+};
 
-void test(const Reborn::ApplicationCloseEvent& evt) {
+void test(const Reborn::ApplicationShouldCloseEvent& evt) {
 	LOG_DEBUG << "test handler";
 }
 
@@ -17,10 +28,8 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 		shouldClose = true;
 	}
 
-	lambdaHandler = [](const IEvent& evt) { LOG_DEBUG << "lambda handler"; };
-
-	System::get().eventDispatcher().subscribe(ApplicationCloseEvent::TYPE(), &closeHandler);
-	System::get().eventDispatcher().subscribe(ApplicationCloseEvent::TYPE(), &lambdaHandler);
+	System::get().eventDispatcher().subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
+	System::get().eventDispatcher().subscribe(KeyPressedEvent::TYPE(), &keyPressedHandler);
 }
 
 void Reborn::Application::Run()
@@ -44,7 +53,7 @@ void Reborn::Application::Close()
 
 Reborn::Application::~Application()
 {
-	System::get().eventDispatcher().unsubscribe(ApplicationCloseEvent::TYPE(), &closeHandler);
+	System::get().eventDispatcher().unsubscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 }
 
 void Reborn::Application::PoolEvents()
@@ -54,13 +63,16 @@ void Reborn::Application::PoolEvents()
 		switch (event.type)
 		{
 		case SDL_QUIT: 
-			System::get().eventDispatcher().triggerEvent(ApplicationCloseEvent());
+			System::get().eventDispatcher().triggerEvent(ApplicationShouldCloseEvent());
 			break;
 		case SDL_KEYDOWN:
-			if (event.key.keysym.sym == SDLK_ESCAPE) {
-			System::get().eventDispatcher().triggerEvent(ApplicationCloseEvent());
+			{
+			KeyCode keyCode = ToRebornKeyCode(event.key.keysym.sym);
+			System::get().eventDispatcher().triggerEvent(KeyPressedEvent(keyCode));
 			}
 			break;
+		case SDL_KEYUP:
+
 		default:
 			break;
 		}
@@ -69,6 +81,5 @@ void Reborn::Application::PoolEvents()
 
 void Reborn::Application::onApplicationClose(const IEvent& evt)
 {
-	LOG_DEBUG << "member handler";
-	shouldClose = true;
+	Close();
 }

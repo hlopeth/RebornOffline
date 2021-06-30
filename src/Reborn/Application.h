@@ -1,6 +1,5 @@
 #pragma once
 #include "Window.h"
-#include "Event/ApplicationCloseEvent.h"
 #include "System.h"
 
 namespace Reborn {
