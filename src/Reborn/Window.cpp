@@ -1,24 +1,59 @@
 #include "Core.h"
 #include "Window.h"
 
+#include <imgui.h>
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
+
 Reborn::Window::Window(SDL_Window* sdlWindow)
 {
-	_id = sdlWindow;
+	_sdlWindow = sdlWindow;
+}
+
+SDL_GLContext Reborn::Window::createGLContext()
+{
+	SDL_GLContext context = SDL_GL_CreateContext(_sdlWindow);
+	if (!context) {
+		LOG_ERROR << "Failed to create context. \n" << SDL_GetError();
+		context = nullptr;
+	}
+	return context;
+}
+
+SDL_Window& Reborn::Window::getSDLWindow()
+{
+	return *_sdlWindow;
+}
+
+const int Reborn::Window::width() const
+{
+	int width;
+	int height;
+	SDL_GetWindowSize(_sdlWindow, &width, &height);
+	return width;
+}
+
+const int Reborn::Window::height() const
+{
+	int width;
+	int height;
+	SDL_GetWindowSize(_sdlWindow, &width, &height);
+	return height;
 }
 
 void Reborn::Window::Update()
 {
-	SDL_UpdateWindowSurface(_id);
+	//SDL_UpdateWindowSurface(_sdlWindow);
 }
 
 Reborn::Window::~Window()
 {
-	SDL_DestroyWindow(_id);
+	SDL_DestroyWindow(_sdlWindow);
 }
 
-std::shared_ptr<Reborn::Window> Reborn::Window::CreateSDLWindow(WindowConfiguration config)
+Reborn::Window* Reborn::Window::CreateSDLWindow(WindowConfiguration config)
 {
-	Uint16 flags = SDL_WINDOW_SHOWN;
+	Uint16 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	if(config.resizable)
 		flags |= SDL_WINDOW_RESIZABLE;
 	if(config.fullscreen)
@@ -26,7 +61,7 @@ std::shared_ptr<Reborn::Window> Reborn::Window::CreateSDLWindow(WindowConfigurat
 
 	SDL_Window* sdlWindow = SDL_CreateWindow(config.title, config.x, config.y, config.width, config.height, flags);
 	if (sdlWindow == nullptr) {
-		LOG_ERROR << "Failed to create SDL window";
+		LOG_ERROR << "Failed to create SDL window. \n" << SDL_GetError();
 	}
-	return std::make_shared<Window>(sdlWindow);
+	return new Window(sdlWindow);
 }

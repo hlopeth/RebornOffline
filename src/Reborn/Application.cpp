@@ -21,11 +21,17 @@ void test(const Reborn::ApplicationShouldCloseEvent& evt) {
 }
 
 Reborn::Application::Application(WindowConfiguration windowConfig):
-	window(Window::CreateSDLWindow(windowConfig)),
+	window(nullptr),
+	renderer(nullptr),
 	closeHandler(std::bind(&Application::onApplicationClose, this, std::placeholders::_1))
 {
+	window = std::unique_ptr<Window>(Window::CreateSDLWindow(windowConfig));
+
 	if (!window) {
 		shouldClose = true;
+	}
+	else {
+		renderer = std::make_unique<Renderer>(window->createGLContext());
 	}
 
 	System::get().eventDispatcher().subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
@@ -42,6 +48,7 @@ void Reborn::Application::Run()
 	{
 		PoolEvents();		
 		window->Update();
+		renderer->draw(*window);
 	}
 
 }

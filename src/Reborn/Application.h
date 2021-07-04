@@ -1,5 +1,6 @@
 #pragma once
 #include "Window.h"
+#include "Renderer.h"
 #include "System.h"
 
 namespace Reborn {
@@ -13,7 +14,8 @@ namespace Reborn {
 		void onApplicationClose(const IEvent& evt);
 
 	protected:
-		std::shared_ptr<Window> window;
+		std::unique_ptr<Window> window;
+		std::unique_ptr<Renderer> renderer;
 	private: 
 		void PoolEvents();
 		bool shouldClose = false; 

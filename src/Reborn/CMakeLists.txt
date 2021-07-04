@@ -1,7 +1,10 @@
 project(Reborn VERSION 0.1.0)
+find_package(OpenGL REQUIRED)
 
 include_directories(${SDL2_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include)
 include_directories(${ELPP_SOURCE_DIR})
+include_directories(${IMGUI_SOURCE_DIR})
+include_directories(${GLAD_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -27,7 +30,7 @@ set(SOURCE_FILES
    "KeyCodes.h"
    "SDLUtils.h"
    "SDLUtils.cpp"
-    )
+     "Renderer.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
@@ -40,4 +43,6 @@ target_precompile_headers(
 	<bitset>
 )
 
+target_link_libraries(Reborn ${OPENGL_LIBRARIES})
+target_link_libraries(Reborn Glad_lib)
 target_link_libraries(Reborn SDL2)

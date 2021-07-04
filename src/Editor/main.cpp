@@ -3,18 +3,21 @@
 
 using namespace Reborn;
 
-Reborn::WindowConfiguration defaultConfig = {
-    "Editor",
-    100,
-    100,
-    600,
-    500,
-};
+Reborn::WindowConfiguration getWindowConfig() {
+    Reborn::WindowConfiguration defaultConfig = { "Editor" };
+    defaultConfig.x = 100;
+    defaultConfig.y = 100;
+    defaultConfig.width = 600;
+    defaultConfig.height = 500;
+    defaultConfig.resizable = true;
+
+    return defaultConfig;
+}
 
 class EditorApp : public Reborn::Application 
 {
 public:
-    EditorApp(): Application(defaultConfig) {
+    EditorApp(): Application(getWindowConfig()) {
         auto& entityManager = System::get().entityManager();
 
         std::vector<Entity> entities;

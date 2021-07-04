@@ -15,10 +15,14 @@ namespace Reborn {
 	class Window {
 	public:
 		Window(SDL_Window* sdlWindow);
+		SDL_GLContext createGLContext();
+		SDL_Window& getSDLWindow();
+		const int width() const;
+		const int height() const;
 		void Update();
 		~Window();
-		static std::shared_ptr<Window> CreateSDLWindow(WindowConfiguration configuration);
+		static Window* CreateSDLWindow(WindowConfiguration configuration);
 	private:
-		SDL_Window* _id = nullptr;
+		SDL_Window* _sdlWindow = nullptr;
 	};
 }
