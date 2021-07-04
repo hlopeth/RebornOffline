@@ -11,7 +11,7 @@ set(SOURCE_FILES
 	"Application.h"
 	"Application.cpp" 
 	"EntryPoint.h"
-	"System.h" 
+	"ECS/EntitySystem.h" 
 	"System.cpp" 
 	"Event/IEvent.h"  
 	 
@@ -27,7 +27,7 @@ set(SOURCE_FILES
    "KeyCodes.h"
    "SDLUtils.h"
    "SDLUtils.cpp"
-   )
+    )
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
@@ -37,6 +37,7 @@ target_precompile_headers(
 	<functional>
 	<memory>
 	<vector>
+	<bitset>
 )
 
 target_link_libraries(Reborn SDL2)

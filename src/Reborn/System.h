@@ -1,9 +1,7 @@
 #pragma once
 #include <memory>
 #include "Event/EventDispatcher.h"
-
-#define SET_MEMBER_EVENT_HANDLER(ClassType, EventType, Callback) System::get().eventDispatcher().setEventHandler<ClassType, EventType>(EventType::TYPE(), this, &ClassType::Callback)
-#define SET_EVENT_HANDLER(EventType, Callback) System::get().eventDispatcher().setEventHandler<EventType>(EventType::TYPE(), Callback)
+#include "ECS/EntityManager.h"
 
 namespace Reborn {
 	class System {
@@ -11,11 +9,16 @@ namespace Reborn {
 		static System& get();
 		int Init();
 		void Shutdown();
+		
 		EventDispatcher& eventDispatcher();
+		static const uint8_t maxEntitySystems = 10;
+		static const uint16_t maxComponents = 100;
+		EntityManager<maxComponents, maxEntitySystems>& entityManager();
 	private:
 		System();
 		static System* systemInstance;
 
 		EventDispatcher _eventDispatcher;
+		EntityManager<maxComponents, maxEntitySystems> _entityManager;
 	};
 }
