@@ -26,11 +26,12 @@ set(SOURCE_FILES
 	"Event/ApplicationShouldCloseEvent.h" 
 	"Log.h"
 	"Core.h"
-   "Event/KeyPressedEvent.h" 
-   "KeyCodes.h"
-   "SDLUtils.h"
-   "SDLUtils.cpp"
-     "Renderer.cpp")
+	"Event/KeyPressedEvent.h" 
+	"KeyCodes.h"
+	"SDLUtils.h"
+	"SDLUtils.cpp"
+	"Renderer.cpp"
+	 )
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
@@ -46,3 +47,4 @@ target_precompile_headers(
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})
 target_link_libraries(Reborn Glad_lib)
 target_link_libraries(Reborn SDL2)
+target_link_libraries(Reborn ImGui_lib)

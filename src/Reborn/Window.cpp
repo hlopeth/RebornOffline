@@ -2,8 +2,6 @@
 #include "Window.h"
 
 #include <imgui.h>
-#include <backends/imgui_impl_sdl.h>
-#include <backends/imgui_impl_opengl3.h>
 
 Reborn::Window::Window(SDL_Window* sdlWindow)
 {

@@ -7,8 +7,8 @@ Reborn::WindowConfiguration getWindowConfig() {
     Reborn::WindowConfiguration defaultConfig = { "Editor" };
     defaultConfig.x = 100;
     defaultConfig.y = 100;
-    defaultConfig.width = 600;
-    defaultConfig.height = 500;
+    defaultConfig.width = 800;
+    defaultConfig.height = 600;
     defaultConfig.resizable = true;
 
     return defaultConfig;

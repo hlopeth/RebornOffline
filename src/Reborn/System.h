@@ -1,5 +1,4 @@
 #pragma once
-#include <memory>
 #include "Event/EventDispatcher.h"
 #include "ECS/EntityManager.h"
 
