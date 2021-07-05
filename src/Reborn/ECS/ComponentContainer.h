@@ -21,7 +21,7 @@ namespace Reborn {
         template<typename... Args>
         void add(Entity entity, Args&&... args) {
             Index index = static_cast<Index>(mComponents.size());
-            mComponents.emplace_back(std::forvard<Args>(args)...);
+            mComponents.emplace_back(std::forward<Args>(args)...);
             mComponentToEntity.emplace_back(entity);
             mEntityToComponent[entity] = index;
             mEntityToBitset[entity][T::type] = true;

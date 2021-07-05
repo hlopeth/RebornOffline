@@ -1,5 +1,7 @@
 #include "Reborn.h"
-#include "Components/TestComponent.h"
+#include "Components/Transform3DComponent.h"
+#include "Components/ImGuiComponent.h"
+#include <imgui.h>
 
 using namespace Reborn;
 
@@ -14,24 +16,35 @@ Reborn::WindowConfiguration getWindowConfig() {
     return defaultConfig;
 }
 
+void drawDemoWindow(Entity entity, ImGuiComponent& _this) {
+    ImGui::ShowDemoWindow();
+}
+
+void drawMetricsWindow(Entity entity, ImGuiComponent& _this) {
+    ImGui::ShowMetricsWindow();
+}
+
+void drawStyleEditor(Entity entity, ImGuiComponent& _this) {
+    ImGui::ShowStyleEditor();
+}
+
 class EditorApp : public Reborn::Application 
 {
 public:
     EditorApp(): Application(getWindowConfig()) {
         auto& entityManager = System::get().entityManager();
 
-        std::vector<Entity> entities;
-        entities.resize(50);
+        Entity entity1 = entityManager.createEntity();
+        entityManager.addComponent<Transform3DComponent>(entity1, 10.f, 10.f, 10.f);
+        entityManager.addComponent<ImGuiComponent>(entity1, std::function<void(Entity, ImGuiComponent&)>(drawDemoWindow));
 
-        for (int i = 0; i < 50; i++) {
-            Entity entity = entityManager.createEntity();
-            entityManager.addComponent<TestComponent>(entity);
-            entities.push_back(entity);
-        }
+        Entity entity2 = entityManager.createEntity();
+        entityManager.addComponent<Transform3DComponent>(entity2, 10.f, 10.f, 10.f);
+        entityManager.addComponent<ImGuiComponent>(entity2, std::function<void(Entity, ImGuiComponent&)>(drawMetricsWindow));
 
-        for (auto entity : entities) {
-            entityManager.removeEntity(entity);
-        }
+        Entity entity3 = entityManager.createEntity();
+        entityManager.addComponent<Transform3DComponent>(entity3, 10.f, 10.f, 10.f);
+        entityManager.addComponent<ImGuiComponent>(entity3, std::function<void(Entity, ImGuiComponent&)>(drawStyleEditor));
     }
 
     ~EditorApp() {

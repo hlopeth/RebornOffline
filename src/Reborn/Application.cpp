@@ -5,7 +5,16 @@
 #include "Event/ApplicationShouldCloseEvent.h"
 #include "SDLUtils.h"
 
+#include <Components/TestComponent.h>
+#include <Components/Transform3DComponent.h>
+#include <Components/ImGuiComponent.h>
+#include <Systems/TestSystem.h>
+#include <Systems/ImGuiSystem.h>
+
+//Reborn::ImGuiSystem<Reborn::System::maxComponents, Reborn::System::maxEntitySystems>* imguiSystem;
+
 SDL_Event event;
+
 Reborn::t_EventHandler keyPressedHandler = [](const Reborn::IEvent& evt) {  
 	auto keyEvent = static_cast<const Reborn::KeyPressedEvent&>(evt);
 	if (keyEvent.key == KeyCode::key_escape) {
@@ -31,11 +40,18 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 		shouldClose = true;
 	}
 	else {
-		renderer = std::make_unique<Renderer>(window->createGLContext());
+		renderer = std::make_unique<Renderer>(static_cast<Window&>(*window));
 	}
+	auto& system = System::get();
 
-	System::get().eventDispatcher().subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
-	System::get().eventDispatcher().subscribe(KeyPressedEvent::TYPE(), &keyPressedHandler);
+	system.entityManager().registerComponent<TestComponent>();
+	system.entityManager().registerComponent<Transform3DComponent>();
+	system.entityManager().registerComponent<ImGuiComponent>();
+	auto testSystem = system.entityManager().createSystem<TestSystem<System::maxComponents, System::maxEntitySystems>>();
+	imGuiSystem = system.entityManager().createSystem<ImGuiSystem<System::maxComponents, System::maxEntitySystems>>();
+
+	system.eventDispatcher().subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
+	system.eventDispatcher().subscribe(KeyPressedEvent::TYPE(), &keyPressedHandler);
 }
 
 void Reborn::Application::Run()
@@ -47,8 +63,11 @@ void Reborn::Application::Run()
 	while (!shouldClose)
 	{
 		PoolEvents();		
+
+		static_cast<ImGuiSystem<System::maxComponents, System::maxEntitySystems>*>(imGuiSystem)->process();
+
 		window->Update();
-		renderer->draw(*window);
+		renderer->draw();
 	}
 
 }

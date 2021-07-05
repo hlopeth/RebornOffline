@@ -42,6 +42,7 @@ target_precompile_headers(
 	<memory>
 	<vector>
 	<bitset>
+	<utility>
 )
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})

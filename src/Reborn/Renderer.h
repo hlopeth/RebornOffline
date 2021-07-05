@@ -5,11 +5,13 @@
 namespace Reborn {
 	class Renderer {
 	public:
-		Renderer(SDL_GLContext context);
-		void draw(Window& window);
+		Renderer(Window& window);
+		void draw();
 		const SDL_GLContext& getContext();
 		~Renderer();
 	private:
+		bool initImGui(SDL_Window* window);
 		SDL_GLContext _context;
+		Window& _window;
 	};
 }

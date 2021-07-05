@@ -1,8 +1,9 @@
 #include "Core.h"
 #include "System.h"
 #include <SDL.h>
-#include "Systems/TestSystem.h"
-#include "Components/TestComponent.h"
+
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_opengl3.h>
 
 Reborn::System* Reborn::System::systemInstance = nullptr;
 
@@ -30,8 +31,6 @@ int Reborn::System::Init() {
         return 1;
     }
 
-    auto testSystem = _entityManager.createSystem<TestSystem<System::maxComponents, System::maxEntitySystems>>();
-    _entityManager.registerComponent<TestComponent>();
     return 0;
 }
 
