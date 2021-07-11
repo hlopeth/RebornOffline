@@ -5,11 +5,9 @@
 #include "Event/ApplicationShouldCloseEvent.h"
 #include "SDLUtils.h"
 
-#include <Components/TestComponent.h>
-#include <Components/Transform3DComponent.h>
-#include <Components/ImGuiComponent.h>
 #include <Systems/TestSystem.h>
 #include <Systems/ImGuiSystem.h>
+#include "backends/imgui_impl_sdl.h"
 
 //Reborn::ImGuiSystem<Reborn::System::maxComponents, Reborn::System::maxEntitySystems>* imguiSystem;
 
@@ -76,6 +74,7 @@ void Reborn::Application::PoolEvents()
 {
 	while (SDL_PollEvent(&event) != 0)
 	{
+		ImGui_ImplSDL2_ProcessEvent(&event);
 		switch (event.type)
 		{
 		case SDL_QUIT: 
