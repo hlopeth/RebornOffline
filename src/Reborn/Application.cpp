@@ -15,15 +15,6 @@
 
 SDL_Event event;
 
-Reborn::t_EventHandler keyPressedHandler = [](const Reborn::IEvent& evt) {  
-	auto keyEvent = static_cast<const Reborn::KeyPressedEvent&>(evt);
-	if (keyEvent.key == KeyCode::key_escape) {
-		Reborn::System::get().eventDispatcher().triggerEvent(Reborn::ApplicationShouldCloseEvent());
-	}
-	else {
-		LOG_DEBUG << (char)keyEvent.key;
-	}
-};
 
 void test(const Reborn::ApplicationShouldCloseEvent& evt) {
 	LOG_DEBUG << "test handler";
@@ -51,7 +42,6 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	imGuiSystem = system.entityManager().createSystem<ImGuiSystem<System::maxComponents, System::maxEntitySystems>>();
 
 	system.eventDispatcher().subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
-	system.eventDispatcher().subscribe(KeyPressedEvent::TYPE(), &keyPressedHandler);
 }
 
 void Reborn::Application::Run()

@@ -46,7 +46,6 @@ bool Reborn::Renderer::initImGui(SDL_Window* window) {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-
 	ImGui_ImplSDL2_InitForOpenGL(window, _context);
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
