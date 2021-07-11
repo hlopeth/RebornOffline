@@ -1,7 +1,6 @@
 #include "Reborn.h"
 #include "Components/Transform3DComponent.h"
 #include "Components/ImGuiComponent.h"
-#include <imgui.h>
 
 using namespace Reborn;
 

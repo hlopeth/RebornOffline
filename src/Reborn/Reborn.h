@@ -7,5 +7,7 @@
 #include <bitset>
 #include <utility>
 
+#include <thirdParty/imgui/imgui.h>
+
 #include "Core.h"
 #include "EntryPoint.h"
