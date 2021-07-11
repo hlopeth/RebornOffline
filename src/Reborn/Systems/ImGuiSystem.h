@@ -20,8 +20,8 @@ namespace Reborn {
 		virtual void onManagedEntityRemoved([[maybe_unused]] Entity entity) override {
 		};
 
-		void process() {
-			ImGui_ImplSDL2_NewFrame();
+		void process(SDL_Window &window) {
+			ImGui_ImplSDL2_NewFrame(&window);
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 

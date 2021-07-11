@@ -64,7 +64,7 @@ void Reborn::Application::Run()
 	{
 		PoolEvents();		
 
-		static_cast<ImGuiSystem<System::maxComponents, System::maxEntitySystems>*>(imGuiSystem)->process();
+		static_cast<ImGuiSystem<System::maxComponents, System::maxEntitySystems>*>(imGuiSystem)->process(window->getSDLWindow());
 
 		window->Update();
 		renderer->draw();
