@@ -1,5 +1,4 @@
 #include "Reborn.h"
-#include "Math/TestVector.h"
 
 using namespace Reborn;
 
@@ -73,7 +72,6 @@ public:
         Entity propertiesViewEntity = entityManager.createEntity();
         entityManager.addComponent<Transform3DComponent>(propertiesViewEntity);
         entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));*/
-        testVector();
     }
 
     ~EditorApp() {

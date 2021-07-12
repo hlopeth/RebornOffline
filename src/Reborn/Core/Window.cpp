@@ -51,6 +51,11 @@ Reborn::Window::~Window()
 
 Reborn::Window* Reborn::Window::CreateSDLWindow(WindowConfiguration config)
 {
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
 	Uint16 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	if(config.resizable)
 		flags |= SDL_WINDOW_RESIZABLE;

@@ -1,17 +1,42 @@
-#pragma once
+﻿#pragma once
 #include "Core.h"
 #include <glad/glad.h>
 #include "Renderer.h"
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_opengl3.h"
 
+void GLAPIENTRY glMessageCallback(
+	GLenum source,
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar* message,
+	const void* userParam
+) {
+	if (type == GL_DEBUG_TYPE_ERROR) {
+		LOG_ERROR << "GL ERROR: type = " << type << ", severity = " << severity << ", message = " << message;
+	}
+	else {
+		LOG_DEBUG << "GL CALLBACK: type = " << type << ", severity = " << severity << ", message = " << message;
+	}
+}
+
 Reborn::Renderer::Renderer(Window& window):
 	_context(window.createGLContext()),
 	_window(window)
 {
 	initImGui(&window.getSDLWindow());
+
+	auto glVersion = glGetString(GL_VERSION);
+	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+	LOG_INFO << "usin OpenGL " << glVersion;
+
 	glClearColor(1.0, 0.0, 0.0, 1.0);
 
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(glMessageCallback, 0);
 }
 
 void Reborn::Renderer::draw()
@@ -25,6 +50,21 @@ void Reborn::Renderer::draw()
 const SDL_GLContext& Reborn::Renderer::getContext()
 {
 	return _context;
+}
+
+void Reborn::Renderer::generate(VBO& vbo)
+{
+	glGenBuffers(1, &(vbo.id));
+}
+
+void Reborn::Renderer::upload(VBO& vbo, GLenum usage)
+{
+	glBufferData(GL_ARRAY_BUFFER, vbo.size * sizeof(float), vbo.vertices.get(), usage);
+}
+
+void Reborn::Renderer::bind(VBO& vbo)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
 }
 
 Reborn::Renderer::~Renderer()

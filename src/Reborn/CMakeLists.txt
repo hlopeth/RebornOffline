@@ -34,7 +34,7 @@ set(SOURCE_FILES
 	"SDLUtils.h"
 	"SDLUtils.cpp"
 	"Graphics/Renderer.cpp"
-	 )
+	  )
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
