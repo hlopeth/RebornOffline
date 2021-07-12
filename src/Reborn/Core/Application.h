@@ -1,6 +1,6 @@
 #pragma once
 #include "Window.h"
-#include "Renderer.h"
+#include "Graphics/Renderer.h"
 #include "System.h"
 #include <ECS/EntitySystem.h>
 

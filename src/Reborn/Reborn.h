@@ -6,6 +6,7 @@
 #include <vector>
 #include <bitset>
 #include <utility>
+#include <string>
 
 #include <thirdParty/imgui/imgui.h>
 #include <thirdParty/imgui/imgui_internal.h>

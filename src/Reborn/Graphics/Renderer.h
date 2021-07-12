@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL_opengl.h>
-#include "Window.h"
+#include "Core/Window.h"
 
 namespace Reborn {
 	class Renderer {

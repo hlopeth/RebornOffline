@@ -14,15 +14,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(SOURCE_FILES
 	"Reborn.h"
 	 
-	"Application.h"
-	"Application.cpp" 
+	"Core/Application.h"
+	"Core/Application.cpp" 
 	"EntryPoint.h"
 	"ECS/EntitySystem.h" 
-	"System.cpp" 
+	"Core/System.cpp" 
 	"Event/IEvent.h"  
 	 
-	"Window.h"  
-	"Window.cpp"
+	"Core/Window.h"  
+	"Core/Window.cpp"
 	${ELPP_SOURCE_DIR}/easylogging++.h
 	${ELPP_SOURCE_DIR}/easylogging++.cc
 	"Event/EventDispatcher.cpp" 
@@ -33,7 +33,7 @@ set(SOURCE_FILES
 	"KeyCodes.h"
 	"SDLUtils.h"
 	"SDLUtils.cpp"
-	"Renderer.cpp"
+	"Graphics/Renderer.cpp"
 	 )
 
 add_library(Reborn ${SOURCE_FILES} )
@@ -46,6 +46,7 @@ target_precompile_headers(
 	<vector>
 	<bitset>
 	<utility>
+	<string>
 )
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})

@@ -2,7 +2,7 @@
 #include <ECS/EntitySystem.h>
 #include <Components/ImGuiComponent.h>
 #include <Components/Transform3DComponent.h>
-#include <System.h>
+#include "Core/System.h"
 
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_opengl3.h>

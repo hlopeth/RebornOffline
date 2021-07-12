@@ -1,4 +1,5 @@
 #include "Reborn.h"
+#include "Math/TestVector.h"
 
 using namespace Reborn;
 
@@ -62,16 +63,17 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
 class EditorApp : public Reborn::Application 
 {
 public:
-    EditorApp(): Application(getWindowConfig()) {
+    EditorApp() : Application(getWindowConfig()) {
         auto& entityManager = System::get().entityManager();
 
-        Entity dockspaceEntity = entityManager.createEntity();
+        /*Entity dockspaceEntity = entityManager.createEntity();
         entityManager.addComponent<Transform3DComponent>(dockspaceEntity);
         entityManager.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));
 
         Entity propertiesViewEntity = entityManager.createEntity();
         entityManager.addComponent<Transform3DComponent>(propertiesViewEntity);
-        entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
+        entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));*/
+        testVector();
     }
 
     ~EditorApp() {

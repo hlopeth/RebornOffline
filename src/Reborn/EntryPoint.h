@@ -1,6 +1,6 @@
 #pragma once
-#include "System.h"
-#include "Application.h"
+#include "Core/System.h"
+#include "Core/Application.h"
 #include "Log.h"
 
 INITIALIZE_EASYLOGGINGPP
