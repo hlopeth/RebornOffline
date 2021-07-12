@@ -38,7 +38,7 @@ Reborn::Renderer::Renderer(Window& window):
 
 	LOG_INFO << "usin OpenGL " << glVersion;
 
-	glClearColor(1.0, 0.0, 0.0, 1.0);
+	glClearColor(0.2, 0.2, 0.2, 1.0);
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(glMessageCallback, 0);
@@ -160,6 +160,11 @@ void Reborn::Renderer::bind(VertexAttayObject& vao)
 void Reborn::Renderer::useProgram(const GLSLProgram& program)
 {
 	glUseProgram(program.id);
+}
+
+void Reborn::Renderer::setClearColor(const Vector3& color)
+{
+	glClearColor(color.r, color.g, color.b, 1.0f);
 }
 
 Reborn::Renderer::~Renderer()

@@ -3,6 +3,7 @@
 #include "Core/Window.h"
 #include "VertexArrayObject.h"
 #include "GLSLProgram.h"
+#include "Math/Vector.h"
 
 namespace Reborn {
 	class Renderer {
@@ -19,6 +20,9 @@ namespace Reborn {
 		void bind(VertexBufferObject& vbo);
 		void bind(VertexAttayObject& vao);
 		void useProgram(const GLSLProgram& program);
+
+		void setClearColor(const Vector3& color);
+
 		~Renderer();
 	private:
 		bool initImGui(SDL_Window* window);

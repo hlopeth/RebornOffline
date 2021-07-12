@@ -16,6 +16,8 @@ Reborn::WindowConfiguration getWindowConfig() {
 ImGuiID dockspace_id;
 bool first_frame = true;
 
+Reborn::Renderer* renderer_ptr = nullptr;
+
 void drawDockspace(Entity entity, ImGuiComponent& _this) {
     bool p_open = true;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -52,11 +54,17 @@ void drawDockspace(Entity entity, ImGuiComponent& _this) {
 }
 
 void drawPropertyView(Entity entity, ImGuiComponent& _this) {
+    static ImVec4 color = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
     bool p_open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
     ImGui::Begin("Properties", &p_open, window_flags);
+    ImGui::ColorPicker4("Background", (float*)&color, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
     ImGui::End();
+
+    if (renderer_ptr != nullptr) {
+        renderer_ptr->setClearColor(Vector3(color.x, color.y, color.z));
+    }
 }
 
 class EditorApp : public Reborn::Application 
@@ -67,11 +75,13 @@ public:
 
         /*Entity dockspaceEntity = entityManager.createEntity();
         entityManager.addComponent<Transform3DComponent>(dockspaceEntity);
-        entityManager.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));
+        entityManager.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));*/
+
+        renderer_ptr = this->renderer.get();
 
         Entity propertiesViewEntity = entityManager.createEntity();
         entityManager.addComponent<Transform3DComponent>(propertiesViewEntity);
-        entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));*/
+        entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
     }
 
     ~EditorApp() {
