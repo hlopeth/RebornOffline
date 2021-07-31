@@ -4,6 +4,7 @@ namespace Reborn {
 	enum ComponentTypes {
 		Test,
 		ImGui,
-		Transform3D
+		Transform3D,
+		Render
 	};
 }

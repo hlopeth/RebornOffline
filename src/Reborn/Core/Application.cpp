@@ -7,6 +7,7 @@
 
 #include <Systems/TestSystem.h>
 #include <Systems/ImGuiSystem.h>
+#include <Systems/RenderSystem.h>
 #include "backends/imgui_impl_sdl.h"
 
 //Reborn::ImGuiSystem<Reborn::System::maxComponents, Reborn::System::maxEntitySystems>* imguiSystem;
@@ -36,8 +37,10 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	system.entityManager().registerComponent<TestComponent>();
 	system.entityManager().registerComponent<Transform3DComponent>();
 	system.entityManager().registerComponent<ImGuiComponent>();
+	system.entityManager().registerComponent<RenderComponent>();
 	auto testSystem = system.entityManager().createSystem<TestSystem<System::maxComponents, System::maxEntitySystems>>();
 	imGuiSystem = system.entityManager().createSystem<ImGuiSystem<System::maxComponents, System::maxEntitySystems>>();
+	rendererSystem = system.entityManager().createSystem<RenderSystem<System::maxComponents, System::maxEntitySystems>>();
 
 	system.eventDispatcher().subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 }
@@ -55,7 +58,10 @@ void Reborn::Application::Run()
 		static_cast<ImGuiSystem<System::maxComponents, System::maxEntitySystems>*>(imGuiSystem)->process(window->getSDLWindow());
 
 		window->Update();
-		renderer->draw();
+
+		renderer->beginFrame();
+		static_cast<RenderSystem<System::maxComponents, System::maxEntitySystems>*>(rendererSystem)->process(*renderer);
+		renderer->endFrame();
 	}
 
 }

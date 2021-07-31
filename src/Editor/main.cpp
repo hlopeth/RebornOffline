@@ -1,5 +1,4 @@
 #include "Reborn.h"
-#include "Resources/TextResource.h"
 
 using namespace Reborn;
 
@@ -85,13 +84,8 @@ public:
         entityManager.addComponent<Transform3DComponent>(propertiesViewEntity);
         entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
 
-        auto resMng = System::get().resourceManager();
-        const TextResource* res = resMng.getResourceOrCreate<TextResource>("test.txt");
-        if (res != nullptr) {
-            auto text = res->getText();
-            LOG_DEBUG << text;
-        }
-
+        Entity triangleEntity;
+        createTriangleEntity(triangleEntity);
     }
 
     ~EditorApp() {
@@ -103,6 +97,40 @@ private:
         resourceManager.setAssetsPath(ASSETS_PATH);
         TextResource* defaultTextResource = new TextResource("default text");
         resourceManager.addDefaultResource(defaultTextResource);
+    }
+
+    bool createTriangleEntity(Entity& triangleEntity) {
+        auto& resourceManager = System::get().resourceManager();
+        const TextResource* vertexShaderSource =
+            resourceManager.getResourceOrCreate<TextResource>("shaders/simple_triangle/vertex.glsl");
+        const TextResource* fragmentShaderSource =
+            resourceManager.getResourceOrCreate<TextResource>("shaders/simple_triangle/fragment.glsl");
+
+        if (vertexShaderSource == nullptr || fragmentShaderSource == nullptr) {
+            LOG_ERROR << "failed to load shader source";
+            return false;
+        }
+
+        GLSLProgram triangleProgram(vertexShaderSource->getText(), fragmentShaderSource->getText());
+        renderer->create(triangleProgram);
+
+        std::shared_ptr<float[]> vertices(new float[] {
+            -0.5f, -0.5f, 0.0f, // left  
+             0.5f, -0.5f, 0.0f, // right 
+             0.0f,  0.5f, 0.0f  // top   
+            });
+        VertexBufferObject vbo(vertices, 9);
+        std::vector<VertexAttribute> layout;
+        layout.emplace_back(3, 3 * sizeof(float), GL_FALSE, GL_FLOAT);
+        VertexArrayObject triangleVAO(vbo, layout);
+
+        renderer->create(triangleVAO);
+
+        auto& entityManager = System::get().entityManager();
+        triangleEntity = entityManager.createEntity();
+        entityManager.addComponent<Transform3DComponent>(triangleEntity);
+        entityManager.addComponent<RenderComponent>(triangleEntity, triangleVAO, triangleProgram);
+        return true;
     }
 };
 

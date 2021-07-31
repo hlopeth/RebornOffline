@@ -5,7 +5,7 @@
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_opengl3.h"
 
-Reborn::VertexAttayObject* test_vao;
+Reborn::VertexArrayObject* test_vao;
 Reborn::GLSLProgram* test_program;
 
 GLuint compileShader(const std::string& source, GLenum type);
@@ -36,7 +36,7 @@ Reborn::Renderer::Renderer(Window& window):
 	auto glVersion = glGetString(GL_VERSION);
 	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-	LOG_INFO << "usin OpenGL " << glVersion;
+	LOG_INFO << "using OpenGL " << glVersion;
 
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 
@@ -69,22 +69,27 @@ Reborn::Renderer::Renderer(Window& window):
 	VertexBufferObject vbo(vertices, 9);
 	std::vector<VertexAttribute> layout;
 	layout.emplace_back(3, 3*sizeof(float), GL_FALSE, GL_FLOAT);
-	test_vao = new VertexAttayObject(vbo, layout);
+	test_vao = new VertexArrayObject(vbo, layout);
 
 	create(*test_vao);
 }
 
-void Reborn::Renderer::draw()
+void Reborn::Renderer::beginFrame()
 {
 	glViewport(0, 0, _window.width(), _window.height());
 	glClear(GL_COLOR_BUFFER_BIT);
+}
 
-	useProgram(*test_program);
-	bind(*test_vao);
-	glDrawArrays(GL_TRIANGLES, 0,3);
-
+void Reborn::Renderer::endFrame()
+{
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
+}
+
+void Reborn::Renderer::drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset)
+{
+	bind(vao);
+	glDrawArrays(GL_TRIANGLES, offset, vertices);
 }
 
 const SDL_GLContext& Reborn::Renderer::getContext()
@@ -119,7 +124,7 @@ void Reborn::Renderer::create(VertexBufferObject& vbo)
 	glGenBuffers(1, &(vbo.id));
 }
 
-void Reborn::Renderer::create(VertexAttayObject& vao)
+void Reborn::Renderer::create(VertexArrayObject& vao)
 {
 	glGenVertexArrays(1, &(vao.id));
 	bind(vao);
@@ -142,7 +147,7 @@ void Reborn::Renderer::upload(VertexBufferObject& vbo, GLenum usage)
 	glBufferData(GL_ARRAY_BUFFER, vbo.size * sizeof(float), vbo.vertices.get(), usage);
 }
 
-void Reborn::Renderer::createLayout(VertexAttayObject vao)
+void Reborn::Renderer::createLayout(VertexArrayObject vao)
 {
 
 }
@@ -152,7 +157,7 @@ void Reborn::Renderer::bind(VertexBufferObject& vbo)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
 }
 
-void Reborn::Renderer::bind(VertexAttayObject& vao)
+void Reborn::Renderer::bind(VertexArrayObject& vao)
 {
 	glBindVertexArray(vao.id);
 }

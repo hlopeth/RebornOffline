@@ -17,8 +17,8 @@ namespace Reborn {
 		GLenum type;
 	};
 
-	struct VertexAttayObject {
-		VertexAttayObject(const VertexBufferObject& _vbo, std::vector<VertexAttribute>& _layout): vbo(_vbo), layout(_layout) {}
+	struct VertexArrayObject {
+		VertexArrayObject(const VertexBufferObject& _vbo, std::vector<VertexAttribute>& _layout): vbo(_vbo), layout(_layout) {}
 		VertexBufferObject vbo;
 		std::vector<VertexAttribute> layout;
 		GLuint id;

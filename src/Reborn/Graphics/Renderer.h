@@ -9,16 +9,18 @@ namespace Reborn {
 	class Renderer {
 	public:
 		Renderer(Window& window);
-		void draw();
+		void beginFrame();
+		void endFrame();
+		void drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset = 0);
 		const SDL_GLContext& getContext();
 		void create(GLSLProgram& program);
 		void create(VertexBufferObject& vbo);
 		//creates VertexAttayObject and it's VertexBufferObject
-		void create(VertexAttayObject& vao);
+		void create(VertexArrayObject& vao);
 		void upload(VertexBufferObject& vbo, GLenum usage = GL_STATIC_DRAW);
-		void createLayout(VertexAttayObject vao);
+		void createLayout(VertexArrayObject vao);
 		void bind(VertexBufferObject& vbo);
-		void bind(VertexAttayObject& vao);
+		void bind(VertexArrayObject& vao);
 		void useProgram(const GLSLProgram& program);
 
 		void setClearColor(const Vector3& color);

@@ -18,6 +18,7 @@ namespace Reborn {
 		std::unique_ptr<Window> window;
 		std::unique_ptr<Renderer> renderer;
 		EntitySystem<System::maxComponents, System::maxEntitySystems>* imGuiSystem = nullptr;
+		EntitySystem<System::maxComponents, System::maxEntitySystems>* rendererSystem = nullptr;
 	private: 
 		void PoolEvents();
 		bool shouldClose = false; 

@@ -15,8 +15,11 @@
 
 #include "Components/Transform3DComponent.h"
 #include "Components/ImGuiComponent.h"
+#include "Components/RenderComponent.h"
 
 #include "Event/ApplicationShouldCloseEvent.h"
 #include "Event/KeyPressedEvent.h"
+
+#include "Resources/TextResource.h"
 
 #include "EntryPoint.h"
