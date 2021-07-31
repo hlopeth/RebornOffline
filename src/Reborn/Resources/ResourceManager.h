@@ -6,26 +6,7 @@ namespace Reborn {
 	class ResourceManager {
 	public:
 		ResourceManager() = default;
-		~ResourceManager() {
-			for (auto it : filenameToData) {
-				AbstractResource* resourceRef = it.second;
-				//не удал€ем ресурс если он ссылаетс€ на дефолтный
-				auto defaultResourceSearchResult = defaultResources.find(resourceRef->getType());
-				if (defaultResourceSearchResult != defaultResources.end()) {
-					return;
-				}
-
-				resourceRef->unload();
-				delete resourceRef;
-			}
-
-			for (auto it : defaultResources) {
-				if (it.second->notLoaded()) {
-					it.second->unload();
-				}
-				delete it.second;
-			}
-		};
+		~ResourceManager();
 		//устанавливает глобальный путь до папки с ресурсами.
 		void setAssetsPath(const char* path);
 		//если ресурс еще не был загружен загружет ресурс.
@@ -49,7 +30,7 @@ namespace Reborn {
 
 					auto defaultResourceSearchResult = defaultResources.find(resType);
 					if (defaultResourceSearchResult != defaultResources.end()) {
-						newResource = reinterpret_cast<ResourceType*>(&defaultResourceSearchResult->second);
+						newResource = reinterpret_cast<ResourceType*>(defaultResourceSearchResult->second);
 					}
 					else {
 						newResource = nullptr;
@@ -68,23 +49,32 @@ namespace Reborn {
 			return reinterpret_cast<ResourceType*>(resourceRef);
 		}
 
-		void removeResource(const std::string& filename) {
-			auto resourceSearchResult = filenameToData.find(filename);
-			if (resourceSearchResult == filenameToData.end()) {
-				return;
-			}
+		//ƒобавл€ет ресурс по умолчанию. 
+		//≈сли ресурс по умолчанию с этим ключем уже есть то он будет перезаписан.
+		//filename - им€ ресурса относительно assetsPath.
+		template<typename ResourceType>
+		bool tryAddDefaultResource(const std::string& filename) {
+			ResourceType* newDefaultResource = new ResourceType();
 
-			AbstractResource* resourceRef = resourceSearchResult->second;
-			//не удал€ем ресурс если он ссылаетс€ на дефолтный
-			auto defaultResourceSearchResult = defaultResources.find(resourceRef->getType());
-			if (defaultResourceSearchResult != defaultResources.end()) {
-				return;
+			const std::string fullFilename = assetsPath + '/' + filename;
+			bool sucsess = newDefaultResource->tryLoad(fullFilename);
+			if (!sucsess) {
+				delete newDefaultResource;
+				return false;
 			}
+			else {
+				addDefaultResource<ResourceType>(newDefaultResource);
+				return true;
+			}
+		}
 
-			filenameToData.erase(resourceSearchResult);
-			resourceRef->unload();
-			delete resourceRef;
-		};
+		template<typename ResourceType>
+		void addDefaultResource(ResourceType* newDefaultResource) {
+			defaultResources.insert({ newDefaultResource->getType(), reinterpret_cast<AbstractResource*>(newDefaultResource) });
+		}
+
+		void removeResource(const std::string& filename);
+
 	private:
 		std::string assetsPath;
 		std::unordered_map<std::string, AbstractResource*> filenameToData;

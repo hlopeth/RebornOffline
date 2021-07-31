@@ -72,7 +72,7 @@ class EditorApp : public Reborn::Application
 {
 public:
     EditorApp() : Application(getWindowConfig()) {
-        System::get().resourceManager().setAssetsPath(ASSETS_PATH);
+        setupResourceManager();
         auto& entityManager = System::get().entityManager();
 
         /*Entity dockspaceEntity = entityManager.createEntity();
@@ -86,7 +86,7 @@ public:
         entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
 
         auto resMng = System::get().resourceManager();
-        const TextResource* res = resMng.getResourceOrCreate<TextResource>("test2.txt");
+        const TextResource* res = resMng.getResourceOrCreate<TextResource>("test.txt");
         if (res != nullptr) {
             auto text = res->getText();
             LOG_DEBUG << text;
@@ -96,6 +96,13 @@ public:
 
     ~EditorApp() {
 
+    }
+private:
+    void setupResourceManager() {
+        auto& resourceManager = System::get().resourceManager();
+        resourceManager.setAssetsPath(ASSETS_PATH);
+        TextResource* defaultTextResource = new TextResource("default text");
+        resourceManager.addDefaultResource(defaultTextResource);
     }
 };
 

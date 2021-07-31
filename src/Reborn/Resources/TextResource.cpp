@@ -6,6 +6,10 @@ Reborn::TextResource::TextResource() : AbstractResource(0x23cedd45)
 {
 }
 
+Reborn::TextResource::TextResource(std::string _text) : AbstractResource(0x23cedd45), text(_text)
+{
+}
+
 bool Reborn::TextResource::tryLoad(const std::string& path)
 {
 	std::ifstream infile;

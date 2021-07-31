@@ -15,6 +15,43 @@ Reborn::AbstractResource* getResource(const std::string& filename)
 	    bool result = T::load();
 		filenameToData.insert()
 	}
-
-
 }
+
+void Reborn::ResourceManager::removeResource(const std::string& filename) {
+	auto resourceSearchResult = filenameToData.find(filename);
+	if (resourceSearchResult == filenameToData.end()) {
+		return;
+	}
+
+	AbstractResource* resourceRef = resourceSearchResult->second;
+	//не удаляем ресурс если он ссылается на дефолтный
+	auto defaultResourceSearchResult = defaultResources.find(resourceRef->getType());
+	if (defaultResourceSearchResult != defaultResources.end()) {
+		return;
+	}
+
+	filenameToData.erase(resourceSearchResult);
+	resourceRef->unload();
+	delete resourceRef;
+};
+
+Reborn::ResourceManager::~ResourceManager() {
+	for (auto it : filenameToData) {
+		AbstractResource* resourceRef = it.second;
+		//не удаляем ресурс если он ссылается на дефолтный
+		auto defaultResourceSearchResult = defaultResources.find(resourceRef->getType());
+		if (defaultResourceSearchResult != defaultResources.end()) {
+			return;
+		}
+
+		resourceRef->unload();
+		delete resourceRef;
+	}
+
+	for (auto it : defaultResources) {
+		if (it.second->notLoaded()) {
+			it.second->unload();
+		}
+		delete it.second;
+	}
+};
