@@ -5,9 +5,6 @@
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_opengl3.h"
 
-Reborn::VertexArrayObject* test_vao;
-Reborn::GLSLProgram* test_program;
-
 GLuint compileShader(const std::string& source, GLenum type);
 
 void GLAPIENTRY glMessageCallback(
@@ -43,45 +40,61 @@ Reborn::Renderer::Renderer(Window& window):
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(glMessageCallback, 0);
 
+	create(sceneFraimbuffer);
+	bind(sceneFraimbuffer);
 
-	std::string vertexShaderSource = "#version 330 core\n"
-		"layout (location = 0) in vec3 aPos;\n"
-		"void main()\n"
-		"{\n"
-		"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-		"}\0";
-	std::string fragmentShaderSource = "#version 330 core\n"
-		"out vec4 FragColor;\n"
-		"void main()\n"
-		"{\n"
-		"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-		"}\n\0";
+	colorAttachmentTexture.width = window.width();
+	colorAttachmentTexture.height = window.height();
+	colorAttachmentTexture.textureType = GL_TEXTURE_2D;
+	colorAttachmentTexture.internalFromat = GL_RGB;
+	colorAttachmentTexture.texelFormat = GL_RGB;
+	colorAttachmentTexture.texelType = GL_UNSIGNED_BYTE;
+	colorAttachmentTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	colorAttachmentTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	create(colorAttachmentTexture);
+	bind(colorAttachmentTexture);
+	upload(colorAttachmentTexture, NULL);
+	updateTextureParameters(colorAttachmentTexture);
 
-	test_program = new GLSLProgram(vertexShaderSource, fragmentShaderSource);
+	Renderbuffer depthStencilRenderbuffer;
+	depthStencilRenderbuffer.width = window.width();
+	depthStencilRenderbuffer.height = window.height();
+	depthStencilRenderbuffer.internalFormat = GL_DEPTH24_STENCIL8;
+	create(depthStencilRenderbuffer);
+	bind(depthStencilRenderbuffer);
+	upload(depthStencilRenderbuffer);
 
-	create(*test_program);
+	setFramebufferTexture(sceneFraimbuffer, colorAttachmentTexture, GL_COLOR_ATTACHMENT0);
+	setFramebufferRenderbuffer(sceneFraimbuffer, depthStencilRenderbuffer, GL_DEPTH_STENCIL_ATTACHMENT);
 
-	std::shared_ptr<float[]> vertices(new float[] {
-		-0.5f, -0.5f, 0.0f, // left  
-		 0.5f, -0.5f, 0.0f, // right 
-		 0.0f,  0.5f, 0.0f  // top   
-		});
-	VertexBufferObject vbo(vertices, 9);
-	std::vector<VertexAttribute> layout;
-	layout.emplace_back(3, 3*sizeof(float), GL_FALSE, GL_FLOAT);
-	test_vao = new VertexArrayObject(vbo, layout);
+	if (!isFramebufferComplete(sceneFraimbuffer)) {
+		LOG_ERROR << "main framebuffer is not complete";
+	}
 
-	create(*test_vao);
+	bindMainFramebuffer();
 }
 
 void Reborn::Renderer::beginFrame()
 {
-	glViewport(0, 0, _window.width(), _window.height());
+	bind(sceneFraimbuffer);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
+bool p_open = true;
+
 void Reborn::Renderer::endFrame()
 {
+	bindMainFramebuffer();
+	glViewport(0, 0, _window.width(), _window.height());
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	/*ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
+	if (p_open) {
+		ImGui::Begin("test", &p_open, window_flags);
+		ImGui::Image((void*)(intptr_t)(colorAttachmentTexture.id), ImVec2(512, 512));
+		ImGui::End();
+	}*/
+
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
 }
@@ -124,6 +137,16 @@ void Reborn::Renderer::create(VertexBufferObject& vbo)
 	glGenBuffers(1, &(vbo.id));
 }
 
+void Reborn::Renderer::create(Framebuffer& fbo)
+{
+	glGenFramebuffers(1, &(fbo.id));
+}
+
+void Reborn::Renderer::create(Renderbuffer& rbo)
+{
+	glGenRenderbuffers(1, &(rbo.id));
+}
+
 void Reborn::Renderer::create(VertexArrayObject& vao)
 {
 	glGenVertexArrays(1, &(vao.id));
@@ -142,14 +165,76 @@ void Reborn::Renderer::create(VertexArrayObject& vao)
 	}
 }
 
+void Reborn::Renderer::create(GLTexture& texture)
+{
+	glGenTextures(1, &(texture.id));
+}
+
 void Reborn::Renderer::upload(VertexBufferObject& vbo, GLenum usage)
 {
+	bind(vbo);
 	glBufferData(GL_ARRAY_BUFFER, vbo.size * sizeof(float), vbo.vertices.get(), usage);
+}
+
+void Reborn::Renderer::upload(GLTexture& texture, void* data, GLuint mipLevel)
+{
+	bind(texture);
+	switch (texture.textureType)
+	{
+	case GL_TEXTURE_2D:
+		glTexImage2D(GL_TEXTURE_2D, mipLevel, texture.internalFromat, texture.width, texture.height, 0, texture.texelFormat, texture.texelType, data);
+		break;
+	default:
+		LOG_ERROR << "Renderer::upload unsuplorted texture type = " << texture.textureType;
+		break;
+	}
+}
+
+void Reborn::Renderer::upload(Renderbuffer& rbo)
+{
+	bind(rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, rbo.internalFormat, rbo.width, rbo.height);
 }
 
 void Reborn::Renderer::createLayout(VertexArrayObject vao)
 {
 
+}
+
+void Reborn::Renderer::updateTextureParameters(GLTexture& texture)
+{
+	bind(texture);
+	GLTextureParemeter* parameters;
+	size_t parametersSize;
+	texture.getTextureParameters(parameters, parametersSize);
+
+	for (size_t i = 0; i < parametersSize; i++) {
+		const GLTextureParemeter& param = parameters[i];
+		switch (param.name)
+		{
+		case GL_TEXTURE_MIN_FILTER:
+		case GL_TEXTURE_MAG_FILTER:
+			glTexParameteri(texture.textureType, param.name, param.value.iValue);
+			break;
+		default:
+			LOG_ERROR << "Renderer::updateTextureParameters unsupported texture parameter " << param.name;
+			break;
+		}
+	}
+}
+
+void Reborn::Renderer::setFramebufferTexture(Framebuffer& fbo, GLTexture& texture, GLenum attachment)
+{
+	bind(fbo);
+	bind(texture);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture.id, 0);
+}
+
+void Reborn::Renderer::setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment)
+{
+	bind(fbo);
+	bind(rbo);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.id);
 }
 
 void Reborn::Renderer::bind(VertexBufferObject& vbo)
@@ -162,9 +247,72 @@ void Reborn::Renderer::bind(VertexArrayObject& vao)
 	glBindVertexArray(vao.id);
 }
 
+void Reborn::Renderer::bind(Framebuffer& fbo)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo.id);
+}
+
+void Reborn::Renderer::bindMainFramebuffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Reborn::Renderer::bind(GLTexture& texture)
+{
+	glBindTexture(texture.textureType, texture.id);
+}
+
+void Reborn::Renderer::bind(Renderbuffer& rbo)
+{
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo.id);
+}
+
+bool Reborn::Renderer::isFramebufferComplete(Framebuffer& fbo)
+{
+	bind(fbo);
+	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status == GL_FRAMEBUFFER_UNDEFINED) {
+		LOG_ERROR << "GL_FRAMEBUFFER_UNDEFINED is returned if the specified framebuffer is the default read or draw framebuffer, but the default framebuffer does not exist.";
+	}
+	if (status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
+		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT is returned if any of the framebuffer attachment points are framebuffer incomplete.";
+	}
+	if (status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
+		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT is returned if the framebuffer does not have at least one image attached to it.";
+	}
+	if (status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
+		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER is returned if the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for any color attachment point(s) named by GL_DRAW_BUFFERi.";
+	}
+	if (status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
+		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER is returned if GL_READ_BUFFER is not GL_NONE and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for the color attachment point named by GL_READ_BUFFER.";
+	}
+	if (status == GL_FRAMEBUFFER_UNSUPPORTED) {
+		LOG_ERROR << "GL_FRAMEBUFFER_UNSUPPORTED is returned if the combination of internal formats of the attached images violates an implementation-dependent set of restrictions.";
+	}
+	if (status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE) {
+		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE is returned if the value of GL_RENDERBUFFER_SAMPLES is not the same for all attached renderbuffers; if the value of GL_TEXTURE_SAMPLES is the not same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, the value of GL_RENDERBUFFER_SAMPLES does not match the value of GL_TEXTURE_SAMPLES.";
+		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE is also returned if the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not the same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not GL_TRUE for all attached textures.";
+	}
+	if (status == GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS) {
+		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS is returned if any framebuffer attachment is layered, and any populated attachment is not layered, or if all populated color attachments are not from textures of the same target.";
+	}
+
+	return status == GL_FRAMEBUFFER_COMPLETE;
+}
+
+void Reborn::Renderer::destroy(Framebuffer& fbo)
+{
+	glDeleteFramebuffers(1, &(fbo.id));
+}
+
 void Reborn::Renderer::useProgram(const GLSLProgram& program)
 {
 	glUseProgram(program.id);
+}
+
+const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()
+{
+	return colorAttachmentTexture;
 }
 
 void Reborn::Renderer::setClearColor(const Vector3& color)

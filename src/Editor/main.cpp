@@ -67,22 +67,41 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
     }
 }
 
+void drawMainScene(Entity entity, ImGuiComponent& _this) {
+    if (renderer_ptr == nullptr) {
+        return;
+    }
+
+    bool p_open = true;
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
+    const GLTexture& sceneTexture = renderer_ptr->getSceneTexture();
+    if (p_open) {
+        ImGui::Begin("Scene View", &p_open, window_flags);
+        ImVec2 canvas_sz = ImGui::GetContentRegionAvail();
+        ImGui::Image((void*)(intptr_t)(sceneTexture.id), canvas_sz);
+        ImGui::End();
+    }
+}
+
 class EditorApp : public Reborn::Application 
 {
 public:
     EditorApp() : Application(getWindowConfig()) {
+        renderer_ptr = this->renderer.get();
         setupResourceManager();
         auto& entityManager = System::get().entityManager();
 
-        /*Entity dockspaceEntity = entityManager.createEntity();
+        Entity dockspaceEntity = entityManager.createEntity();
         entityManager.addComponent<Transform3DComponent>(dockspaceEntity);
-        entityManager.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));*/
-
-        renderer_ptr = this->renderer.get();
+        entityManager.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));
 
         Entity propertiesViewEntity = entityManager.createEntity();
         entityManager.addComponent<Transform3DComponent>(propertiesViewEntity);
         entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
+
+        Entity sceneViewEntity = entityManager.createEntity();
+        entityManager.addComponent<Transform3DComponent>(sceneViewEntity);
+        entityManager.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
         Entity triangleEntity;
         createTriangleEntity(triangleEntity);
