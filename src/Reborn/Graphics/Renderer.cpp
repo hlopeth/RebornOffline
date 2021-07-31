@@ -24,9 +24,10 @@ void GLAPIENTRY glMessageCallback(
 	}
 }
 
-Reborn::Renderer::Renderer(Window& window):
+Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
 	_context(window.createGLContext()),
-	_window(window)
+	_window(window),
+	sceneFraimbufferSize(_sceneFraimbufferSize)
 {
 	initImGui(&window.getSDLWindow());
 
@@ -43,8 +44,8 @@ Reborn::Renderer::Renderer(Window& window):
 	create(sceneFraimbuffer);
 	bind(sceneFraimbuffer);
 
-	colorAttachmentTexture.width = window.width();
-	colorAttachmentTexture.height = window.height();
+	colorAttachmentTexture.width = sceneFraimbufferSize.x;
+	colorAttachmentTexture.height = sceneFraimbufferSize.y;
 	colorAttachmentTexture.textureType = GL_TEXTURE_2D;
 	colorAttachmentTexture.internalFromat = GL_RGB;
 	colorAttachmentTexture.texelFormat = GL_RGB;
@@ -56,9 +57,8 @@ Reborn::Renderer::Renderer(Window& window):
 	upload(colorAttachmentTexture, NULL);
 	updateTextureParameters(colorAttachmentTexture);
 
-	Renderbuffer depthStencilRenderbuffer;
-	depthStencilRenderbuffer.width = window.width();
-	depthStencilRenderbuffer.height = window.height();
+	depthStencilRenderbuffer.width = sceneFraimbufferSize.x;
+	depthStencilRenderbuffer.height = sceneFraimbufferSize.y;
 	depthStencilRenderbuffer.internalFormat = GL_DEPTH24_STENCIL8;
 	create(depthStencilRenderbuffer);
 	bind(depthStencilRenderbuffer);
@@ -77,6 +77,7 @@ Reborn::Renderer::Renderer(Window& window):
 void Reborn::Renderer::beginFrame()
 {
 	bind(sceneFraimbuffer);
+	glViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -87,13 +88,6 @@ void Reborn::Renderer::endFrame()
 	bindMainFramebuffer();
 	glViewport(0, 0, _window.width(), _window.height());
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	/*ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
-	if (p_open) {
-		ImGui::Begin("test", &p_open, window_flags);
-		ImGui::Image((void*)(intptr_t)(colorAttachmentTexture.id), ImVec2(512, 512));
-		ImGui::End();
-	}*/
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
@@ -318,6 +312,25 @@ const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()
 void Reborn::Renderer::setClearColor(const Vector3& color)
 {
 	glClearColor(color.r, color.g, color.b, 1.0f);
+}
+
+const Reborn::Vector2& Reborn::Renderer::getSceneFraimbufferSize()
+{
+	return sceneFraimbufferSize;
+}
+
+void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
+{
+	sceneFraimbufferSize = newSize;
+	colorAttachmentTexture.width = newSize.x;
+	colorAttachmentTexture.height = newSize.y;
+	bind(colorAttachmentTexture);
+	upload(colorAttachmentTexture, nullptr);
+
+	depthStencilRenderbuffer.width = newSize.x;
+	depthStencilRenderbuffer.height = newSize.y;
+	bind(depthStencilRenderbuffer);
+	upload(depthStencilRenderbuffer);
 }
 
 Reborn::Renderer::~Renderer()

@@ -11,7 +11,7 @@
 namespace Reborn {
 	class Renderer {
 	public:
-		Renderer(Window& window);
+		Renderer(Window& window, const Vector2& sceneFraimbufferSize = Vector2(500, 500));
 		void beginFrame();
 		void endFrame();
 		void drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset = 0);
@@ -43,12 +43,17 @@ namespace Reborn {
 
 		void setClearColor(const Vector3& color);
 
+		const Vector2& getSceneFraimbufferSize();
+		void setSceneFramebufferSize(const Vector2& newSize);
+
 		~Renderer();
 	private:
 		bool initImGui(SDL_Window* window);
 		SDL_GLContext _context;
 		Window& _window;
+		Vector2 sceneFraimbufferSize;
 		Framebuffer sceneFraimbuffer;
 		GLTexture colorAttachmentTexture;
+		Renderbuffer depthStencilRenderbuffer;
 	};
 }
