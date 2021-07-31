@@ -45,3 +45,8 @@ Reborn::EventDispatcher& Reborn::System::eventDispatcher()
 {
     return _eventDispatcher;
 }
+
+Reborn::ResourceManager& Reborn::System::resourceManager()
+{
+    return _resourceManager;
+}

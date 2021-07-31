@@ -1,6 +1,7 @@
 #pragma once
 #include "Event/EventDispatcher.h"
 #include "ECS/EntityManager.h"
+#include "Resources/ResourceManager.h"
 
 namespace Reborn {
 	class System {
@@ -10,6 +11,7 @@ namespace Reborn {
 		void Shutdown();
 		
 		EventDispatcher& eventDispatcher();
+		ResourceManager& resourceManager();
 		static const uint8_t maxEntitySystems = 10;
 		static const uint16_t maxComponents = 100;
 		EntityManager<maxComponents, maxEntitySystems>& entityManager();
@@ -18,6 +20,7 @@ namespace Reborn {
 		static System* systemInstance;
 
 		EventDispatcher _eventDispatcher;
+		ResourceManager _resourceManager;
 		EntityManager<maxComponents, maxEntitySystems> _entityManager;
 	};
 }
