@@ -19,6 +19,11 @@ namespace Reborn {
 			y = _y;
 			z = _z;
 		};
+		Vector3(const Vector2& v, float _z) {
+			x = v.x;
+			y = v.y;
+			z = _z;
+		}
 		Vector3(const Vector3& v) {
 			xyz = v.xyz;
 		};
@@ -88,48 +93,12 @@ namespace Reborn {
 			scalarSwizzle<1> y, g;
 			scalarSwizzle<2> z, b;
 
-			vec2Swizzle<Vector2, 0, 0> xx, rr;
-			vec2Swizzle<Vector2, 0, 1> xy, rg;
-			vec2Swizzle<Vector2, 0, 2> xz, rb;
-			vec2Swizzle<Vector2, 1, 0> yx, gr;
-			vec2Swizzle<Vector2, 1, 1> yy, gg;
-			vec2Swizzle<Vector2, 1, 2> yz, gb;
-			vec2Swizzle<Vector2, 2, 0> zx, br;
-			vec2Swizzle<Vector2, 2, 1> zy, bg;
-			vec2Swizzle<Vector2, 2, 2> zz, bb;
-
-			vec3Swizzle<Vector3, 0, 0, 0> xxx, rrr;
-			vec3Swizzle<Vector3, 0, 0, 1> xxy, rrg;
-			vec3Swizzle<Vector3, 0, 0, 2> xxz, rrb;
-			vec3Swizzle<Vector3, 0, 1, 0> xyx, rgr;
-			vec3Swizzle<Vector3, 0, 1, 1> xyy, rgg;
-			vec3Swizzle<Vector3, 0, 1, 2> xyz, rgb;
-			vec3Swizzle<Vector3, 0, 2, 0> xzx, rbr;
-			vec3Swizzle<Vector3, 0, 2, 1> xzy, rbg;
-			vec3Swizzle<Vector3, 0, 2, 2> xzz, rbb;
-
-			vec3Swizzle<Vector3, 1, 0, 0> yxx, grr;
-			vec3Swizzle<Vector3, 1, 0, 1> yxy, grg;
-			vec3Swizzle<Vector3, 1, 0, 2> yxz, grb;
-			vec3Swizzle<Vector3, 1, 1, 0> yyx, ggr;
-			vec3Swizzle<Vector3, 1, 1, 1> yyy, ggg;
-			vec3Swizzle<Vector3, 1, 1, 2> yyz, ggb;
-			vec3Swizzle<Vector3, 1, 2, 0> yzx, gbr;
-			vec3Swizzle<Vector3, 1, 2, 1> yzy, gbg;
-			vec3Swizzle<Vector3, 1, 2, 2> yzz, gbb;
-
-			vec3Swizzle<Vector3, 2, 0, 0> zxx, brr;
-			vec3Swizzle<Vector3, 2, 0, 1> zxy, brg;
-			vec3Swizzle<Vector3, 2, 0, 2> zxz, brb;
-			vec3Swizzle<Vector3, 2, 1, 0> zyx, bgr;
-			vec3Swizzle<Vector3, 2, 1, 1> zyy, bgg;
-			vec3Swizzle<Vector3, 2, 1, 2> zyz, bgb;
-			vec3Swizzle<Vector3, 2, 2, 0> zzx, bbr;
-			vec3Swizzle<Vector3, 2, 2, 1> zzy, bbg;
-			vec3Swizzle<Vector3, 2, 2, 2> zzz, bbb;
+			REBORN_SWIZZLE3_2_MEMBERS(x, y, z)
+			REBORN_SWIZZLE3_2_MEMBERS(r, g, b)
+			REBORN_SWIZZLE3_3_MEMBERS(x, y, z)
+			REBORN_SWIZZLE3_3_MEMBERS(r, g, b)
 		};
 	};
-
 
 	inline std::ostream& operator<<(std::ostream& os, const Vector3& vec)
 	{

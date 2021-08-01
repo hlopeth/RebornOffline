@@ -136,7 +136,7 @@ namespace Reborn {
 
 		Matrix2 operator/(const Matrix2& mat) const {
 			Matrix2 result;
-			result = *this * mat.inverce();
+			result = *this * mat.inverse();
 			return result;
 		}
 
@@ -159,7 +159,7 @@ namespace Reborn {
 		}
 
 		Matrix2& operator/=(const Matrix2& mat) {
-			return *this *= mat.inverce();
+			return *this *= mat.inverse();
 		}
 
 		Matrix2 transpose() const {
@@ -175,14 +175,14 @@ namespace Reborn {
 			return (*this)(0, 0) * (*this)(1, 1) - (*this)(1, 0) * (*this)(0, 1);
 		}
 
-		Matrix2 inverce() const {
-			float OneOverDeterminant = 1.f / this->determinant();
+		Matrix2 inverse() const {
+			float oneOverDeterminant = 1.f / this->determinant();
 
 			Matrix2 inverse(
-				+(*this)(1, 1) * OneOverDeterminant,
-				-(*this)(0, 1) * OneOverDeterminant,
-				-(*this)(1, 0) * OneOverDeterminant,
-				+(*this)(0, 0) * OneOverDeterminant);
+				+(*this)(1, 1) * oneOverDeterminant,
+				-(*this)(0, 1) * oneOverDeterminant,
+				-(*this)(1, 0) * oneOverDeterminant,
+				+(*this)(0, 0) * oneOverDeterminant);
 
 			return inverse;
 		}

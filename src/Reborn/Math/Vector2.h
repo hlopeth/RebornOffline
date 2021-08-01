@@ -72,10 +72,12 @@ namespace Reborn {
 			float d[2];
 			scalarSwizzle<0> x, r;
 			scalarSwizzle<1> y, g;
-			vec2Swizzle<Vector2, 0, 0> xx, rr;
-			vec2Swizzle<Vector2, 0, 1> xy, rg;
-			vec2Swizzle<Vector2, 1, 0> yx, gr;
-			vec2Swizzle<Vector2, 1, 1> yy, gg;
+			REBORN_SWIZZLE2_2_MEMBERS(x, y)
+			REBORN_SWIZZLE2_2_MEMBERS(r, g)
+			//REBORN_SWIZZLE2_3_MEMBERS(x, y)
+			//REBORN_SWIZZLE2_3_MEMBERS(r, g)
+			//REBORN_SWIZZLE2_4_MEMBERS(x, y)
+			//REBORN_SWIZZLE2_4_MEMBERS(r, g)
 		};
 	};
 

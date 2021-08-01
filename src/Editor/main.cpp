@@ -119,6 +119,7 @@ public:
         Entity triangleEntity;
         createTriangleEntity(triangleEntity);
 
+        //testVector();
         testMatrix();
     }
 

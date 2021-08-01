@@ -24,7 +24,7 @@ namespace Reborn {
             LOG_DEBUG << v4 << "\n";
         }
 #endif
-#if 0
+#if 1
         {
             Vector3 v(1, 2, 3);
             LOG_DEBUG << v;
@@ -71,7 +71,7 @@ namespace Reborn {
         }
 #endif
 
-#if 0
+#if 1
         {
             Vector2 a(1, 2);
             Vector2 b(1, 2);
@@ -90,6 +90,25 @@ namespace Reborn {
             LOG_DEBUG << a.xy + b;
             LOG_DEBUG << a.xy - b;
             LOG_DEBUG << a.xy * b << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a + b;
+            LOG_DEBUG << a - b;
+            LOG_DEBUG << a * b << "\n";
+
+            LOG_DEBUG << a.xyzw + b.xyzw;
+            LOG_DEBUG << a.xyzw - b.xyzw;
+            LOG_DEBUG << a.xyzw * b.xyzw << "\n";
+
+            LOG_DEBUG << a + b.xyzw;
+            LOG_DEBUG << a - b.xyzw;
+            LOG_DEBUG << a * b.xyzw << "\n";
+
+            LOG_DEBUG << a.xyzw + b;
+            LOG_DEBUG << a.xyzw - b;
+            LOG_DEBUG << a.xyzw * b << "\n";
         }
         {
             Vector3 a(1, 2, 3);
@@ -112,7 +131,7 @@ namespace Reborn {
         }
 #endif
 
-#if 0
+#if 1
         {
             Vector2 a(1, 2);
             Vector2 b(1, 2);
@@ -198,7 +217,7 @@ namespace Reborn {
             LOG_DEBUG << a << "\n";
         }
 #endif
-#if 0
+#if 1
         {
             Vector3 a(1, 2, 3);
             Vector3 b(1, 2, 3);
@@ -281,6 +300,92 @@ namespace Reborn {
             Vector3 b(1, 2, 3);
             LOG_DEBUG << a << " * " << b.zyx;
             a *= b.zyx;
+            LOG_DEBUG << a << "\n";
+        }
+#endif
+#if 1
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " + " << b.z;
+            a += b.z;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " - " << b.z;
+            a -= b.z;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " * " << b.z;
+            a *= b.z;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " + " << b.xxxx;
+            a += b.xxxx;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " - " << b.xxxx;
+            a -= b.xxxx;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " * " << b.xxxx;
+            a *= b.xxxx;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " + " << b.yyyy;
+            a += b.yyyy;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " - " << b.yyyy;
+            a -= b.yyyy;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " * " << b.yyyy;
+            a *= b.yyyy;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " + " << b.wzyx;
+            a += b.wzyx;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " - " << b.wzyx;
+            a -= b.wzyx;
+            LOG_DEBUG << a << "\n";
+        }
+        {
+            Vector4 a(1, 2, 3, 4);
+            Vector4 b(1, 2, 3, 4);
+            LOG_DEBUG << a << " * " << b.wzyx;
+            a *= b.wzyx;
             LOG_DEBUG << a << "\n";
         }
 #endif
