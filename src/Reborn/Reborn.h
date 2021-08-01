@@ -13,6 +13,9 @@
 
 #include "Core.h"
 
+#include "Math/Vector.h"
+#include "Math/Matrix.h"
+
 #include "Components/Transform3DComponent.h"
 #include "Components/ImGuiComponent.h"
 #include "Components/RenderComponent.h"

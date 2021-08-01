@@ -1,5 +1,8 @@
 #include "Reborn.h"
 
+#include "TestVector.h"
+#include "TestMatrix.h"
+
 using namespace Reborn;
 
 Reborn::WindowConfiguration getWindowConfig() {
@@ -63,7 +66,7 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
 
     const char* items[] = { "128x128", "256x256", "512x512", "1024x1024", "2048x2048"};
     Vector2 rects[] = { Vector2(128,128), Vector2(256,256), Vector2(512,512), Vector2(1024,1024), Vector2(2048,2048) };
-    static int item_current = 0;
+    static int item_current = 3;
     ImGui::Combo("Resolution", &item_current, items, IM_ARRAYSIZE(items));
     if (ImGui::Button("Apply")) {
         renderer_ptr->setSceneFramebufferSize(rects[item_current]);
@@ -105,19 +108,18 @@ public:
         auto& entityManager = System::get().entityManager();
 
         Entity dockspaceEntity = entityManager.createEntity();
-        entityManager.addComponent<Transform3DComponent>(dockspaceEntity);
         entityManager.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));
 
         Entity propertiesViewEntity = entityManager.createEntity();
-        entityManager.addComponent<Transform3DComponent>(propertiesViewEntity);
         entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
 
         Entity sceneViewEntity = entityManager.createEntity();
-        entityManager.addComponent<Transform3DComponent>(sceneViewEntity);
         entityManager.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
         Entity triangleEntity;
         createTriangleEntity(triangleEntity);
+
+        testMatrix();
     }
 
     ~EditorApp() {

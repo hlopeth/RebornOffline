@@ -12,7 +12,7 @@ namespace Reborn {
 	class ImGuiSystem : public EntitySystem<_ComponentCount, _SystemCount> {
 	public:
 		ImGuiSystem() {
-			setRequirements<Transform3DComponent, ImGuiComponent>();
+			setRequirements<ImGuiComponent>();
 		}
 
 		virtual void onManagedEntityAdded([[maybe_unused]] Entity entity) override {
@@ -27,7 +27,7 @@ namespace Reborn {
 
 			auto& entityManager = System::get().entityManager();
 			for (Entity entity : getManagedEntities()) {
-				auto [ transform3DComponent, imGuiComponent ] = entityManager.getComponents<Transform3DComponent, ImGuiComponent>(entity);
+				auto imGuiComponent = entityManager.getComponent<ImGuiComponent>(entity);
 				imGuiComponent.onDraw(entity, imGuiComponent);
 			}
 
