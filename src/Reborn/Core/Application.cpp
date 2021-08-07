@@ -10,10 +10,10 @@
 #include <Systems/RenderSystem.h>
 #include "backends/imgui_impl_sdl.h"
 
-//Reborn::ImGuiSystem<Reborn::System::maxComponents, Reborn::System::maxEntitySystems>* imguiSystem;
 
 SDL_Event event;
 
+Reborn::Application* Reborn::Application::appInstance = nullptr;
 
 void test(const Reborn::ApplicationShouldCloseEvent& evt) {
 	LOG_DEBUG << "test handler";
@@ -21,7 +21,7 @@ void test(const Reborn::ApplicationShouldCloseEvent& evt) {
 
 Reborn::Application::Application(WindowConfiguration windowConfig):
 	window(nullptr),
-	renderer(nullptr),
+	_renderer(nullptr),
 	closeHandler(std::bind(&Application::onApplicationClose, this, std::placeholders::_1))
 {
 	window = std::unique_ptr<Window>(Window::CreateSDLWindow(windowConfig));
@@ -30,19 +30,45 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 		shouldClose = true;
 	}
 	else {
-		renderer = std::make_unique<Renderer>(static_cast<Window&>(*window));
+		_renderer = std::make_unique<Renderer>(static_cast<Window&>(*window));
 	}
-	auto& system = System::get();
 
-	system.entityManager().registerComponent<TestComponent>();
-	system.entityManager().registerComponent<Transform3DComponent>();
-	system.entityManager().registerComponent<ImGuiComponent>();
-	system.entityManager().registerComponent<RenderComponent>();
-	auto testSystem = system.entityManager().createSystem<TestSystem<System::maxComponents, System::maxEntitySystems>>();
-	imGuiSystem = system.entityManager().createSystem<ImGuiSystem<System::maxComponents, System::maxEntitySystems>>();
-	rendererSystem = system.entityManager().createSystem<RenderSystem<System::maxComponents, System::maxEntitySystems>>();
+	_entityManager.registerComponent<TestComponent>();
+	_entityManager.registerComponent<Transform3DComponent>();
+	_entityManager.registerComponent<ImGuiComponent>();
+	_entityManager.registerComponent<RenderComponent>();
+	auto testSystem = _entityManager.createSystem<TestSystem<maxComponents, maxEntitySystems>>();
+	imGuiSystem = _entityManager.createSystem<ImGuiSystem<maxComponents, maxEntitySystems>>();
+	rendererSystem = _entityManager.createSystem<RenderSystem<maxComponents, maxEntitySystems>>();
 
-	system.eventDispatcher().subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
+	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
+}
+
+bool Reborn::Application::internalInit(Reborn::Application* (createApplication)())
+{
+	appInstance = createApplication();
+	if (appInstance == nullptr) {
+		LOG_FATAL << "createApplication returned nullptr";
+		return false;
+	}
+	Uint32 sdlInitFlags = SDL_INIT_VIDEO;
+	if (SDL_Init(sdlInitFlags) != 0) {
+		LOG_ERROR << "Error while sdl init. \n" << SDL_GetError();
+		return false;
+	}
+
+	return true;
+}
+
+Reborn::Application* Reborn::Application::get()
+{
+	return appInstance;
+}
+
+void Reborn::Application::Destroy()
+{
+	delete appInstance;
+	appInstance = nullptr;
 }
 
 void Reborn::Application::Run()
@@ -55,13 +81,13 @@ void Reborn::Application::Run()
 	{
 		PoolEvents();		
 
-		static_cast<ImGuiSystem<System::maxComponents, System::maxEntitySystems>*>(imGuiSystem)->process(window->getSDLWindow());
+		static_cast<ImGuiSystem<maxComponents, maxEntitySystems>*>(imGuiSystem)->process(window->getSDLWindow());
 
 		window->Update();
 
-		renderer->beginFrame();
-		static_cast<RenderSystem<System::maxComponents, System::maxEntitySystems>*>(rendererSystem)->process(*renderer);
-		renderer->endFrame();
+		_renderer->beginFrame();
+		static_cast<RenderSystem<maxComponents, maxEntitySystems>*>(rendererSystem)->process(*_renderer);
+		_renderer->endFrame();
 	}
 
 }
@@ -73,7 +99,7 @@ void Reborn::Application::Close()
 
 Reborn::Application::~Application()
 {
-	System::get().eventDispatcher().unsubscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
+	_eventDispatcher.unsubscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 }
 
 void Reborn::Application::PoolEvents()
@@ -84,12 +110,12 @@ void Reborn::Application::PoolEvents()
 		switch (event.type)
 		{
 		case SDL_QUIT: 
-			System::get().eventDispatcher().triggerEvent(ApplicationShouldCloseEvent());
+			_eventDispatcher.triggerEvent(ApplicationShouldCloseEvent());
 			break;
 		case SDL_KEYDOWN:
 			{
 			KeyCode keyCode = ToRebornKeyCode(event.key.keysym.sym);
-			System::get().eventDispatcher().triggerEvent(KeyPressedEvent(keyCode));
+			_eventDispatcher.triggerEvent(KeyPressedEvent(keyCode));
 			}
 			break;
 		case SDL_KEYUP:
@@ -103,4 +129,27 @@ void Reborn::Application::PoolEvents()
 void Reborn::Application::onApplicationClose(const IEvent& evt)
 {
 	Close();
+}
+
+Reborn::EventDispatcher& Reborn::Application::eventDispatcher()
+{
+	return _eventDispatcher;
+}
+
+Reborn::ResourceManager& Reborn::Application::resourceManager()
+{
+	return _resourceManager;
+}
+
+Reborn::Renderer& Reborn::Application::renderer() {
+	return *_renderer;
+}
+
+
+Reborn::EntityManager<
+	Reborn::Application::maxComponents, 
+	Reborn::Application::maxEntitySystems
+>& Reborn::Application::entityManager()
+{
+	return _entityManager;
 }

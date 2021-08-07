@@ -18,7 +18,7 @@ set(SOURCE_FILES
 	"Core/Application.cpp" 
 	"EntryPoint.h"
 	"ECS/EntitySystem.h" 
-	"Core/System.cpp" 
+	 
 	"Event/IEvent.h"  
 	 
 	"Core/Window.h"  
@@ -34,7 +34,7 @@ set(SOURCE_FILES
 	"SDLUtils.h"
 	"SDLUtils.cpp"
 	"Graphics/Renderer.cpp"
-	   "Resources/ResourceManager.cpp" "Resources/TextResource.cpp")
+	   "Resources/ResourceManager.cpp" "Resources/TextResource.cpp" "Resources/GLSLShaderResouce.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
@@ -47,6 +47,7 @@ target_precompile_headers(
 	<bitset>
 	<utility>
 	<string>
+	<fstream>
 )
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})

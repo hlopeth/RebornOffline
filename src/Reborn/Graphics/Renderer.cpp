@@ -299,6 +299,12 @@ void Reborn::Renderer::destroy(Framebuffer& fbo)
 	glDeleteFramebuffers(1, &(fbo.id));
 }
 
+void Reborn::Renderer::destroy(GLSLProgram& program)
+{
+	glDeleteProgram(program.id);
+	program.id = -1;
+}
+
 void Reborn::Renderer::useProgram(const GLSLProgram& program)
 {
 	glUseProgram(program.id);

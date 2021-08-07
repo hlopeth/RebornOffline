@@ -33,7 +33,26 @@ void Reborn::ResourceManager::removeResource(const std::string& filename) {
 	filenameToData.erase(resourceSearchResult);
 	resourceRef->unload();
 	delete resourceRef;
-};
+}
+
+
+bool Reborn::ResourceManager::reloadResource(const std::string& filename)
+{
+	auto foundData = filenameToData.find(filename);
+	if (foundData == filenameToData.end()) {
+		LOG_ERROR << "ResourceManager::reloadResource: " << filename << " is not known to ResourceManager";
+		return false;
+	}
+	else {
+		foundData->second->unload();
+		return foundData->second->tryLoad(getFullFilename(filename));
+	}
+}
+
+std::string Reborn::ResourceManager::getFullFilename(const std::string& filename)
+{
+	return assetsPath + '/' + filename;
+}
 
 Reborn::ResourceManager::~ResourceManager() {
 	for (auto it : filenameToData) {

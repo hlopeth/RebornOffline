@@ -4,6 +4,7 @@
 namespace Reborn {
 	class GLSLProgram {
 	public:
+		GLSLProgram() = default;
 		GLSLProgram(const std::string& _vertexSource, const std::string& _fragmentSource) {
 			vertexSource = _vertexSource;
 			fragmentSource = _fragmentSource;

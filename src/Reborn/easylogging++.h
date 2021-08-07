@@ -838,10 +838,10 @@ enum class FormatFlags : base::type::EnumType {
 class SubsecondPrecision {
  public:
   SubsecondPrecision(void) {
-    init(base::consts::kDefaultSubsecondPrecision);
+    Start(base::consts::kDefaultSubsecondPrecision);
   }
   explicit SubsecondPrecision(int width) {
-    init(width);
+    Start(width);
   }
   bool operator==(const SubsecondPrecision& ssPrec) {
     return m_width == ssPrec.m_width && m_offset == ssPrec.m_offset;
@@ -849,7 +849,7 @@ class SubsecondPrecision {
   int m_width;
   unsigned int m_offset;
  private:
-  void init(int width);
+  void Start(int width);
 };
 /// @brief Type alias of SubsecondPrecision
 typedef SubsecondPrecision MillisecondsWidth;

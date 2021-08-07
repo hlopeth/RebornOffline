@@ -18,10 +18,10 @@ namespace Reborn {
 		};
 
 		void process(Renderer& renderer) {
-			auto& entityManager = System::get().entityManager();
+			auto& entityManager = Application::get()->entityManager();
 			for (Entity entity : getManagedEntities()) {
 				auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(entity);
-				renderer.useProgram(renderComponent.program);
+				renderer.useProgram(*renderComponent.program);
 				renderer.drawVAO(renderComponent.vao, 3);
 			}
 		};

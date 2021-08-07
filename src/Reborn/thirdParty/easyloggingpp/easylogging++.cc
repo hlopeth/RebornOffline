@@ -1405,7 +1405,7 @@ static void msleep(int ms) {
 
 // SubsecondPrecision
 
-void SubsecondPrecision::init(int width) {
+void SubsecondPrecision::Start(int width) {
   if (width < 1 || width > 6) {
     width = base::consts::kDefaultSubsecondPrecision;
   }

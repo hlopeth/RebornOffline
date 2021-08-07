@@ -38,6 +38,7 @@ namespace Reborn {
 		void bind(Renderbuffer& rbo);
 		bool isFramebufferComplete(Framebuffer& fbo);
 		void destroy(Framebuffer& fbo);
+		void destroy(GLSLProgram& program);
 		void useProgram(const GLSLProgram& program);
 		const GLTexture& getSceneTexture();
 

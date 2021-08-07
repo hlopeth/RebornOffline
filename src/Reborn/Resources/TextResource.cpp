@@ -1,6 +1,5 @@
 #include "Core.h"
 #include "TextResource.h"
-#include <fstream>
 
 Reborn::TextResource::TextResource() : AbstractResource(0x23cedd45)
 {
@@ -12,16 +11,18 @@ Reborn::TextResource::TextResource(std::string _text) : AbstractResource(0x23ced
 
 bool Reborn::TextResource::tryLoad(const std::string& path)
 {
-	std::ifstream infile;
-	infile.open(path);
-	if (!infile.is_open()) {
+	std::ifstream inFile;
+	inFile.open(path);
+	if (!inFile.is_open()) {
 		LOG_ERROR << "TextResource::tryLoad failed to open file " << path;
+		inFile.close();
 		return false;
 	}
 	std::stringstream buffer;
-	buffer << infile.rdbuf();
+	buffer << inFile.rdbuf();
 	text = buffer.str();
 	loaded = true;
+	inFile.close();
 	return true;
 }
 

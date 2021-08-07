@@ -165,7 +165,7 @@ static SDL_Window *window;
 static SDL_bool done = SDL_FALSE;
 
 SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
+LoadTexture(SDL_Renderer *_renderer, const char *file, SDL_bool transparent)
 {
     SDL_Surface *temp;
     SDL_Texture *texture;
@@ -185,7 +185,7 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
     }
 
     /* Create textures from the image */
-    texture = SDL_CreateTextureFromSurface(renderer, temp);
+    texture = SDL_CreateTextureFromSurface(_renderer, temp);
     if (!texture) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
         SDL_FreeSurface(temp);

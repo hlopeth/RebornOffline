@@ -11,11 +11,11 @@ namespace Reborn {
 		RenderComponent() = delete;
 		RenderComponent(const VertexArrayObject& _vao, const GLSLProgram& _program):
 			vao(_vao),
-			program(_program)
+			program(&_program)
 		{
 
 		}
 		VertexArrayObject vao;
-		GLSLProgram program;
+		const GLSLProgram* program;
 	};
 }

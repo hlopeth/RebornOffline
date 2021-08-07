@@ -7,6 +7,7 @@
 #include <bitset>
 #include <utility>
 #include <string>
+#include <fstream>
 
 #include <thirdParty/imgui/imgui.h>
 #include <thirdParty/imgui/imgui_internal.h>
@@ -24,5 +25,6 @@
 #include "Event/KeyPressedEvent.h"
 
 #include "Resources/TextResource.h"
+#include "Resources/GLSLShaderResource.h"
 
 #include "EntryPoint.h"

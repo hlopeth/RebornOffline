@@ -19,8 +19,6 @@ Reborn::WindowConfiguration getWindowConfig() {
 ImGuiID dockspace_id;
 bool first_frame = true;
 
-Reborn::Renderer* renderer_ptr = nullptr;
-
 void drawDockspace(Entity entity, ImGuiComponent& _this) {
     bool p_open = true;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -47,7 +45,7 @@ void drawDockspace(Entity entity, ImGuiComponent& _this) {
         {
             if (ImGui::MenuItem("Exit", "", false))
             {
-                Reborn::System::get().eventDispatcher().triggerEvent(Reborn::ApplicationShouldCloseEvent());
+                Application::get()->eventDispatcher().triggerEvent(Reborn::ApplicationShouldCloseEvent());
             }
             ImGui::EndMenu();
         }
@@ -67,25 +65,28 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
     const char* items[] = { "128x128", "256x256", "512x512", "1024x1024", "2048x2048"};
     Vector2 rects[] = { Vector2(128,128), Vector2(256,256), Vector2(512,512), Vector2(1024,1024), Vector2(2048,2048) };
     static int item_current = 3;
+
     ImGui::Combo("Resolution", &item_current, items, IM_ARRAYSIZE(items));
+
+    Renderer& renderer = Application::get()->renderer();
+
     if (ImGui::Button("Apply")) {
-        renderer_ptr->setSceneFramebufferSize(rects[item_current]);
+        renderer.setSceneFramebufferSize(rects[item_current]);
+    }
+
+    if (ImGui::Button("Reload resources")) {
+        const std::string resource = "shaders/simple_triangle";
+        bool result = Application::get()->resourceManager().reloadResource(resource);
     }
     ImGui::End();
 
-    if (renderer_ptr != nullptr) {
-        renderer_ptr->setClearColor(Vector3(color.x, color.y, color.z));
-    }
+    renderer.setClearColor(Vector3(color.x, color.y, color.z));
 }
 
 void drawMainScene(Entity entity, ImGuiComponent& _this) {
-    if (renderer_ptr == nullptr) {
-        return;
-    }
-
     bool p_open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
-    const GLTexture& sceneTexture = renderer_ptr->getSceneTexture();
+    const GLTexture& sceneTexture = Application::get()->renderer().getSceneTexture();
     if (p_open) {
         ImGui::Begin("Scene View", &p_open, window_flags);
         ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -102,25 +103,24 @@ class EditorApp : public Reborn::Application
 {
 public:
     EditorApp() : Application(getWindowConfig()) {
-        renderer_ptr = this->renderer.get();
-        renderer->setSceneFramebufferSize(Vector2(1024, 1024));
+    }
+
+    void Start() override {
+        renderer().setSceneFramebufferSize(Vector2(1024, 1024));
         setupResourceManager();
-        auto& entityManager = System::get().entityManager();
+        auto& entityMng = entityManager();
 
-        Entity dockspaceEntity = entityManager.createEntity();
-        entityManager.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));
+        Entity dockspaceEntity = entityMng.createEntity();
+        entityMng.addComponent<ImGuiComponent>(dockspaceEntity, std::function(drawDockspace));
 
-        Entity propertiesViewEntity = entityManager.createEntity();
-        entityManager.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
+        Entity propertiesViewEntity = entityMng.createEntity();
+        entityMng.addComponent<ImGuiComponent>(propertiesViewEntity, std::function(drawPropertyView));
 
-        Entity sceneViewEntity = entityManager.createEntity();
-        entityManager.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
+        Entity sceneViewEntity = entityMng.createEntity();
+        entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
         Entity triangleEntity;
         createTriangleEntity(triangleEntity);
-
-        //testVector();
-        testMatrix();
     }
 
     ~EditorApp() {
@@ -128,26 +128,14 @@ public:
     }
 private:
     void setupResourceManager() {
-        auto& resourceManager = System::get().resourceManager();
-        resourceManager.setAssetsPath(ASSETS_PATH);
+        auto& resourceMng = resourceManager();
+        resourceMng.setAssetsPath(ASSETS_PATH);
         TextResource* defaultTextResource = new TextResource("default text");
-        resourceManager.addDefaultResource(defaultTextResource);
+        resourceMng.addDefaultResource(defaultTextResource);
     }
 
     bool createTriangleEntity(Entity& triangleEntity) {
-        auto& resourceManager = System::get().resourceManager();
-        const TextResource* vertexShaderSource =
-            resourceManager.getResourceOrCreate<TextResource>("shaders/simple_triangle/vertex.glsl");
-        const TextResource* fragmentShaderSource =
-            resourceManager.getResourceOrCreate<TextResource>("shaders/simple_triangle/fragment.glsl");
-
-        if (vertexShaderSource == nullptr || fragmentShaderSource == nullptr) {
-            LOG_ERROR << "failed to load shader source";
-            return false;
-        }
-
-        GLSLProgram triangleProgram(vertexShaderSource->getText(), fragmentShaderSource->getText());
-        renderer->create(triangleProgram);
+        const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/simple_triangle");
 
         std::shared_ptr<float[]> vertices(new float[] {
             -0.5f, -0.5f, 0.0f, // left  
@@ -159,12 +147,11 @@ private:
         layout.emplace_back(3, 3 * sizeof(float), GL_FALSE, GL_FLOAT);
         VertexArrayObject triangleVAO(vbo, layout);
 
-        renderer->create(triangleVAO);
+        renderer().create(triangleVAO);
 
-        auto& entityManager = System::get().entityManager();
-        triangleEntity = entityManager.createEntity();
-        entityManager.addComponent<Transform3DComponent>(triangleEntity);
-        entityManager.addComponent<RenderComponent>(triangleEntity, triangleVAO, triangleProgram);
+        triangleEntity = entityManager().createEntity();
+        entityManager().addComponent<Transform3DComponent>(triangleEntity);
+        entityManager().addComponent<RenderComponent>(triangleEntity, triangleVAO, shaderResource->getProgram());
         return true;
     }
 };

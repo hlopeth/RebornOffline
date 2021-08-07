@@ -23,12 +23,12 @@ static struct
     units of velocity are pixels per millesecond
 */
 void
-initializeHappyFaces(SDL_Renderer *renderer)
+initializeHappyFaces(SDL_Renderer *_renderer)
 {
     int i;
     int w;
     int h;
-    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    SDL_RenderGetLogicalSize(_renderer, &w, &h);
 
     for (i = 0; i < NUM_HAPPY_FACES; i++) {
         faces[i].x = randomFloat(0.0f, w - HAPPY_FACE_SIZE);
@@ -39,7 +39,7 @@ initializeHappyFaces(SDL_Renderer *renderer)
 }
 
 void
-render(SDL_Renderer *renderer, double deltaTime)
+render(SDL_Renderer *_renderer, double deltaTime)
 {
     int i;
     SDL_Rect srcRect;
@@ -47,7 +47,7 @@ render(SDL_Renderer *renderer, double deltaTime)
     int w;
     int h;
 
-    SDL_RenderGetLogicalSize(renderer, &w, &h);
+    SDL_RenderGetLogicalSize(_renderer, &w, &h);
 
     /* setup boundaries for happyface bouncing */
     int maxx = w - HAPPY_FACE_SIZE;
@@ -64,8 +64,8 @@ render(SDL_Renderer *renderer, double deltaTime)
     dstRect.h = HAPPY_FACE_SIZE;
 
     /* fill background in with black */
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(_renderer);
 
     /*
        loop through all the happy faces:
@@ -92,10 +92,10 @@ render(SDL_Renderer *renderer, double deltaTime)
         }
         dstRect.x = faces[i].x;
         dstRect.y = faces[i].y;
-        SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
+        SDL_RenderCopy(_renderer, texture, &srcRect, &dstRect);
     }
     /* update screen */
-    SDL_RenderPresent(renderer);
+    SDL_RenderPresent(_renderer);
 
 }
 
@@ -103,7 +103,7 @@ render(SDL_Renderer *renderer, double deltaTime)
     loads the happyface graphic into a texture
 */
 void
-initializeTexture(SDL_Renderer *renderer)
+initializeTexture(SDL_Renderer *_renderer)
 {
     SDL_Surface *bmp_surface;
     /* load the bmp */
@@ -116,7 +116,7 @@ initializeTexture(SDL_Renderer *renderer)
                     SDL_MapRGB(bmp_surface->format, 255, 255, 255));
 
     /* convert RGBA surface to texture */
-    texture = SDL_CreateTextureFromSurface(renderer, bmp_surface);
+    texture = SDL_CreateTextureFromSurface(_renderer, bmp_surface);
     if (texture == 0) {
         fatalError("could not create texture");
     }
@@ -130,7 +130,7 @@ int
 main(int argc, char *argv[])
 {
     SDL_Window *window;
-    SDL_Renderer *renderer;
+    SDL_Renderer *_renderer;
     int done;
     int width;
     int height;
@@ -145,13 +145,13 @@ main(int argc, char *argv[])
      * (if SDL_WINDOW_RESIZABLE isn't specified). */
     window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_ALLOW_HIGHDPI);
 
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    _renderer = SDL_CreateRenderer(window, -1, 0);
 
     SDL_GetWindowSize(window, &width, &height);
-    SDL_RenderSetLogicalSize(renderer, width, height);
+    SDL_RenderSetLogicalSize(_renderer, width, height);
 
-    initializeTexture(renderer);
-    initializeHappyFaces(renderer);
+    initializeTexture(_renderer);
+    initializeHappyFaces(_renderer);
 
 
     /* main loop */
@@ -166,7 +166,7 @@ main(int argc, char *argv[])
             }
         }
 
-        render(renderer, deltaTime);
+        render(_renderer, deltaTime);
         SDL_Delay(1);
     }
 

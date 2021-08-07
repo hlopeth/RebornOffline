@@ -1,5 +1,4 @@
 #pragma once
-#include "Core/System.h"
 #include "Core/Application.h"
 #include "Log.h"
 
@@ -22,14 +21,18 @@ int main(int argc, char* argv[]) {
 
 	configureLogger();
 
-	LOG_INFO << "Application started";
-	if (Reborn::System::get().Init() != 0) {
+	if (!Reborn::Application::internalInit(CreateApplication)) {
+		LOG_FATAL << "Failed to init basic application";
 		return 0;
 	}
 
-	Reborn::Application* app = CreateApplication();
+	LOG_INFO << "Application started";	
+
+	Reborn::Application* app = Reborn::Application::get();
+
+	app->Start();
 	app->Run();
-	delete app;
+	app->Destroy();
 
 	LOG_INFO << "Application finished";
 	return 0;

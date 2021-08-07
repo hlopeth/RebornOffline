@@ -2,7 +2,6 @@
 #include <ECS/EntitySystem.h>
 #include <Components/ImGuiComponent.h>
 #include <Components/Transform3DComponent.h>
-#include "Core/System.h"
 
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -25,7 +24,7 @@ namespace Reborn {
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 
-			auto& entityManager = System::get().entityManager();
+			auto& entityManager = Application::get()->entityManager();
 			for (Entity entity : getManagedEntities()) {
 				auto imGuiComponent = entityManager.getComponent<ImGuiComponent>(entity);
 				imGuiComponent.onDraw(entity, imGuiComponent);

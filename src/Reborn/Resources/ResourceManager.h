@@ -56,7 +56,7 @@ namespace Reborn {
 		bool tryAddDefaultResource(const std::string& filename) {
 			ResourceType* newDefaultResource = new ResourceType();
 
-			const std::string fullFilename = assetsPath + '/' + filename;
+			const std::string fullFilename = getFullFilename(filename);
 			bool sucsess = newDefaultResource->tryLoad(fullFilename);
 			if (!sucsess) {
 				delete newDefaultResource;
@@ -75,7 +75,10 @@ namespace Reborn {
 
 		void removeResource(const std::string& filename);
 
+		bool reloadResource(const std::string& filename);
+
 	private:
+		std::string getFullFilename(const std::string& filename);
 		std::string assetsPath;
 		std::unordered_map<std::string, AbstractResource*> filenameToData;
 		std::unordered_map<ResourceTypeID, AbstractResource*> defaultResources;
