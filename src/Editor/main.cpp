@@ -18,6 +18,7 @@ Reborn::WindowConfiguration getWindowConfig() {
 
 ImGuiID dockspace_id;
 bool first_frame = true;
+Entity triangleEntity;
 
 void drawDockspace(Entity entity, ImGuiComponent& _this) {
     bool p_open = true;
@@ -61,6 +62,29 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
 
     ImGui::Begin("Properties", &p_open, window_flags);
     ImGui::ColorPicker4("Background", (float*)&color, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
+
+    static float x, y, z;
+    ImGui::Text("Position");
+    ImGui::SliderFloat("x", &x, -1.f, 1.f, "%.3f");
+    ImGui::SliderFloat("y", &y, -1.f, 1.f, "%.3f");
+    ImGui::SliderFloat("z", &z, -1.f, 1.f, "%.3f");
+
+    static float sx = 1, sy = 1, sz = 1;
+    ImGui::Text("Scale");
+    ImGui::SliderFloat("sx", &sx, 1.f, 2.f, "%.3f");
+    ImGui::SliderFloat("sy", &sy, 1.f, 2.f, "%.3f");
+    ImGui::SliderFloat("sz", &sz, 1.f, 2.f, "%.3f");
+
+    static float rx = 0, ry = 0, rz = 0;
+    ImGui::Text("Rotation");
+    ImGui::SliderAngle("rx", &rx);
+    ImGui::SliderAngle("ry", &ry);
+    ImGui::SliderAngle("rz", &rz);
+
+    auto& transform = Application::get()->entityManager().getComponent<Transform3DComponent>(triangleEntity);
+    transform.position.xyz = Vector3(x, y, z);
+    transform.scale.xyz = Vector3(sx, sy, sz);
+    transform.rotation.xyz = Vector3(rx, ry, rz);
 
     const char* items[] = { "128x128", "256x256", "512x512", "1024x1024", "2048x2048"};
     Vector2 rects[] = { Vector2(128,128), Vector2(256,256), Vector2(512,512), Vector2(1024,1024), Vector2(2048,2048) };
@@ -119,7 +143,6 @@ public:
         Entity sceneViewEntity = entityMng.createEntity();
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
-        Entity triangleEntity;
         createTriangleEntity(triangleEntity);
     }
 

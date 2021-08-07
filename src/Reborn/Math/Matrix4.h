@@ -280,6 +280,63 @@ namespace Reborn {
 			return result;
 		}
 
+		Matrix4& translate(const Vector3& v) {
+			(*this)(0, 3) += v.x;
+			(*this)(1, 3) += v.y;
+			(*this)(2, 3) += v.z;
+			return *this;
+		}
+
+		Matrix4& scale(const Vector3& v) {
+			(*this)(0, 0) *= v.x;
+			(*this)(1, 1) *= v.y;
+			(*this)(2, 2) *= v.z;
+			return *this;
+		}
+
+		//угол в радианах
+		Matrix4& rotateX(const float angle) {
+			(*this)(1, 1) *= cos(angle);
+			(*this)(1, 2) *= -sin(angle);
+			(*this)(2, 1) *= sin(angle);
+			(*this)(2, 2) *= cos(angle);
+			return *this;
+		}
+
+		//угол в радианах
+		Matrix4& rotateY(const float angle) {
+			(*this)(0, 0) *= cos(angle);
+			(*this)(0, 2) *= sin(angle);
+			(*this)(2, 0) *= -sin(angle);
+			(*this)(2, 2) *= cos(angle);
+			return *this;
+		}
+
+		//угол в радианах
+		Matrix4& rotateZ(const float angle) {
+			(*this)(0, 0) *= cos(angle);
+			(*this)(0, 1) *= -sin(angle);
+			(*this)(1, 0) *= sin(angle);
+			(*this)(1, 1) *= cos(angle);
+			return *this;
+		}
+
+		//угол в радианах
+		Matrix4& rotate(const float angle) {
+			(*this)(0, 0) *= cos(angle) * cos(angle);
+			(*this)(0, 1) *= -sin(angle);
+			(*this)(0, 2) *= sin(angle);
+
+			(*this)(1, 0) *= sin(angle);
+			(*this)(1, 1) *= cos(angle) * cos(angle);
+			(*this)(1, 2) *= -sin(angle);
+
+			(*this)(2, 0) *= -sin(angle);
+			(*this)(2, 1) *= sin(angle);
+			(*this)(2, 2) *= cos(angle) * cos(angle);
+			return *this;
+		}
+
 		float determinant() const {
 			const Matrix4& m = *this;
 			float SubFactor00 = m(2,2) * m(3,3) - m(3,2) * m(2,3);
@@ -378,7 +435,6 @@ namespace Reborn {
 				"[" << _d[12] << "; " << _d[13] << "; " << _d[14] << "; " << _d[15] << " ]";
 			return str.str();
 		}
-	private:
 		float _d[16];
 	};
 

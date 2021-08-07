@@ -196,6 +196,56 @@ namespace Reborn {
 			return *this *= mat.inverse();
 		}
 
+		Matrix3& translate(const Vector3& v) {
+			(*this)(0, 3) += v.x;
+			(*this)(1, 3) += v.y;
+			(*this)(2, 3) += v.z;
+			return *this;
+		}
+
+		Matrix3& scale(const Vector3& v) {
+			(*this)(0, 0) *= v.x;
+			(*this)(1, 1) *= v.y;
+			(*this)(2, 2) *= v.z;
+			return *this;
+		}
+
+		//угол в радианах
+		Matrix3& rotateX(const float angle) {
+			(*this)(1, 1) *= cos(angle);
+			(*this)(1, 2) *= -sin(angle);
+			(*this)(2, 1) *= sin(angle);
+			(*this)(2, 2) *= cos(angle);
+			return *this;
+		}
+
+		//угол в радианах
+		Matrix3& rotateY(const float angle) {
+			(*this)(0, 0) *= cos(angle);
+			(*this)(0, 2) *= sin(angle);
+			(*this)(2, 0) *= -sin(angle);
+			(*this)(2, 2) *= cos(angle);
+			return *this;
+		}
+
+		//угол в радианах
+		Matrix3& rotateZ(const float angle) {
+			(*this)(0, 0) *= cos(angle);
+			(*this)(0, 1) *= -sin(angle);
+			(*this)(1, 0) *= sin(angle);
+			(*this)(1, 1) *= cos(angle);
+			return *this;
+		}
+
+		/*//угол в радианах
+		Matrix3& rotate(const Vector3& angle) {
+			(*this)(0, 0) *= cos(angle);
+			(*this)(0, 1) *= -sin(angle);
+			(*this)(1, 0) *= sin(angle);
+			(*this)(1, 1) *= cos(angle);
+			return *this;
+		}*/
+
 		Matrix3 transpose() const {
 			Matrix3 result;
 			result(0,0) = (*this)(0,0);
@@ -260,7 +310,6 @@ namespace Reborn {
 				"[" << _d[6] << "; " << _d[7] << "; " << _d[8] << " ]";
 			return str.str();
 		}
-	private:
 		float _d[9];
 	};
 

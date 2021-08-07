@@ -203,7 +203,6 @@ namespace Reborn {
 				"[" << _d[2] << "; " << _d[3] << " ]";
 			return str.str();
 		}
-	private:
 		float _d[4];
 	};
 

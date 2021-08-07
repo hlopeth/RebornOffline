@@ -104,6 +104,48 @@ const SDL_GLContext& Reborn::Renderer::getContext()
 	return _context;
 }
 
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const float& value)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniform1f(location, value);
+}
+
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Vector2& value)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniform2f(location, value.x, value.y);
+}
+
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Vector3& value)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniform3f(location, value.x, value.y, value.z);
+}
+
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Vector4& value)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniform4f(location, value.x, value.y, value.z, value.w);
+}
+
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Matrix2& value, bool transpose)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniformMatrix2fv(location, 1, transpose, value._d);
+}
+
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Matrix3& value, bool transpose)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniformMatrix3fv(location, 1, transpose, value._d);
+}
+
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Matrix4& value, bool transpose)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniformMatrix4fv(location, 1, transpose, value._d);
+}
+
 void Reborn::Renderer::create(GLSLProgram& program)
 {
 	GLuint vertexShader = compileShader(program.vertexSource, GL_VERTEX_SHADER);

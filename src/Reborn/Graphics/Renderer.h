@@ -6,7 +6,8 @@
 #include "Framebuffer.h"
 #include "Renderbuffer.h"
 #include "GLTexture.h"
-#include "Math/Vector.h"
+#include <Math/Matrix.h>
+#include <Math/Vector.h>
 
 namespace Reborn {
 	class Renderer {
@@ -16,6 +17,15 @@ namespace Reborn {
 		void endFrame();
 		void drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset = 0);
 		const SDL_GLContext& getContext();
+
+		void setUniform(const GLSLProgram& program, const GLchar* name, const float& value);
+		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector2& value);
+		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector3& value);
+		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector4& value);
+		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix2& value, bool transpose = true);
+		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix3& value, bool transpose = true);
+		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix4& value, bool transpose = true);
+
 		void create(GLSLProgram& program);
 		void create(VertexBufferObject& vbo);
 		void create(Framebuffer& fbo);
