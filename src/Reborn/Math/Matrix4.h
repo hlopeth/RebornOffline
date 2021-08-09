@@ -281,15 +281,24 @@ namespace Reborn {
 		}
 
 		Matrix4& translate(const Vector3& v) {
-			(*this)(0, 3) += v.x;
-			(*this)(1, 3) += v.y;
-			(*this)(2, 3) += v.z;
+			Matrix4& m = *this;
+			(*this)(0, 3) = m(0, 0)*v.x + m(0, 1) * v.y + m(0, 2) * v.z + m(0, 3);
+			(*this)(1, 3) = m(1, 0)*v.x + m(1, 1) * v.y + m(1, 2) * v.z + m(1, 3);
+			(*this)(2, 3) = m(2, 0)*v.x + m(2, 1) * v.y + m(2, 2) * v.z + m(2, 3);
 			return *this;
 		}
 
 		Matrix4& scale(const Vector3& v) {
 			(*this)(0, 0) *= v.x;
+			(*this)(0, 1) *= v.y;
+			(*this)(0, 2) *= v.z;
+
+			(*this)(1, 0) *= v.x;
 			(*this)(1, 1) *= v.y;
+			(*this)(1, 2) *= v.z;
+
+			(*this)(2, 0) *= v.x;
+			(*this)(2, 1) *= v.y;
 			(*this)(2, 2) *= v.z;
 			return *this;
 		}

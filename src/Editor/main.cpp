@@ -65,15 +65,15 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
 
     static float x, y, z;
     ImGui::Text("Position");
-    ImGui::SliderFloat("x", &x, -1.f, 1.f, "%.3f");
-    ImGui::SliderFloat("y", &y, -1.f, 1.f, "%.3f");
-    ImGui::SliderFloat("z", &z, -1.f, 1.f, "%.3f");
+    ImGui::SliderFloat("x", &x, -10.f, 10.f, "%.3f");
+    ImGui::SliderFloat("y", &y, -10.f, 10.f, "%.3f");
+    ImGui::SliderFloat("z", &z, -10.f, 10.f, "%.3f");
 
     static float sx = 1, sy = 1, sz = 1;
     ImGui::Text("Scale");
-    ImGui::SliderFloat("sx", &sx, 1.f, 2.f, "%.3f");
-    ImGui::SliderFloat("sy", &sy, 1.f, 2.f, "%.3f");
-    ImGui::SliderFloat("sz", &sz, 1.f, 2.f, "%.3f");
+    ImGui::SliderFloat("sx", &sx, 1.f, 20.f, "%.3f");
+    ImGui::SliderFloat("sy", &sy, 1.f, 20.f, "%.3f");
+    ImGui::SliderFloat("sz", &sz, 1.f, 20.f, "%.3f");
 
     static float rx = 0, ry = 0, rz = 0;
     ImGui::Text("Rotation");
@@ -143,7 +143,7 @@ public:
         Entity sceneViewEntity = entityMng.createEntity();
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
-        createTriangleEntity(triangleEntity);
+        createCubeEntity(triangleEntity);
     }
 
     ~EditorApp() {
@@ -166,6 +166,65 @@ private:
              0.0f,  0.5f, 0.0f  // top   
             });
         VertexBufferObject vbo(vertices, 9);
+        std::vector<VertexAttribute> layout;
+        layout.emplace_back(3, 3 * sizeof(float), GL_FALSE, GL_FLOAT);
+        VertexArrayObject triangleVAO(vbo, layout);
+
+        renderer().create(triangleVAO);
+
+        triangleEntity = entityManager().createEntity();
+        entityManager().addComponent<Transform3DComponent>(triangleEntity);
+        entityManager().addComponent<RenderComponent>(triangleEntity, triangleVAO, shaderResource->getProgram());
+        return true;
+    }
+
+    bool createCubeEntity(Entity& cubeEntity) {
+        const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/simple_triangle");
+
+        std::shared_ptr<float[]> vertices(new float[] {
+            -0.5f, -0.5f, -0.5f,
+             0.5f, -0.5f, -0.5f,
+             0.5f,  0.5f, -0.5f,
+             0.5f,  0.5f, -0.5f,
+            -0.5f,  0.5f, -0.5f,
+            -0.5f, -0.5f, -0.5f,
+
+            -0.5f, -0.5f,  0.5f,
+             0.5f, -0.5f,  0.5f,
+             0.5f,  0.5f,  0.5f,
+             0.5f,  0.5f,  0.5f,
+            -0.5f,  0.5f,  0.5f,
+            -0.5f, -0.5f,  0.5f,
+
+            -0.5f,  0.5f,  0.5f,
+            -0.5f,  0.5f, -0.5f,
+            -0.5f, -0.5f, -0.5f,
+            -0.5f, -0.5f, -0.5f,
+            -0.5f, -0.5f,  0.5f,
+            -0.5f,  0.5f,  0.5f,
+
+             0.5f,  0.5f,  0.5f,
+             0.5f,  0.5f, -0.5f,
+             0.5f, -0.5f, -0.5f,
+             0.5f, -0.5f, -0.5f,
+             0.5f, -0.5f,  0.5f,
+             0.5f,  0.5f,  0.5f,
+
+            -0.5f, -0.5f, -0.5f,
+             0.5f, -0.5f, -0.5f,
+             0.5f, -0.5f,  0.5f,
+             0.5f, -0.5f,  0.5f,
+            -0.5f, -0.5f,  0.5f,
+            -0.5f, -0.5f, -0.5f,
+
+            -0.5f,  0.5f, -0.5f,
+             0.5f,  0.5f, -0.5f,
+             0.5f,  0.5f,  0.5f,
+             0.5f,  0.5f,  0.5f,
+            -0.5f,  0.5f,  0.5f,
+            -0.5f,  0.5f, -0.5f,
+            });
+        VertexBufferObject vbo(vertices, 3 * 6 * 6);
         std::vector<VertexAttribute> layout;
         layout.emplace_back(3, 3 * sizeof(float), GL_FALSE, GL_FLOAT);
         VertexArrayObject triangleVAO(vbo, layout);

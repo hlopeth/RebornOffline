@@ -4,6 +4,7 @@
 #include <Components/RenderComponent.h>
 #include <Graphics/Renderer.h>
 #include <Math/Matrix.h>
+#include <Math/MathUtils.h>
 
 namespace Reborn {
 	template<std::size_t _ComponentCount, std::size_t _SystemCount>
@@ -19,23 +20,23 @@ namespace Reborn {
 		};
 
 		void process(Renderer& renderer) {
+			//Matrix4 proj = perspectiveMatrix(-5, 5, 10, -10, 10, -10);
+			Matrix4 proj = orthoMatrix(-10, 10, 10, -10, 10, -10);
+
 			auto& entityManager = Application::get()->entityManager();
 			for (Entity entity : getManagedEntities()) {
 				auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(entity);
 				const Matrix4 transform = calculateTransform(transform3DComponent);
 				renderer.useProgram(*renderComponent.program);
-				LOG_DEBUG << transform;
-				renderer.setUniform(*renderComponent.program, "uTransform", transform);
-				renderer.drawVAO(renderComponent.vao, 3);
+				//LOG_DEBUG << transform;
+				Matrix4 mvp = proj * transform;
+				renderer.setUniform(*renderComponent.program, "uTransform",  mvp);
+				renderer.drawVAO(renderComponent.vao, 36);
 			}
 		};
 	private:
 		Matrix4 calculateTransform(const Transform3DComponent& transformComponent) {
-			Matrix4 transform = Matrix4::one();
-			transform
-				.rotateX(transformComponent.rotation.x)
-				.rotateY(transformComponent.rotation.y)
-				.rotateZ(transformComponent.rotation.z)
+			Matrix4 transform = rotation(transformComponent.rotation)
 				.scale(transformComponent.scale)
 				.translate(transformComponent.position);
 			return transform;

@@ -3,4 +3,51 @@
 #include "Vector.h"
 
 namespace Reborn {
+	Matrix4 perspectiveMatrix(float n, float f, float r, float l, float t, float b) {
+		return Matrix4(
+			2 * n / (r - l), 0, (r + l) / (r - l), 0,
+			0, 2 * n / (t - b), (t + b) / (t - b), 0,
+			0, 0, -(f + n) / (f - n), -2 * n * f / (f - n),
+			0, 0, -1, 0
+		);
+	}
+
+	Matrix4 perspectiveInfiniteDepthMatrix(float n, float f, float r, float l, float t, float b) {
+		return Matrix4(
+			2 * n / (r - l), 0, (r + l) / (r - l), 0,
+			0, 2 * n / (t - b), (t + b) / (t - b), 0,
+			0, 0, -1, -2 * n,
+			0, 0, -1, 0
+		);
+	}
+
+	Matrix4 orthoMatrix(float n, float f, float r, float l, float t, float b) {
+		return Matrix4(
+			2 / (r - l), 0, 0, -( r+l)/(r-l),
+			0, 2 / (t - b), 0, -(t + b) / (t - b),
+			0, 0, -2/(f-n), -(f+n)/(f-n),
+			0, 0, 0, 1
+		);
+	}
+
+	Matrix4 rotation(const Vector3& angles) {
+		Matrix4 m_x = Matrix4::one();
+		m_x(1, 1) = cos(angles.x);
+		m_x(1, 2) = -sin(angles.x);
+		m_x(2, 1) = sin(angles.x);
+		m_x(2, 2) = cos(angles.x);
+
+		Matrix4 m_y = Matrix4::one();
+		m_y(0, 0) = cos(angles.y);
+		m_y(0, 2) = sin(angles.y);
+		m_y(2, 0) = -sin(angles.y);
+		m_y(2, 2) = cos(angles.y);
+
+		Matrix4 m_z = Matrix4::one();
+		m_z(0, 0) = cos(angles.z);
+		m_z(0, 1) = -sin(angles.z);
+		m_z(1, 0) = sin(angles.z);
+		m_z(1, 1) = cos(angles.z);
+		return m_x * m_y * m_z;
+	}
 }
