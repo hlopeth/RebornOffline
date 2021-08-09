@@ -20,13 +20,14 @@ namespace Reborn {
 		};
 
 		void process(Renderer& renderer) {
-			//Matrix4 proj = perspectiveMatrix(-5, 5, 10, -10, 10, -10);
-			Matrix4 proj = orthoMatrix(-10, 10, 10, -10, 10, -10);
+			//Matrix4 proj = perspectiveMatrix(-100, 100, 10, -10, 10, -10).transpose();
+			Matrix4 proj = perspectiveFOVMatrix(60, 1, -3, 3).transpose();
+			//Matrix4 proj = orthoMatrix(-10, 10, 10, -10, 10, -10).transpose();
 
 			auto& entityManager = Application::get()->entityManager();
 			for (Entity entity : getManagedEntities()) {
 				auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(entity);
-				const Matrix4 transform = calculateTransform(transform3DComponent);
+				const Matrix4 transform = transfromMatrix(transform3DComponent.position, transform3DComponent.scale, transform3DComponent.rotation);
 				renderer.useProgram(*renderComponent.program);
 				//LOG_DEBUG << transform;
 				Matrix4 mvp = proj * transform;
