@@ -20,9 +20,9 @@ namespace Reborn {
 		};
 
 		void process(Renderer& renderer) {
-			Matrix4 proj = perspectiveMatrix(-1, -10, 2, -2, 2, -2);
-			//Matrix4 proj = perspectiveFOVMatrix(60, 1, -3, 3).transpose();
-			//Matrix4 proj = orthoMatrix(-10, 10, 10, -10, 10, -10).transpose();
+			Matrix4 proj = perspectiveMatrix(-100, 100, 10, -10, 10, -10);
+			//Matrix4 proj = perspectiveFOVMatrix(1.0472, 1, -3, 3);
+			//Matrix4 proj = orthoMatrix(-100, 100, 10, -10, 10, -10);
 
 			auto& entityManager = Application::get()->entityManager();
 			for (Entity entity : getManagedEntities()) {
@@ -30,17 +30,10 @@ namespace Reborn {
 				const Matrix4 transform = transfromMatrix(transform3DComponent.position, transform3DComponent.scale, transform3DComponent.rotation);
 				renderer.useProgram(*renderComponent.program);
 				Matrix4 mvp = proj * transform;
-				LOG_DEBUG << mvp;
-				renderer.setUniform(*renderComponent.program, "uTransform",  mvp, true);
+				renderer.setUniform(*renderComponent.program, "uTransform", mvp, true);
 				renderer.drawVAO(renderComponent.vao, 36);
 			}
 		};
 	private:
-		Matrix4 calculateTransform(const Transform3DComponent& transformComponent) {
-			Matrix4 transform = rotation(transformComponent.rotation)
-				.scale(transformComponent.scale)
-				.translate(transformComponent.position);
-			return transform;
-		}
 	};
 }

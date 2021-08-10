@@ -59,6 +59,14 @@ namespace Reborn {
 		{
 			elem() *= sw.elem();
 		}
+		void operator/=(float a)
+		{
+			elem() /= a;
+		}
+		void operator/=(const scalarSwizzle& sw)
+		{
+			elem() /= sw.elem();
+		}
 	private:
 		float& elem() {
 			return (reinterpret_cast<float*>(v))[I];

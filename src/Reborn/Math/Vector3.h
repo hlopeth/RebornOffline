@@ -80,6 +80,22 @@ namespace Reborn {
 			y *= t;
 			z *= t;
 		}
+		Vector3 operator/(const Vector3& t) const {
+			return Vector3(x / t.x, y / t.y, z / t.z);
+		}
+		Vector3 operator/(float t) const {
+			return Vector3(x / t, y / t, z / t);
+		}
+		void operator/=(const Vector3& t) {
+			x /= t.x;
+			y /= t.y;
+			z /= t.z;
+		}
+		void operator/=(float t) {
+			x /= t;
+			y /= t;
+			z /= t;
+		}
 
 		std::string toString() const {
 			std::stringstream str;

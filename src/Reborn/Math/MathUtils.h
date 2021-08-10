@@ -3,12 +3,13 @@
 #include "Vector.h"
 
 namespace Reborn {
+
 	Matrix4 perspectiveMatrix(float n, float f, float r, float l, float t, float b) {
 		return Matrix4(
 			2 * n / (r - l), 0, (r + l) / (r - l), 0,
 			0, 2 * n / (t - b), (t + b) / (t - b), 0,
-			0, 0, -(f + n) / (f - n), -2 * n * f / (f - n),
-			0, 0, -1, 0
+			0, 0, -(f + n) / (f - n), -1,
+			0, 0, -2 * n * f / (f - n), 0
 		);
 	}
 
@@ -17,26 +18,26 @@ namespace Reborn {
 		return Matrix4(
 			1.0/(aspect*tanHalfFov), 0, 0, 0,
 			0, 1.0/tanHalfFov, 0, 0,
-			0, 0, -(f+n)/(f-n), -2 * f * n / (f - n),
-			0, 0, -1, 0
+			0, 0, -(f+n)/(f-n), -1,
+			0, 0, -2 * f * n / (f - n), 0
 		);
 	}
 
 	Matrix4 perspectiveInfiniteDepthMatrix(float n, float f, float r, float l, float t, float b) {
 		return Matrix4(
-			2 * n / (r - l), 0, (r + l) / (r - l), 0,
+			2 * n / (r - l), 0, 0, 0,
 			0, 2 * n / (t - b), (t + b) / (t - b), 0,
-			0, 0, -1, -2 * n,
+			(r + l) / (r - l), 0, -1, -2 * n,
 			0, 0, -1, 0
 		);
 	}
 
 	Matrix4 orthoMatrix(float n, float f, float r, float l, float t, float b) {
 		return Matrix4(
-			2 / (r - l), 0, 0, -(r + l) / (r - l),
-			0, 2 / (t - b), 0, -(t + b) / (t - b),
-			0, 0, -2 / (f - n), -(f + n) / (f - n),
-			0, 0, 0, 1
+			2 / (r - l), 0, 0, 0,
+			0, 2 / (t - b), 0, 0,
+			0, 0, -2 / (f - n), 0,
+			-(r + l) / (r - l), -(t + b) / (t - b), -(f + n) / (f - n), 1
 		);
 	}
 
@@ -74,6 +75,6 @@ namespace Reborn {
 		s(2, 2) = scale.z;
 
 		Matrix4 r = rotation(rot);
-		return t * s * r;
+		return t * r * s;
 	}
 }

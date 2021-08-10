@@ -170,7 +170,7 @@ namespace Reborn {
 			return result;
 		}
 
-		Matrix4 operator*(const Matrix4 mat) const {
+		Matrix4 operator*(const Matrix4& mat) const {
 			const float SrcA00 = (*this)(0, 0);
 			const float SrcA01 = (*this)(0, 1);
 			const float SrcA02 = (*this)(0, 2);
