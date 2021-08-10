@@ -20,7 +20,7 @@ void GLAPIENTRY glMessageCallback(
 		LOG_ERROR << "GL ERROR: type = " << type << ", severity = " << severity << ", message = " << message;
 	}
 	else {
-		LOG_DEBUG << "GL CALLBACK: type = " << type << ", severity = " << severity << ", message = " << message;
+		//LOG_DEBUG << "GL CALLBACK: type = " << type << ", severity = " << severity << ", message = " << message;
 	}
 }
 
@@ -39,7 +39,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 
 	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(glMessageCallback, 0);
+	//glDebugMessageCallback(glMessageCallback, 0);
 
 	create(sceneFraimbuffer);
 	bind(sceneFraimbuffer);

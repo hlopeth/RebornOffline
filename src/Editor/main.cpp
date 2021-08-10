@@ -12,6 +12,7 @@ Reborn::WindowConfiguration getWindowConfig() {
     defaultConfig.width = 800;
     defaultConfig.height = 600;
     defaultConfig.resizable = true;
+    defaultConfig.fullscreen = false;
 
     return defaultConfig;
 }

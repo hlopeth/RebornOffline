@@ -10,6 +10,11 @@ Reborn::Window::Window(SDL_Window* sdlWindow)
 
 SDL_GLContext Reborn::Window::createGLContext()
 {
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 	SDL_GLContext context = SDL_GL_CreateContext(_sdlWindow);
 	if (!context) {
 		LOG_ERROR << "Failed to create context. \n" << SDL_GetError();
@@ -51,10 +56,6 @@ Reborn::Window::~Window()
 
 Reborn::Window* Reborn::Window::CreateSDLWindow(WindowConfiguration config)
 {
-	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
 	Uint16 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	if(config.resizable)
