@@ -70,6 +70,9 @@ namespace Reborn {
 			z -= t.z;
 			w -= t.w;
 		}
+		Vector4 operator-() const {
+			return Vector4(-x, -y, -z, -w);
+		}
 		Vector4 operator-(float t) const {
 			return Vector4(x - t, y - t, z - t, w - t);
 		}
@@ -132,5 +135,9 @@ namespace Reborn {
 	inline Vector4 operator*(const float t, const Vector4& v) 
 	{
 		return v * t;
+	}
+
+	inline float dot(const Vector4& a, const Vector4& b) {
+		return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 	}
 }

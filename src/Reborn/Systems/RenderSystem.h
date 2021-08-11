@@ -24,7 +24,7 @@ namespace Reborn {
 			//Matrix4 proj = perspectiveMatrix(-100, 100, 10, -10, 10, -10);
 			//Matrix4 proj = perspectiveFOVMatrix(toRadians(60), 1, -3, 3);
 			//Matrix4 proj = orthoMatrix(-100, 100, 10, -10, 10, -10);
-			const Matrix4& proj = renderer.getCamera().getProjection();
+			const Matrix4& proj = renderer.getCamera().getViewProjection();
 
 			auto& entityManager = Application::get()->entityManager();
 			for (Entity entity : getManagedEntities()) {

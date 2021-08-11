@@ -83,4 +83,16 @@ namespace Reborn {
 		Matrix4 r = rotation(rot);
 		return t * r * s;
 	}
+	Matrix4 lookAt(const Vector3& eye, const Vector3& cursor, const Vector3& up)
+	{
+		Vector3 b = normalize(eye - cursor);
+		Vector3 r = cross(up, b).normalize();
+		Vector3 u = cross(r, b);
+		return Matrix4(
+			r.x, r.y, r.z, 0,
+			u.x, u.y, u.z, 0,
+			b.x, b.y, b.z, 0,
+			0, 0, 0, 1
+		);
+	}
 }

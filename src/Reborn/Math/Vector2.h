@@ -33,6 +33,9 @@ namespace Reborn {
 			x += t;
 			y += t;
 		}
+		Vector2 operator-() const {
+			return Vector2(-x, -y);
+		}
 		Vector2 operator-(const Vector2& t) const {
 			return Vector2(x - t.x, y - t.y);
 		}
@@ -86,5 +89,9 @@ namespace Reborn {
 	{
 		os << vec.toString();
 		return os;
+	}
+
+	inline float dot(const Vector2& a, const Vector2& b) {
+		return a.x * b.x + a.y * b.y;
 	}
 }

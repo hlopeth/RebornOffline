@@ -48,6 +48,9 @@ namespace Reborn {
 			y += t;
 			z += t;
 		}
+		Vector3 operator-() const {
+			return Vector3(- x, -y, -z);
+		}
 		Vector3 operator-(const Vector3& t) const {
 			return Vector3(x - t.x, y - t.y, z - t.z);
 		}
@@ -96,6 +99,13 @@ namespace Reborn {
 			y /= t;
 			z /= t;
 		}
+		float length() const {
+			return sqrt(x * x + y * y + z * z);
+		}
+		Vector3& normalize() {
+			(*this) /= length();
+			return *this;
+		}
 
 		std::string toString() const {
 			std::stringstream str;
@@ -120,5 +130,30 @@ namespace Reborn {
 	{
 		os << vec.toString();
 		return os;
+	}
+
+	inline Vector3 operator+(const float t, const Vector3& v)
+	{
+		return v + t;
+	}
+	inline Vector3 operator*(const float t, const Vector3& v)
+	{
+		return v * t;
+	}
+
+	inline Vector3 normalize(const Vector3& v) {
+		return v / v.length();
+	}
+
+	inline float dot(const Vector3& a, const Vector3& b) {
+		return a.x * b.x + a.y * b.y + a.z * b.z;
+	}
+
+	inline Vector3 cross(const Vector3& a, const Vector3& b) {
+		return Vector3(
+			a.y * b.z - a.z * b.y,
+			a.z * b.x - a.x * b.z,
+			a.x * b.y - a.y * b.x
+		);
 	}
 }

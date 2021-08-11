@@ -29,7 +29,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	_context(window.createGLContext()),
 	_window(window),
 	sceneFraimbufferSize(_sceneFraimbufferSize),
-	_camera(Reborn::toRadians(60), -3, 3, 1)
+	_camera(Reborn::toRadians(60), 1, 100, 1)
 {
 	initImGui(&window.getSDLWindow());
 
@@ -89,7 +89,6 @@ bool p_open = true;
 void Reborn::Renderer::endFrame()
 {
 	bindMainFramebuffer();
-	_camera.setAspect(_window.width() / _window.height());
 	glViewport(0, 0, _window.width(), _window.height());
 	glClear(GL_COLOR_BUFFER_BIT);
 
