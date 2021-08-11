@@ -8,6 +8,7 @@
 #include "GLTexture.h"
 #include <Math/Matrix.h>
 #include <Math/Vector.h>
+#include "Camera.h"
 
 namespace Reborn {
 	class Renderer {
@@ -17,6 +18,8 @@ namespace Reborn {
 		void endFrame();
 		void drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset = 0);
 		const SDL_GLContext& getContext();
+		Camera& getCamera();
+		const Camera& getCamera() const;
 
 		void setUniform(const GLSLProgram& program, const GLchar* name, const float& value);
 		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector2& value);
@@ -58,6 +61,7 @@ namespace Reborn {
 		void setSceneFramebufferSize(const Vector2& newSize);
 
 		~Renderer();
+
 	private:
 		bool initImGui(SDL_Window* window);
 		SDL_GLContext _context;
@@ -66,5 +70,6 @@ namespace Reborn {
 		Framebuffer sceneFraimbuffer;
 		GLTexture colorAttachmentTexture;
 		Renderbuffer depthStencilRenderbuffer;
+		Camera _camera;
 	};
 }

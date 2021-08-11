@@ -82,6 +82,19 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
     ImGui::SliderAngle("ry", &ry);
     ImGui::SliderAngle("rz", &rz);
 
+    ImGui::Text("Camera");
+    float fov = Application::get()->renderer().getCamera().getFOV();
+    ImGui::SliderAngle("fov", &fov, 10, 170);
+    Application::get()->renderer().getCamera().setFOV(fov);
+
+    float valNear = Application::get()->renderer().getCamera().getNear();
+    ImGui::SliderFloat("near", &valNear, -30, 30, "%.2f");
+    Application::get()->renderer().getCamera().setNear(valNear);
+
+    float valFar = Application::get()->renderer().getCamera().getFar();
+    ImGui::SliderFloat("far", &valFar, -30, 30, "%.2f");
+    Application::get()->renderer().getCamera().setFar(valFar);
+
     auto& transform = Application::get()->entityManager().getComponent<Transform3DComponent>(triangleEntity);
     transform.position.xyz = Vector3(x, y, z);
     transform.scale.xyz = Vector3(sx, sy, sz);

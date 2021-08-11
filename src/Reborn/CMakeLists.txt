@@ -34,7 +34,11 @@ set(SOURCE_FILES
 	"SDLUtils.h"
 	"SDLUtils.cpp"
 	"Graphics/Renderer.cpp"
-	   "Resources/ResourceManager.cpp" "Resources/TextResource.cpp" "Resources/GLSLShaderResouce.cpp")
+	"Resources/ResourceManager.cpp" 
+	"Resources/TextResource.cpp" 
+	"Resources/GLSLShaderResouce.cpp"
+	"Math/MathUtils.cpp"
+	 "Graphics/Camera.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(

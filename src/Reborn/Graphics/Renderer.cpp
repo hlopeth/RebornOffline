@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_opengl3.h"
+#include <Math/MathUtils.h>
 
 GLuint compileShader(const std::string& source, GLenum type);
 
@@ -27,7 +28,8 @@ void GLAPIENTRY glMessageCallback(
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
 	_context(window.createGLContext()),
 	_window(window),
-	sceneFraimbufferSize(_sceneFraimbufferSize)
+	sceneFraimbufferSize(_sceneFraimbufferSize),
+	_camera(Reborn::toRadians(60), -3, 3, 1)
 {
 	initImGui(&window.getSDLWindow());
 
@@ -87,6 +89,7 @@ bool p_open = true;
 void Reborn::Renderer::endFrame()
 {
 	bindMainFramebuffer();
+	_camera.setAspect(_window.width() / _window.height());
 	glViewport(0, 0, _window.width(), _window.height());
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -103,6 +106,16 @@ void Reborn::Renderer::drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint o
 const SDL_GLContext& Reborn::Renderer::getContext()
 {
 	return _context;
+}
+
+Reborn::Camera& Reborn::Renderer::getCamera()
+{
+	return _camera;
+}
+
+const Reborn::Camera& Reborn::Renderer::getCamera() const
+{
+	return _camera;
 }
 
 void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const float& value)
