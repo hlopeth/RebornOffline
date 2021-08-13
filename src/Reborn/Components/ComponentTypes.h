@@ -5,6 +5,7 @@ namespace Reborn {
 		Test,
 		ImGui,
 		Transform3D,
-		Render
+		Render,
+		Tick
 	};
 }

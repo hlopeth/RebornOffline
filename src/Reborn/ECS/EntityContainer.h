@@ -10,25 +10,25 @@ namespace Reborn
 		std::vector<std::bitset<ComponentCount>>& getEntityToBitset() {
 			return mEntityToBitset;
 		}
-		const std::bitset<ComponentCount>& getBitset(Entity entity) const {
-			return mEntityToBitset[entity];
+		const std::bitset<ComponentCount>& getBitset(Entity cameraControllerEntity) const {
+			return mEntityToBitset[cameraControllerEntity];
 		}
 		Entity create() {
-			Entity entity = Entity();
+			Entity cameraControllerEntity = Entity();
 			//по возможности переиспользует id из mFreeEntities
 			if (mFreeEntities.empty()) {
-				entity = static_cast<Entity>(mEntityToBitset.size()); //entity = последний возможный id
+				cameraControllerEntity = static_cast<Entity>(mEntityToBitset.size()); //entity = последний возможный id
 				mEntityToBitset.emplace_back();
 			}
 			else {
-				entity = mFreeEntities.back();
+				cameraControllerEntity = mFreeEntities.back();
 				mFreeEntities.pop_back();
-				mEntityToBitset[entity].reset();
+				mEntityToBitset[cameraControllerEntity].reset();
 			}
-			return entity;
+			return cameraControllerEntity;
 		}
-		void remove(Entity entity) {
-			mFreeEntities.push_back(entity);
+		void remove(Entity cameraControllerEntity) {
+			mFreeEntities.push_back(cameraControllerEntity);
 		}
 
 	private:

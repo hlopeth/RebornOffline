@@ -30,6 +30,7 @@ namespace Reborn {
 		std::unique_ptr<Window> window;
 		EntitySystem<maxComponents, maxEntitySystems>* imGuiSystem = nullptr;
 		EntitySystem<maxComponents, maxEntitySystems>* rendererSystem = nullptr;
+		EntitySystem<maxComponents, maxEntitySystems>* tickSystem = nullptr;
 	private: 
 		static Application* appInstance;
 

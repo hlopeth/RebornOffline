@@ -8,6 +8,7 @@
 #include <utility>
 #include <string>
 #include <fstream>
+#include <functional>
 
 #include <thirdParty/imgui/imgui.h>
 #include <thirdParty/imgui/imgui_internal.h>
@@ -21,6 +22,7 @@
 #include "Components/Transform3DComponent.h"
 #include "Components/ImGuiComponent.h"
 #include "Components/RenderComponent.h"
+#include "Components/TickComponent.h"
 
 #include "Event/ApplicationShouldCloseEvent.h"
 #include "Event/KeyPressedEvent.h"

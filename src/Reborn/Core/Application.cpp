@@ -9,6 +9,7 @@
 #include <Systems/TestSystem.h>
 #include <Systems/ImGuiSystem.h>
 #include <Systems/RenderSystem.h>
+#include <Systems/TickSystem.h>
 #include "backends/imgui_impl_sdl.h"
 
 
@@ -38,9 +39,11 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	_entityManager.registerComponent<Transform3DComponent>();
 	_entityManager.registerComponent<ImGuiComponent>();
 	_entityManager.registerComponent<RenderComponent>();
+	_entityManager.registerComponent<TickComponent>();
 	auto testSystem = _entityManager.createSystem<TestSystem<maxComponents, maxEntitySystems>>();
 	imGuiSystem = _entityManager.createSystem<ImGuiSystem<maxComponents, maxEntitySystems>>();
 	rendererSystem = _entityManager.createSystem<RenderSystem<maxComponents, maxEntitySystems>>();
+	tickSystem = _entityManager.createSystem<TickSystem<maxComponents, maxEntitySystems>>();
 
 	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 }
@@ -82,6 +85,7 @@ void Reborn::Application::Run()
 	{
 		PoolEvents();		
 
+		static_cast<TickSystem<maxComponents, maxEntitySystems>*>(tickSystem)->update();
 		static_cast<ImGuiSystem<maxComponents, maxEntitySystems>*>(imGuiSystem)->process(window->getSDLWindow());
 
 		window->Update();
@@ -129,6 +133,12 @@ void Reborn::Application::PoolEvents()
 		{
 			MouseButtonCode buttonCode = ToRebornMoseButtonCode(event.button.button);
 			_eventDispatcher.triggerEvent(MouseButtonReleasedEvent(buttonCode));
+		}
+		break;
+		case SDL_MOUSEMOTION:
+		{
+			auto motion = event.motion;
+			_eventDispatcher.triggerEvent(MouseMotionEvent(motion.x, motion.y, motion.xrel, motion.yrel));
 		}
 		break;
 		case SDL_KEYUP:

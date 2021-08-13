@@ -2,7 +2,6 @@
 #include "ComponentTypes.h"
 #include <ECS/Entity.h>
 #include <ECS/Component.h>
-#include <functional>
 
 namespace Reborn {
 	class ImGuiComponent : public Component<ImGuiComponent, ComponentTypes::ImGui>
@@ -13,6 +12,6 @@ namespace Reborn {
 			onDraw(_onDraw) 
 		{}
 		bool enable;
-		std::function<void(Entity entity, ImGuiComponent& _this)> onDraw;
+		std::function<void(Entity cameraControllerEntity, ImGuiComponent& _this)> onDraw;
 	};
 }

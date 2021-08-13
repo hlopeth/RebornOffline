@@ -12,37 +12,37 @@ namespace Reborn {
 
         }
 
-        T& get(Entity entity) {
-            return mComponents[mEntityToComponent[entity]];
+        T& get(Entity cameraControllerEntity) {
+            return mComponents[mEntityToComponent[cameraControllerEntity]];
         };
-        const T& get(Entity entity) const {
-            return mComponents[mEntityToComponent[entity]];
+        const T& get(Entity cameraControllerEntity) const {
+            return mComponents[mEntityToComponent[cameraControllerEntity]];
         };
         template<typename... Args>
-        void add(Entity entity, Args&&... args) {
+        void add(Entity cameraControllerEntity, Args&&... args) {
             Index index = static_cast<Index>(mComponents.size());
             mComponents.emplace_back(std::forward<Args>(args)...);
-            mComponentToEntity.emplace_back(entity);
-            mEntityToComponent[entity] = index;
-            mEntityToBitset[entity][T::type] = true;
+            mComponentToEntity.emplace_back(cameraControllerEntity);
+            mEntityToComponent[cameraControllerEntity] = index;
+            mEntityToBitset[cameraControllerEntity][T::type] = true;
         };
-        void remove(Entity entity) {
-            mEntityToBitset[entity][T::type] = false;
-            Index index = mEntityToComponent[entity];
+        void remove(Entity cameraControllerEntity) {
+            mEntityToBitset[cameraControllerEntity][T::type] = false;
+            Index index = mEntityToComponent[cameraControllerEntity];
             // Update mComponents
             mComponents[index] = std::move(mComponents.back());
             mComponents.pop_back();
             // Update mEntityToComponent
             mEntityToComponent[mComponentToEntity.back()] = index;
-            mEntityToComponent.erase(entity);
+            mEntityToComponent.erase(cameraControllerEntity);
             // Update mComponentToEntity
             mComponentToEntity[index] = mComponentToEntity.back();
             mComponentToEntity.pop_back();
         }
-        virtual bool tryRemove(Entity entity) override {
-            if (mEntityToBitset[entity][T::type])
+        virtual bool tryRemove(Entity cameraControllerEntity) override {
+            if (mEntityToBitset[cameraControllerEntity][T::type])
             {
-                remove(entity);
+                remove(cameraControllerEntity);
                 return true;
             }
             return false;

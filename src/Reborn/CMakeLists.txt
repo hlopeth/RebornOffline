@@ -52,6 +52,7 @@ target_precompile_headers(
 	<utility>
 	<string>
 	<fstream>
+	<functional>
 )
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})

@@ -1,6 +1,9 @@
 #include "Core.h"
 #include "SDLUtils.h"
 
+using Reborn::KeyCode;
+using Reborn::MouseButtonCode;
+
 KeyCode Reborn::ToRebornKeyCode(SDL_Keycode sdlKeyCode)
 {
 	KeyCode rebornKeyCode = KeyCode::key_unknown;

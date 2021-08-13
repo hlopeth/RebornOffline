@@ -1,8 +1,10 @@
 #include "Reborn.h"
 
 #include "Editors.h"
+#include "CameraController.h"
 #include "TestVector.h"
 #include "TestMatrix.h"
+
 
 using namespace Reborn;
 
@@ -22,7 +24,7 @@ ImGuiID dockspace_id;
 bool first_frame = true;
 Entity mainEntity;
 
-void drawDockspace(Entity entity, ImGuiComponent& _this) {
+void drawDockspace(Entity cameraControllerEntity, ImGuiComponent& _this) {
     bool p_open = true;
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -57,7 +59,7 @@ void drawDockspace(Entity entity, ImGuiComponent& _this) {
     ImGui::End();
 }
 
-void drawPropertyView(Entity entity, ImGuiComponent& _this) {
+void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
     static ImVec4 color = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
     bool p_open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
@@ -91,7 +93,7 @@ void drawPropertyView(Entity entity, ImGuiComponent& _this) {
     renderer.setClearColor(Vector3(color.x, color.y, color.z));
 }
 
-void drawMainScene(Entity entity, ImGuiComponent& _this) {
+void drawMainScene(Entity cameraControllerEntity, ImGuiComponent& _this) {
     bool p_open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
     const GLTexture& sceneTexture = Application::get()->renderer().getSceneTexture();
@@ -106,15 +108,6 @@ void drawMainScene(Entity entity, ImGuiComponent& _this) {
         ImGui::End();
     }
 
-}
-
-void onKeyPress(const IEvent& evt) {
-    if (evt.GetType() == MouseButtonPressedEvent::TYPE()) {
-        LOG_DEBUG << "pressed";
-    }
-    if (evt.GetType() == MouseButtonReleasedEvent::TYPE()) {
-        LOG_DEBUG << "released";
-    }
 }
 
 class EditorApp : public Reborn::Application 
@@ -137,14 +130,12 @@ public:
         Entity sceneViewEntity = entityMng.createEntity();
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
-        keyPressHandler = std::function(onKeyPress);
-        keyReleasedHandler = std::function(onKeyPress);
-        eventDispatcher().subscribe(MouseButtonPressedEvent::TYPE(), &keyPressHandler);
-        eventDispatcher().subscribe(MouseButtonReleasedEvent::TYPE(), &keyReleasedHandler);
 
         createCubeEntity(mainEntity);
 
         renderer().getCamera().setPosition(Vector3(0, 3, 3));
+
+        cameraController.init(this);
     }
 
     ~EditorApp() {
@@ -240,8 +231,7 @@ private:
         return true;
     }
 
-    t_EventHandler keyPressHandler;
-    t_EventHandler keyReleasedHandler;
+    CameraController cameraController;
 };
 
 Reborn::Application* CreateApplication() {

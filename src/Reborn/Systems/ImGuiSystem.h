@@ -14,9 +14,9 @@ namespace Reborn {
 			setRequirements<ImGuiComponent>();
 		}
 
-		virtual void onManagedEntityAdded([[maybe_unused]] Entity entity) override {
+		virtual void onManagedEntityAdded([[maybe_unused]] Entity cameraControllerEntity) override {
 		};
-		virtual void onManagedEntityRemoved([[maybe_unused]] Entity entity) override {
+		virtual void onManagedEntityRemoved([[maybe_unused]] Entity cameraControllerEntity) override {
 		};
 
 		void process(SDL_Window &window) {
@@ -25,9 +25,11 @@ namespace Reborn {
 			ImGui::NewFrame();
 
 			auto& entityManager = Application::get()->entityManager();
-			for (Entity entity : getManagedEntities()) {
-				auto imGuiComponent = entityManager.getComponent<ImGuiComponent>(entity);
-				imGuiComponent.onDraw(entity, imGuiComponent);
+			for (Entity cameraControllerEntity : getManagedEntities()) {
+				auto imGuiComponent = entityManager.getComponent<ImGuiComponent>(cameraControllerEntity);
+				if (imGuiComponent.enable) {
+					imGuiComponent.onDraw(cameraControllerEntity, imGuiComponent);
+				}
 			}
 
 			ImGui::Render();

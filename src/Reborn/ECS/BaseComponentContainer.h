@@ -6,6 +6,6 @@ namespace Reborn {
     public:
         virtual ~BaseComponentContainer() = default;
 
-        virtual bool tryRemove(Entity entity) = 0;
+        virtual bool tryRemove(Entity cameraControllerEntity) = 0;
     };
 }

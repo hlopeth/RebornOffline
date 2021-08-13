@@ -31,76 +31,76 @@ namespace Reborn {
             return mEntities.create();
         };
 
-        void removeEntity(Entity entity) {
+        void removeEntity(Entity cameraControllerEntity) {
             // Remove components
             for (std::size_t i = 0; i < ComponentCount; ++i)
             {
                 if (mComponentContainers[i])
-                    mComponentContainers[i]->tryRemove(entity);
+                    mComponentContainers[i]->tryRemove(cameraControllerEntity);
             }
             // Send message to systems
             for (auto& system : mSystems)
-                system->onEntityRemoved(entity);
+                system->onEntityRemoved(cameraControllerEntity);
             // Remove entity
-            mEntities.remove(entity);
+            mEntities.remove(cameraControllerEntity);
         };
 
         template<typename T>
-        bool hasComponent(Entity entity) const {
+        bool hasComponent(Entity cameraControllerEntity) const {
             checkComponentType<T>();
-            return mEntities.getBitset(entity)[T::type];
+            return mEntities.getBitset(cameraControllerEntity)[T::type];
         };
 
         template<typename ...Ts>
-        bool hasComponents(Entity entity) const {
+        bool hasComponents(Entity cameraControllerEntity) const {
             checkComponentTypes<Ts...>();
             auto requirements = std::bitset<ComponentCount>();
             (requirements.set(Ts::type), ...);
-            return (requirements & mEntities.getBitset(entity)) == requirements;
+            return (requirements & mEntities.getBitset(cameraControllerEntity)) == requirements;
         };
 
         template<typename T>
-        T& getComponent(Entity entity) {
+        T& getComponent(Entity cameraControllerEntity) {
             checkComponentType<T>();
-            return getComponentContainer<T>()->get(entity);
+            return getComponentContainer<T>()->get(cameraControllerEntity);
         };
 
         template<typename T>
-        const T& getComponent(Entity entity) const {
+        const T& getComponent(Entity cameraControllerEntity) const {
             checkComponentType<T>();
-            return getComponentContainer<T>()->get(entity);
+            return getComponentContainer<T>()->get(cameraControllerEntity);
         };
 
         template<typename ...Ts>
-        std::tuple<Ts&...> getComponents(Entity entity) {
+        std::tuple<Ts&...> getComponents(Entity cameraControllerEntity) {
             checkComponentTypes<Ts...>();
-            return std::tie(getComponentContainer<Ts>()->get(entity)...);
+            return std::tie(getComponentContainer<Ts>()->get(cameraControllerEntity)...);
         };
 
         template<typename ...Ts>
-        std::tuple<const Ts&...> getComponents(Entity entity) const {
+        std::tuple<const Ts&...> getComponents(Entity cameraControllerEntity) const {
             checkComponentTypes<Ts...>();
-            return std::tie(getComponentContainer<Ts>()->get(entity)...);
+            return std::tie(getComponentContainer<Ts>()->get(cameraControllerEntity)...);
         };
 
         template<typename T, typename... Args>
-        void addComponent(Entity entity, Args&&... args) {
+        void addComponent(Entity cameraControllerEntity, Args&&... args) {
             checkComponentType<T>();
-            getComponentContainer<T>()->add(entity, std::forward<Args>(args)...);
+            getComponentContainer<T>()->add(cameraControllerEntity, std::forward<Args>(args)...);
             // Send message to systems
-            const auto& bitset = mEntities.getBitset(entity);
+            const auto& bitset = mEntities.getBitset(cameraControllerEntity);
             for (auto& system : mSystems)
-                system->onEntityUpdated(entity, bitset);
+                system->onEntityUpdated(cameraControllerEntity, bitset);
         };
 
         template<typename T>
-        void removeComponent(Entity entity) {
+        void removeComponent(Entity cameraControllerEntity) {
             checkComponentType<T>();
-            getComponentContainer<T>()->remove(entity);
+            getComponentContainer<T>()->remove(cameraControllerEntity);
             // Send message to systems
-            const auto& bitset = mEntities.getBitset(entity);
+            const auto& bitset = mEntities.getBitset(cameraControllerEntity);
             for (auto& system : mSystems)
-                system->onEntityUpdated(entity, bitset);
+                system->onEntityUpdated(cameraControllerEntity, bitset);
         };
 
         template<typename T>

@@ -14,9 +14,9 @@ namespace Reborn {
 			setRequirements<Transform3DComponent, RenderComponent>();
 		}
 
-		virtual void onManagedEntityAdded([[maybe_unused]] Entity entity) override {
+		virtual void onManagedEntityAdded([[maybe_unused]] Entity cameraControllerEntity) override {
 		};
-		virtual void onManagedEntityRemoved([[maybe_unused]] Entity entity) override {
+		virtual void onManagedEntityRemoved([[maybe_unused]] Entity cameraControllerEntity) override {
 		};
 
 		void process(Renderer& renderer) {
@@ -27,8 +27,8 @@ namespace Reborn {
 			const Matrix4& proj = renderer.getCamera().getViewProjection();
 
 			auto& entityManager = Application::get()->entityManager();
-			for (Entity entity : getManagedEntities()) {
-				auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(entity);
+			for (Entity cameraControllerEntity : getManagedEntities()) {
+				auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(cameraControllerEntity);
 				const Matrix4 transform = transfromMatrix(transform3DComponent.position, transform3DComponent.scale, transform3DComponent.rotation);
 				renderer.useProgram(*renderComponent.program);
 				Matrix4 mvp = proj * transform;
