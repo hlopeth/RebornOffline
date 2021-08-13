@@ -84,3 +84,16 @@ KeyCode Reborn::ToRebornKeyCode(SDL_Keycode sdlKeyCode)
 	}
 	return rebornKeyCode;
 }
+
+MouseButtonCode Reborn::ToRebornMoseButtonCode(Uint8 sdlButtonCode)
+{
+	MouseButtonCode rebornButtonCode = MouseButtonCode::button_unknown;
+	switch (sdlButtonCode)
+	{
+	case SDL_BUTTON_LEFT: rebornButtonCode = MouseButtonCode::button_left; break;
+	case SDL_BUTTON_MIDDLE: rebornButtonCode = MouseButtonCode::button_middle; break;
+	case SDL_BUTTON_RIGHT: rebornButtonCode = MouseButtonCode::button_right; break;
+	default: rebornButtonCode = MouseButtonCode::button_unknown; break;
+	}
+	return rebornButtonCode;
+}

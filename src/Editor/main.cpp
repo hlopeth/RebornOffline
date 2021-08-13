@@ -108,6 +108,15 @@ void drawMainScene(Entity entity, ImGuiComponent& _this) {
 
 }
 
+void onKeyPress(const IEvent& evt) {
+    if (evt.GetType() == MouseButtonPressedEvent::TYPE()) {
+        LOG_DEBUG << "pressed";
+    }
+    if (evt.GetType() == MouseButtonReleasedEvent::TYPE()) {
+        LOG_DEBUG << "released";
+    }
+}
+
 class EditorApp : public Reborn::Application 
 {
 public:
@@ -128,7 +137,10 @@ public:
         Entity sceneViewEntity = entityMng.createEntity();
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
-        //eventDispatcher().subscribe(KeyPressedEvent::TYPE(), onKeyPressed)
+        keyPressHandler = std::function(onKeyPress);
+        keyReleasedHandler = std::function(onKeyPress);
+        eventDispatcher().subscribe(MouseButtonPressedEvent::TYPE(), &keyPressHandler);
+        eventDispatcher().subscribe(MouseButtonReleasedEvent::TYPE(), &keyReleasedHandler);
 
         createCubeEntity(mainEntity);
 
@@ -227,6 +239,9 @@ private:
         entityManager().addComponent<RenderComponent>(cubeEntity, triangleVAO, shaderResource->getProgram());
         return true;
     }
+
+    t_EventHandler keyPressHandler;
+    t_EventHandler keyReleasedHandler;
 };
 
 Reborn::Application* CreateApplication() {

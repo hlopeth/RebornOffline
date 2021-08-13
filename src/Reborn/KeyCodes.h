@@ -75,6 +75,13 @@ enum KeyCode {
     key_z = 'z',
 };
 
+enum MouseButtonCode {
+    button_unknown,
+    button_left,
+    button_middle,
+    button_right,
+};
+
 /*
 typedef enum
 {

@@ -2,6 +2,7 @@
 #include "Application.h"
 #include <SDL.h>
 #include "Event/KeyPressedEvent.h"
+#include "Event/MouseButtonEvent.h"
 #include "Event/ApplicationShouldCloseEvent.h"
 #include "SDLUtils.h"
 
@@ -118,6 +119,18 @@ void Reborn::Application::PoolEvents()
 			_eventDispatcher.triggerEvent(KeyPressedEvent(keyCode));
 			}
 			break;
+		case SDL_MOUSEBUTTONDOWN:
+		{
+			MouseButtonCode buttonCode = ToRebornMoseButtonCode(event.button.button);
+			_eventDispatcher.triggerEvent(MouseButtonPressedEvent(buttonCode));
+		}
+		break;
+		case SDL_MOUSEBUTTONUP:
+		{
+			MouseButtonCode buttonCode = ToRebornMoseButtonCode(event.button.button);
+			_eventDispatcher.triggerEvent(MouseButtonReleasedEvent(buttonCode));
+		}
+		break;
 		case SDL_KEYUP:
 
 		default:
