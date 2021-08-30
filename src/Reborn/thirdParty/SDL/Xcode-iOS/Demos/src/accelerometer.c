@@ -204,9 +204,9 @@ main(int argc, char *argv[])
     /* enter main loop */
     while (!done) {
         double deltaTime = updateDeltaTime();
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
+        SDL_Event evt;
+        while (SDL_PollEvent(&evt)) {
+            if (evt.type == SDL_QUIT) {
                 done = 1;
             }
         }

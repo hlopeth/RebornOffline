@@ -103,6 +103,7 @@ void drawMainScene(Entity cameraControllerEntity, ImGuiComponent& _this) {
         ImRect innerRect = window->InnerClipRect;
 
         ImVec2 viewprtSize = window->InnerClipRect.GetSize();
+        viewprtSize.y -= 15;
         Application::get()->renderer().getCamera().setAspect(viewprtSize.x / viewprtSize.y);
         ImGui::Image((void*)(intptr_t)(sceneTexture.id), viewprtSize);
         ImGui::End();

@@ -40,6 +40,7 @@ namespace Reborn {
 
 		MouseButtonCode button;
 	};
+
 	class MouseMotionEvent : public IEvent
 	{
 	public:
@@ -63,5 +64,27 @@ namespace Reborn {
 		int32_t y;
 		int32_t xRel;
 		int32_t yRel;
+	};
+
+	class MouseWheelEvent : public IEvent
+	{
+	public:
+		MouseWheelEvent(int32_t _scrollX, int32_t _scrollY, uint32_t _direction):
+			scrollX(_scrollX),
+			scrollY(_scrollY),
+			direction(_direction)
+		{}
+		const EventType GetType() const override {
+			return TYPE();
+		};
+		const char* GetName() const override {
+			return "MouseWheelEvent";
+		};
+		static EventType TYPE() {
+			return 0x31b9adf8;
+		};
+		int32_t scrollX; //vertical scroll
+		int32_t scrollY; //horizintal scroll
+		uint32_t direction;
 	};
 }

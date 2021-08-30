@@ -2,7 +2,7 @@
 #include <Reborn.h>
 
 int sgn(float val) {
-	return (0 < val) - (val < 0);
+	return (0 <= val) - (val < 0);
 }
 
 class CameraController {
@@ -23,10 +23,12 @@ public:
 		keyPressHandler = std::bind(&CameraController::onKeyPress, this, std::placeholders::_1);
 		keyReleasedHandler = std::bind(&CameraController::onKeyPress, this, std::placeholders::_1);
 		mouseMoveHandler= std::bind(&CameraController::onMouseMove, this, std::placeholders::_1);
+		mouseWheelHandler = std::bind(&CameraController::onMouseWheel, this, std::placeholders::_1);
 
 		app->eventDispatcher().subscribe(Reborn::MouseButtonPressedEvent::TYPE(), &keyPressHandler);
 		app->eventDispatcher().subscribe(Reborn::MouseButtonReleasedEvent::TYPE(), &keyReleasedHandler);
 		app->eventDispatcher().subscribe(Reborn::MouseMotionEvent::TYPE(), &mouseMoveHandler);
+		app->eventDispatcher().subscribe(Reborn::MouseWheelEvent::TYPE(), &mouseWheelHandler);
 	}
 
 	void onTick(
@@ -35,23 +37,32 @@ public:
 		double time, 
 		double delta
 	) {
+		auto& camera = Reborn::Application::get()->renderer().getCamera();
+		Reborn::Vector3 pos = toSpherical(camera.getPosition());
+		pos.x += rRel;
 		if (buttonPressed) {
-			auto& camera = Reborn::Application::get()->renderer().getCamera();
-			Reborn::Vector3 pos = toSpherical(camera.getPosition());
-			pos.y += yRel;
-			pos.z += xRel;
-			camera.setPosition(fromSpherical(pos));
+			pos.y -= xRel;
+			pos.z -= yRel;
+			xRel = yRel = 0;
 		}
-		xRel = yRel = 0;
+
+		//constrains
+		pos.x = max(pos.x, 0.01);
+		pos.z = pos.z < PI ? max(pos.z, 0.0001) : min(pos.z, PI-0.0001);
+
+		camera.setPosition(fromSpherical(pos));
+		rRel = 0;
 	}
 
-	//Vector3(r, phi, theta)
+	//Vector3(r, theta, phi)
 
 	Reborn::Vector3 fromSpherical(Reborn::Vector3 p) {
+		p.z = fmod(float(p.z), PI);
+		float r = p.x;
 		return Reborn::Vector3(
-			p.x * sin(p.y) * cos(p.z),
-			p.x * sin(p.y) * sin(p.z),
-			p.x * cos(p.y)
+			r * sin(p.z) * sin(p.y),
+			r * cos(p.z),
+			r * sin(p.z) * cos(p.y)
 		);
 	}
 
@@ -59,8 +70,8 @@ public:
 		float d = sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
 		return Reborn::Vector3(
 			d,
-			acos(p.z / d),
-			sgn(p.y) * acos(p.x / sqrt(p.x * p.x + p.y * p.y))
+			sgn(p.x) * acos(p.z / sqrt(p.z * p.z + p.x * p.x)),
+			acos(p.y / d)
 		);
 	}
 
@@ -79,8 +90,13 @@ public:
 		}
 	}
 
+	void onMouseWheel(const Reborn::IEvent& evt) {
+		const auto& wheelEvent = static_cast<const Reborn::MouseWheelEvent&>(evt);
+		rRel = wheelEvent.scrollY * radiusSpeed;
+	}
+
 	void onMouseMove(const Reborn::IEvent& evt) {
-		auto moveEvent = static_cast<const Reborn::MouseMotionEvent&>(evt);
+		const auto& moveEvent = static_cast<const Reborn::MouseMotionEvent&>(evt);
 		xRel = moveEvent.xRel * speed;
 		yRel = moveEvent.yRel * speed;
 	}
@@ -97,10 +113,13 @@ private:
 	bool buttonPressed = false;
 	float xRel = 0;
 	float yRel = 0;
+	float rRel = 0;
 	float speed = 0.01;
+	float radiusSpeed = 1;
 
 	Reborn::Entity cameraControllerEntity;
 	Reborn::t_EventHandler keyPressHandler;
 	Reborn::t_EventHandler keyReleasedHandler;
 	Reborn::t_EventHandler mouseMoveHandler;
+	Reborn::t_EventHandler mouseWheelHandler;
 };

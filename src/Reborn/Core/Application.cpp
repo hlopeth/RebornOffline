@@ -2,7 +2,7 @@
 #include "Application.h"
 #include <SDL.h>
 #include "Event/KeyPressedEvent.h"
-#include "Event/MouseButtonEvent.h"
+#include "Event/MouseEvents.h"
 #include "Event/ApplicationShouldCloseEvent.h"
 #include "SDLUtils.h"
 
@@ -13,7 +13,7 @@
 #include "backends/imgui_impl_sdl.h"
 
 
-SDL_Event event;
+SDL_Event evt;
 
 Reborn::Application* Reborn::Application::appInstance = nullptr;
 
@@ -109,36 +109,41 @@ Reborn::Application::~Application()
 
 void Reborn::Application::PoolEvents()
 {
-	while (SDL_PollEvent(&event) != 0)
+	while (SDL_PollEvent(&evt) != 0)
 	{
-		ImGui_ImplSDL2_ProcessEvent(&event);
-		switch (event.type)
+		ImGui_ImplSDL2_ProcessEvent(&evt);
+		switch (evt.type)
 		{
 		case SDL_QUIT: 
 			_eventDispatcher.triggerEvent(ApplicationShouldCloseEvent());
 			break;
 		case SDL_KEYDOWN:
 			{
-			KeyCode keyCode = ToRebornKeyCode(event.key.keysym.sym);
+			KeyCode keyCode = ToRebornKeyCode(evt.key.keysym.sym);
 			_eventDispatcher.triggerEvent(KeyPressedEvent(keyCode));
 			}
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 		{
-			MouseButtonCode buttonCode = ToRebornMoseButtonCode(event.button.button);
+			MouseButtonCode buttonCode = ToRebornMoseButtonCode(evt.button.button);
 			_eventDispatcher.triggerEvent(MouseButtonPressedEvent(buttonCode));
 		}
 		break;
 		case SDL_MOUSEBUTTONUP:
 		{
-			MouseButtonCode buttonCode = ToRebornMoseButtonCode(event.button.button);
+			MouseButtonCode buttonCode = ToRebornMoseButtonCode(evt.button.button);
 			_eventDispatcher.triggerEvent(MouseButtonReleasedEvent(buttonCode));
 		}
 		break;
 		case SDL_MOUSEMOTION:
 		{
-			auto motion = event.motion;
+			auto motion = evt.motion;
 			_eventDispatcher.triggerEvent(MouseMotionEvent(motion.x, motion.y, motion.xrel, motion.yrel));
+		}
+		break;
+		case SDL_MOUSEWHEEL:
+		{
+			_eventDispatcher.triggerEvent(MouseWheelEvent(evt.wheel.x, evt.wheel.y, evt.wheel.direction));
 		}
 		break;
 		case SDL_KEYUP:

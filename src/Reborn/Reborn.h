@@ -26,7 +26,7 @@
 
 #include "Event/ApplicationShouldCloseEvent.h"
 #include "Event/KeyPressedEvent.h"
-#include "Event/MouseButtonEvent.h"
+#include "Event/MouseEvents.h"
 
 #include "Resources/TextResource.h"
 #include "Resources/GLSLShaderResource.h"
