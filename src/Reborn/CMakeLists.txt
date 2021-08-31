@@ -5,10 +5,12 @@ find_package(OpenGL REQUIRED)
 include_directories(${SDL2_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include)
 set(ELPP_SOURCE_DIR thirdParty/easyloggingpp)
 set(IMGUI_SOURCE_DIR thirdParty/imgui)
+set(ASSIMP_SOURCE_DIR thirdParty/assimp-5.0.1/include)
 include_directories(${IMGUI_SOURCE_DIR})
 include_directories(${GLAD_SOURCE_DIR})
+include_directories(${ASSIMP_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-#include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 set(SOURCE_FILES
@@ -59,3 +61,4 @@ target_link_libraries(Reborn ${OPENGL_LIBRARIES})
 target_link_libraries(Reborn Glad_lib)
 target_link_libraries(Reborn SDL2)
 target_link_libraries(Reborn ImGui_lib)
+target_link_libraries(Reborn assimp)
