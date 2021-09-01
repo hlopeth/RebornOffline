@@ -31,4 +31,6 @@
 #include "Resources/TextResource.h"
 #include "Resources/GLSLShaderResource.h"
 
+#include "Graphics/Mesh.h"
+
 #include "EntryPoint.h"

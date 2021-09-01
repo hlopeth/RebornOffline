@@ -100,9 +100,9 @@ namespace Assimp
         {
             GLenum drawMode;
             int baseVertex;
-            int vertexCount;
+            int _vertexCount;
 
-            DrawCallGL( GLenum drawMode, int baseVertex ): drawMode( drawMode ), baseVertex( baseVertex ), vertexCount( 0 ) { }
+            DrawCallGL( GLenum drawMode, int baseVertex ): drawMode( drawMode ), baseVertex( baseVertex ), _vertexCount( 0 ) { }
         };
 
         struct TessDataGL
@@ -118,16 +118,16 @@ namespace Assimp
         BlenderTessellatorGL( BlenderBMeshConverter& converter );
         ~BlenderTessellatorGL( );
 
-        void Tessellate( const Blender::MLoop* polyLoop, int vertexCount, const std::vector< Blender::MVert >& vertices );
+        void Tessellate( const Blender::MLoop* polyLoop, int _vertexCount, const std::vector< Blender::MVert >& vertices );
 
     private:
-        void AssertVertexCount( int vertexCount );
-        void GenerateLoopVerts( std::vector< Blender::VertexGL >& polyLoopGL, const Blender::MLoop* polyLoop, int vertexCount, const std::vector< Blender::MVert >& vertices );
+        void AssertVertexCount( int _vertexCount );
+        void GenerateLoopVerts( std::vector< Blender::VertexGL >& polyLoopGL, const Blender::MLoop* polyLoop, int _vertexCount, const std::vector< Blender::MVert >& vertices );
         void Tesssellate( std::vector< Blender::VertexGL >& polyLoopGL, Blender::TessDataGL& tessData );
         void TriangulateDrawCalls( const Blender::TessDataGL& tessData );
-        void MakeFacesFromTris( const Blender::VertexGL* vertices, int vertexCount );
-        void MakeFacesFromTriStrip( const Blender::VertexGL* vertices, int vertexCount );
-        void MakeFacesFromTriFan( const Blender::VertexGL* vertices, int vertexCount );
+        void MakeFacesFromTris( const Blender::VertexGL* vertices, int _vertexCount );
+        void MakeFacesFromTriStrip( const Blender::VertexGL* vertices, int _vertexCount );
+        void MakeFacesFromTriFan( const Blender::VertexGL* vertices, int _vertexCount );
 
         static void TessellateBegin( GLenum drawModeGL, void* userData );
         static void TessellateEnd( void* userData );
@@ -188,11 +188,11 @@ namespace Assimp
         BlenderTessellatorP2T( BlenderBMeshConverter& converter );
         ~BlenderTessellatorP2T( );
 
-        void Tessellate( const Blender::MLoop* polyLoop, int vertexCount, const std::vector< Blender::MVert >& vertices );
+        void Tessellate( const Blender::MLoop* polyLoop, int _vertexCount, const std::vector< Blender::MVert >& vertices );
 
     private:
-        void AssertVertexCount( int vertexCount );
-        void Copy3DVertices( const Blender::MLoop* polyLoop, int vertexCount, const std::vector< Blender::MVert >& vertices, std::vector< Blender::PointP2T >& targetVertices ) const;
+        void AssertVertexCount( int _vertexCount );
+        void Copy3DVertices( const Blender::MLoop* polyLoop, int _vertexCount, const std::vector< Blender::MVert >& vertices, std::vector< Blender::PointP2T >& targetVertices ) const;
         aiMatrix4x4 GeneratePointTransformMatrix( const Blender::PlaneP2T& plane ) const;
         void TransformAndFlattenVectices( const aiMatrix4x4& transform, std::vector< Blender::PointP2T >& vertices ) const;
         void ReferencePoints( std::vector< Blender::PointP2T >& points, std::vector< p2t::Point* >& pointRefs ) const;

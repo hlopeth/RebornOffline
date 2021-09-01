@@ -971,16 +971,16 @@ void ColladaParser::ReadControllerJoints(Collada::Controller& pController)
 void ColladaParser::ReadControllerWeights(Collada::Controller& pController)
 {
     // read vertex count from attributes and resize the array accordingly
-    int indexCount = GetAttribute("count");
-    size_t vertexCount = (size_t)mReader->getAttributeValueAsInt(indexCount);
-    pController.mWeightCounts.resize(vertexCount);
+    int _indexCount = GetAttribute("count");
+    size_t _vertexCount = (size_t)mReader->getAttributeValueAsInt(_indexCount);
+    pController.mWeightCounts.resize(_vertexCount);
 
     while (mReader->read())
     {
         if (mReader->getNodeType() == irr::io::EXN_ELEMENT)
         {
             // Input channels for weight data. Two possible semantics: "JOINT" and "WEIGHT"
-            if (IsElement("input") && vertexCount > 0)
+            if (IsElement("input") && _vertexCount > 0)
             {
                 InputChannel channel;
 
@@ -1009,7 +1009,7 @@ void ColladaParser::ReadControllerWeights(Collada::Controller& pController)
                 if (!mReader->isEmptyElement())
                     SkipElement();
             }
-            else if (IsElement("vcount") && vertexCount > 0)
+            else if (IsElement("vcount") && _vertexCount > 0)
             {
                 // read weight count per vertex
                 const char* text = GetTextContent();
@@ -1029,7 +1029,7 @@ void ColladaParser::ReadControllerWeights(Collada::Controller& pController)
                 // reserve weight count
                 pController.mWeights.resize(numWeights);
             }
-            else if (IsElement("v") && vertexCount > 0)
+            else if (IsElement("v") && _vertexCount > 0)
             {
                 // read JointIndex - WeightIndex pairs
                 const char* text = GetTextContent();
@@ -2126,8 +2126,8 @@ void ColladaParser::ReadDataArray()
     // read attributes
     int indexID = GetAttribute("id");
     std::string id = mReader->getAttributeValue(indexID);
-    int indexCount = GetAttribute("count");
-    unsigned int count = (unsigned int)mReader->getAttributeValueAsInt(indexCount);
+    int _indexCount = GetAttribute("count");
+    unsigned int count = (unsigned int)mReader->getAttributeValueAsInt(_indexCount);
     const char* content = TestTextContent();
 
     // read values and store inside an array in the data library

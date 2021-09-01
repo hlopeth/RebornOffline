@@ -2,10 +2,8 @@
 #include "Entity.h"
 
 namespace Reborn {
-    template<std::size_t ComponentCount, std::size_t SystemCount>
     class EntityManager;
 
-    template<std::size_t ComponentCount, std::size_t SystemCount>
     class EntitySystem
     {
     public:
@@ -23,13 +21,13 @@ namespace Reborn {
         virtual void onManagedEntityRemoved([[maybe_unused]] Entity cameraControllerEntity) {};
 
     private:
-        friend EntityManager<ComponentCount, SystemCount>;
+        friend EntityManager;
 
 
         void setUp(std::size_t type) {
             mType = type;
         };
-        void onEntityUpdated(Entity cameraControllerEntity, const std::bitset<ComponentCount>& components) {
+        void onEntityUpdated(Entity cameraControllerEntity, const std::bitset<REBORN_COMPONENTS_COUNT>& components) {
             bool satisfied = (mRequirements & components) == mRequirements;
             bool managed = mEntityToManagedEntity.find(cameraControllerEntity) != std::end(mEntityToManagedEntity);
 
@@ -58,7 +56,7 @@ namespace Reborn {
             mManagedEntities.pop_back();
         };
 
-        std::bitset<ComponentCount> mRequirements;
+        std::bitset<REBORN_COMPONENTS_COUNT> mRequirements;
         std::size_t mType;
         std::vector<Entity> mManagedEntities;
         std::unordered_map<Entity, Index> mEntityToManagedEntity;

@@ -4,8 +4,7 @@
 #include <chrono>
 
 namespace Reborn {
-	template<std::size_t _ComponentCount, std::size_t _SystemCount>
-	class TickSystem : public EntitySystem<_ComponentCount, _SystemCount> {
+	class TickSystem : public EntitySystem {
 	public:
 		TickSystem() {
 			time = std::chrono::system_clock::now();
@@ -30,11 +29,11 @@ namespace Reborn {
 		}
 
 		uint32_t getTime() {
-			return time;
+			return time.time_since_epoch().count();
 		}
 
 		uint32_t getDelta() {
-			return time - prevTime;
+			return (time - prevTime).count();
 		}
 	private:
 		void updateTime() {

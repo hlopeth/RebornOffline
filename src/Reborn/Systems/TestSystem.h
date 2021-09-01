@@ -3,8 +3,7 @@
 #include "Components/TestComponent.h"
 
 namespace Reborn {
-	template<std::size_t _ComponentCount, std::size_t _SystemCount>
-	class TestSystem : public EntitySystem<_ComponentCount, _SystemCount> {
+	class TestSystem : public EntitySystem {
 	public:
 		TestSystem() {
 			setRequirements<TestComponent>();

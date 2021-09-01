@@ -86,12 +86,12 @@ BlenderTessellatorGL::~BlenderTessellatorGL( )
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorGL::Tessellate( const MLoop* polyLoop, int vertexCount, const std::vector< MVert >& vertices )
+void BlenderTessellatorGL::Tessellate( const MLoop* polyLoop, int _vertexCount, const std::vector< MVert >& vertices )
 {
-    AssertVertexCount( vertexCount );
+    AssertVertexCount( _vertexCount );
 
     std::vector< VertexGL > polyLoopGL;
-    GenerateLoopVerts( polyLoopGL, polyLoop, vertexCount, vertices );
+    GenerateLoopVerts( polyLoopGL, polyLoop, _vertexCount, vertices );
 
     TessDataGL tessData;
     Tesssellate( polyLoopGL, tessData );
@@ -100,18 +100,18 @@ void BlenderTessellatorGL::Tessellate( const MLoop* polyLoop, int vertexCount, c
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorGL::AssertVertexCount( int vertexCount )
+void BlenderTessellatorGL::AssertVertexCount( int _vertexCount )
 {
-    if ( vertexCount <= 4 )
+    if ( _vertexCount <= 4 )
     {
         ThrowException( "Expected more than 4 vertices for tessellation" );
     }
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorGL::GenerateLoopVerts( std::vector< VertexGL >& polyLoopGL, const MLoop* polyLoop, int vertexCount, const std::vector< MVert >& vertices )
+void BlenderTessellatorGL::GenerateLoopVerts( std::vector< VertexGL >& polyLoopGL, const MLoop* polyLoop, int _vertexCount, const std::vector< MVert >& vertices )
 {
-    for ( int i = 0; i < vertexCount; ++i )
+    for ( int i = 0; i < _vertexCount; ++i )
     {
         const MLoop& loopItem = polyLoop[ i ];
         const MVert& vertex = vertices[ loopItem.v ];
@@ -156,23 +156,23 @@ void BlenderTessellatorGL::TriangulateDrawCalls( const TessDataGL& tessData )
         const VertexGL* vertices = &tessData.vertices[ drawCallGL.baseVertex ];
         if ( drawCallGL.drawMode == GL_TRIANGLES )
         {
-            MakeFacesFromTris( vertices, drawCallGL.vertexCount );
+            MakeFacesFromTris( vertices, drawCallGL._vertexCount );
         }
         else if ( drawCallGL.drawMode == GL_TRIANGLE_STRIP )
         {
-            MakeFacesFromTriStrip( vertices, drawCallGL.vertexCount );
+            MakeFacesFromTriStrip( vertices, drawCallGL._vertexCount );
         }
         else if ( drawCallGL.drawMode == GL_TRIANGLE_FAN )
         {
-            MakeFacesFromTriFan( vertices, drawCallGL.vertexCount );
+            MakeFacesFromTriFan( vertices, drawCallGL._vertexCount );
         }
     }
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorGL::MakeFacesFromTris( const VertexGL* vertices, int vertexCount )
+void BlenderTessellatorGL::MakeFacesFromTris( const VertexGL* vertices, int _vertexCount )
 {
-    const int triangleCount = vertexCount / 3;
+    const int triangleCount = _vertexCount / 3;
     for ( int i = 0; i < triangleCount; ++i )
     {
         int vertexBase = i * 3;
@@ -181,9 +181,9 @@ void BlenderTessellatorGL::MakeFacesFromTris( const VertexGL* vertices, int vert
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorGL::MakeFacesFromTriStrip( const VertexGL* vertices, int vertexCount )
+void BlenderTessellatorGL::MakeFacesFromTriStrip( const VertexGL* vertices, int _vertexCount )
 {
-    const int triangleCount = vertexCount - 2;
+    const int triangleCount = _vertexCount - 2;
     for ( int i = 0; i < triangleCount; ++i )
     {
         int vertexBase = i;
@@ -192,9 +192,9 @@ void BlenderTessellatorGL::MakeFacesFromTriStrip( const VertexGL* vertices, int 
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorGL::MakeFacesFromTriFan( const VertexGL* vertices, int vertexCount )
+void BlenderTessellatorGL::MakeFacesFromTriFan( const VertexGL* vertices, int _vertexCount )
 {
-    const int triangleCount = vertexCount - 2;
+    const int triangleCount = _vertexCount - 2;
     for ( int i = 0; i < triangleCount; ++i )
     {
         int vertexBase = i;
@@ -230,7 +230,7 @@ void BlenderTessellatorGL::TessellateVertex( const void* vtxData, void* userData
     {
         ThrowException( "\"Vertex\" callback received before \"Begin\"" );
     }
-    ++( tessData.drawCalls.back( ).vertexCount );
+    ++( tessData.drawCalls.back( )._vertexCount );
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -279,15 +279,15 @@ BlenderTessellatorP2T::~BlenderTessellatorP2T( )
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorP2T::Tessellate( const MLoop* polyLoop, int vertexCount, const std::vector< MVert >& vertices )
+void BlenderTessellatorP2T::Tessellate( const MLoop* polyLoop, int _vertexCount, const std::vector< MVert >& vertices )
 {
-    AssertVertexCount( vertexCount );
+    AssertVertexCount( _vertexCount );
 
     // NOTE - We have to hope that points in a Blender polygon are roughly on the same plane.
     //        There may be some triangulation artifacts if they are wildly different.
 
     std::vector< PointP2T > points;
-    Copy3DVertices( polyLoop, vertexCount, vertices, points );
+    Copy3DVertices( polyLoop, _vertexCount, vertices, points );
 
     PlaneP2T plane = FindLLSQPlane( points );
 
@@ -307,19 +307,19 @@ void BlenderTessellatorP2T::Tessellate( const MLoop* polyLoop, int vertexCount, 
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorP2T::AssertVertexCount( int vertexCount )
+void BlenderTessellatorP2T::AssertVertexCount( int _vertexCount )
 {
-    if ( vertexCount <= 4 )
+    if ( _vertexCount <= 4 )
     {
         ThrowException( "Expected more than 4 vertices for tessellation" );
     }
 }
 
 // ------------------------------------------------------------------------------------------------
-void BlenderTessellatorP2T::Copy3DVertices( const MLoop* polyLoop, int vertexCount, const std::vector< MVert >& vertices, std::vector< PointP2T >& points ) const
+void BlenderTessellatorP2T::Copy3DVertices( const MLoop* polyLoop, int _vertexCount, const std::vector< MVert >& vertices, std::vector< PointP2T >& points ) const
 {
-    points.resize( vertexCount );
-    for ( int i = 0; i < vertexCount; ++i )
+    points.resize( _vertexCount );
+    for ( int i = 0; i < _vertexCount; ++i )
     {
         const MLoop& loop = polyLoop[ i ];
         const MVert& vert = vertices[ loop.v ];

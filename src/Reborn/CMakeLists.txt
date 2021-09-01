@@ -40,7 +40,7 @@ set(SOURCE_FILES
 	"Resources/TextResource.cpp" 
 	"Resources/GLSLShaderResouce.cpp"
 	"Math/MathUtils.cpp"
-	 "Graphics/Camera.cpp")
+	 "Graphics/Camera.cpp" "Resources/MeshResource.cpp" "Graphics/Mesh.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(

@@ -22,15 +22,13 @@ namespace Reborn {
 		EventDispatcher& eventDispatcher();
 		ResourceManager& resourceManager();
 		Renderer& renderer();
-		static const uint8_t maxEntitySystems = 10;
-		static const uint16_t maxComponents = 100;
-		EntityManager<maxComponents, maxEntitySystems>& entityManager();
+		EntityManager& entityManager();
 	protected:
 		Application(WindowConfiguration windowConfig);
 		std::unique_ptr<Window> window;
-		EntitySystem<maxComponents, maxEntitySystems>* imGuiSystem = nullptr;
-		EntitySystem<maxComponents, maxEntitySystems>* rendererSystem = nullptr;
-		EntitySystem<maxComponents, maxEntitySystems>* tickSystem = nullptr;
+		EntitySystem* imGuiSystem = nullptr;
+		EntitySystem* rendererSystem = nullptr;
+		EntitySystem* tickSystem = nullptr;
 	private: 
 		static Application* appInstance;
 
@@ -41,6 +39,6 @@ namespace Reborn {
 		std::unique_ptr<Renderer> _renderer;
 		EventDispatcher _eventDispatcher;
 		ResourceManager _resourceManager;
-		EntityManager<maxComponents, maxEntitySystems> _entityManager;
+		EntityManager _entityManager;
 	};
 }

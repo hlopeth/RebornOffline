@@ -8,7 +8,6 @@
 //heavily inspierd by https://github.com/pvigier/ecs
 
 namespace Reborn {
-    template<std::size_t ComponentCount, std::size_t SystemCount>
     class EntityManager
     {
     public:
@@ -16,7 +15,7 @@ namespace Reborn {
         void registerComponent() {
             checkComponentType<T>();
             mComponentContainers[T::type] = 
-                std::make_unique<ComponentContainer<T, ComponentCount, SystemCount>>(mEntities.getEntityToBitset());
+                std::make_unique<ComponentContainer<T>>(mEntities.getEntityToBitset());
         };
 
         template<typename T, typename ...Args>
@@ -33,7 +32,7 @@ namespace Reborn {
 
         void removeEntity(Entity cameraControllerEntity) {
             // Remove components
-            for (std::size_t i = 0; i < ComponentCount; ++i)
+            for (std::size_t i = 0; i < REBORN_COMPONENTS_COUNT; ++i)
             {
                 if (mComponentContainers[i])
                     mComponentContainers[i]->tryRemove(cameraControllerEntity);
@@ -54,7 +53,7 @@ namespace Reborn {
         template<typename ...Ts>
         bool hasComponents(Entity cameraControllerEntity) const {
             checkComponentTypes<Ts...>();
-            auto requirements = std::bitset<ComponentCount>();
+            auto requirements = std::bitset<REBORN_COMPONENTS_COUNT>();
             (requirements.set(Ts::type), ...);
             return (requirements & mEntities.getBitset(cameraControllerEntity)) == requirements;
         };
@@ -112,7 +111,7 @@ namespace Reborn {
     private:
         template<typename T>
         void checkComponentType() const { 
-            static_assert(T::type < ComponentCount);
+            static_assert(T::type < REBORN_COMPONENTS_COUNT);
         };
         template<typename ...Ts>
         void checkComponentTypes() const {
@@ -121,15 +120,15 @@ namespace Reborn {
 
         template<typename T>
         auto getComponentContainer() {
-            return static_cast<ComponentContainer<T, ComponentCount, SystemCount>*>(mComponentContainers[T::type].get());
+            return static_cast<ComponentContainer<T>*>(mComponentContainers[T::type].get());
         };
         template<typename T>
         auto getComponentContainer() const {
-            return static_cast<ComponentContainer<T, ComponentCount, SystemCount>*>(mComponentContainers[T::type].get());
+            return static_cast<ComponentContainer<T>*>(mComponentContainers[T::type].get());
         };
 
-        std::array<std::unique_ptr<BaseComponentContainer>, ComponentCount> mComponentContainers;
-        EntityContainer<ComponentCount, SystemCount> mEntities;
-        std::vector<std::unique_ptr<EntitySystem<ComponentCount, SystemCount>>> mSystems;
+        std::array<std::unique_ptr<BaseComponentContainer>, REBORN_COMPONENTS_COUNT> mComponentContainers;
+        EntityContainer mEntities;
+        std::vector<std::unique_ptr<EntitySystem>> mSystems;
     };
 }

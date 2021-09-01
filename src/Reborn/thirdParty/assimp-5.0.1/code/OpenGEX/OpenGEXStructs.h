@@ -162,7 +162,7 @@ struct BoneRefArray {
 };
 
 struct BoneCount {
-    int vertexCount;
+    int _vertexCount;
     const unsigned short *boneCountArray;
     unsigned short *arrayStorage;
 };

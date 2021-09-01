@@ -3,14 +3,13 @@
 
 namespace Reborn
 {
-	template<std::size_t ComponentCount, std::size_t SystemCount>
 	class EntityContainer
 	{
 	public:
-		std::vector<std::bitset<ComponentCount>>& getEntityToBitset() {
+		std::vector<std::bitset<REBORN_COMPONENTS_COUNT>>& getEntityToBitset() {
 			return mEntityToBitset;
 		}
-		const std::bitset<ComponentCount>& getBitset(Entity cameraControllerEntity) const {
+		const std::bitset<REBORN_COMPONENTS_COUNT>& getBitset(Entity cameraControllerEntity) const {
 			return mEntityToBitset[cameraControllerEntity];
 		}
 		Entity create() {
@@ -32,7 +31,7 @@ namespace Reborn
 		}
 
 	private:
-		std::vector<std::bitset<ComponentCount>> mEntityToBitset;
+		std::vector<std::bitset<REBORN_COMPONENTS_COUNT>> mEntityToBitset;
 		std::vector<Entity> mFreeEntities;
 	};
 }

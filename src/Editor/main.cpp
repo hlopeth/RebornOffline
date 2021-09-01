@@ -132,7 +132,7 @@ public:
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
 
-        createCubeEntity(mainEntity);
+        createTriangleEntity(mainEntity);
 
         renderer().getCamera().setPosition(Vector3(0, 3, 3));
 
@@ -153,26 +153,23 @@ private:
     bool createTriangleEntity(Entity& triangleEntity) {
         const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/simple_triangle");
 
-        std::shared_ptr<float[]> vertices(new float[] {
-            -0.5f, -0.5f, 0.0f, // left  
-             0.5f, -0.5f, 0.0f, // right 
-             0.0f,  0.5f, 0.0f  // top   
-            });
-        VertexBufferObject vbo(vertices, 9);
-        std::vector<VertexAttribute> layout;
-        layout.emplace_back(3, 3 * sizeof(float), GL_FALSE, GL_FLOAT);
-        VertexArrayObject triangleVAO(vbo, layout);
+        const Vector3 vertices[3] = {
+            Vector3(-0.5f, -0.5f, 0.0f), // left  
+            Vector3(0.5f, -0.5f, 0.0f), // right 
+            Vector3(0.0f,  0.5f, 0.0f)  // top   
+        };
 
-        renderer().create(triangleVAO);
+        const uint32_t indeces[] = { 0, 1 ,2 };
+        Mesh triangleMesh(3, indeces, 3, vertices);
 
         triangleEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(triangleEntity);
         //entityManager().getComponent<Transform3DComponent>(triangleEntity).position.z = -3;
-        entityManager().addComponent<RenderComponent>(triangleEntity, triangleVAO, shaderResource->getProgram());
+        entityManager().addComponent<RenderComponent>(triangleEntity, triangleMesh, shaderResource->getProgram());
         return true;
     }
 
-    bool createCubeEntity(Entity& cubeEntity) {
+    /*bool createCubeEntity(Entity& cubeEntity) {
         const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/simple_triangle");
 
         std::shared_ptr<float[]> vertices(new float[] {
@@ -230,7 +227,7 @@ private:
         //entityManager().getComponent<Transform3DComponent>(cubeEntity).position.z = -3;
         entityManager().addComponent<RenderComponent>(cubeEntity, triangleVAO, shaderResource->getProgram());
         return true;
-    }
+    }*/
 
     CameraController cameraController;
 };

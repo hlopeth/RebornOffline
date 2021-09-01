@@ -39,10 +39,10 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	_entityManager.registerComponent<ImGuiComponent>();
 	_entityManager.registerComponent<RenderComponent>();
 	_entityManager.registerComponent<TickComponent>();
-	auto testSystem = _entityManager.createSystem<TestSystem<maxComponents, maxEntitySystems>>();
-	imGuiSystem = _entityManager.createSystem<ImGuiSystem<maxComponents, maxEntitySystems>>();
-	rendererSystem = _entityManager.createSystem<RenderSystem<maxComponents, maxEntitySystems>>();
-	tickSystem = _entityManager.createSystem<TickSystem<maxComponents, maxEntitySystems>>();
+	auto testSystem = _entityManager.createSystem<TestSystem>();
+	imGuiSystem = _entityManager.createSystem<ImGuiSystem>();
+	rendererSystem = _entityManager.createSystem<RenderSystem>();
+	tickSystem = _entityManager.createSystem<TickSystem>();
 
 	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 }
@@ -84,13 +84,13 @@ void Reborn::Application::Run()
 	{
 		PoolEvents();		
 
-		static_cast<TickSystem<maxComponents, maxEntitySystems>*>(tickSystem)->update();
-		static_cast<ImGuiSystem<maxComponents, maxEntitySystems>*>(imGuiSystem)->process(window->getSDLWindow());
+		static_cast<TickSystem*>(tickSystem)->update();
+		static_cast<ImGuiSystem*>(imGuiSystem)->process(window->getSDLWindow());
 
 		window->Update();
 
 		_renderer->beginFrame();
-		static_cast<RenderSystem<maxComponents, maxEntitySystems>*>(rendererSystem)->process(*_renderer);
+		static_cast<RenderSystem*>(rendererSystem)->process(*_renderer);
 		_renderer->endFrame();
 	}
 
@@ -173,10 +173,7 @@ Reborn::Renderer& Reborn::Application::renderer() {
 }
 
 
-Reborn::EntityManager<
-	Reborn::Application::maxComponents, 
-	Reborn::Application::maxEntitySystems
->& Reborn::Application::entityManager()
+Reborn::EntityManager& Reborn::Application::entityManager()
 {
 	return _entityManager;
 }

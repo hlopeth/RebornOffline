@@ -7,8 +7,7 @@
 #include <backends/imgui_impl_opengl3.h>
 
 namespace Reborn {
-	template<std::size_t _ComponentCount, std::size_t _SystemCount>
-	class ImGuiSystem : public EntitySystem<_ComponentCount, _SystemCount> {
+	class ImGuiSystem : public EntitySystem {
 	public:
 		ImGuiSystem() {
 			setRequirements<ImGuiComponent>();

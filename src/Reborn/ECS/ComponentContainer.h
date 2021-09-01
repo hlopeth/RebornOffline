@@ -3,11 +3,11 @@
 #include "BaseComponentContainer.h"
 
 namespace Reborn {
-    template<typename T, std::size_t ComponentCount, std::size_t SystemCount>
+    template<typename T>
     class ComponentContainer : public BaseComponentContainer
     {
     public:
-        ComponentContainer(std::vector<std::bitset<ComponentCount>>& entityToBitset) :
+        ComponentContainer(std::vector<std::bitset<REBORN_COMPONENTS_COUNT>>& entityToBitset) :
             mEntityToBitset(entityToBitset) {
 
         }
@@ -57,6 +57,6 @@ namespace Reborn {
         std::vector<T> mComponents;
         std::vector<Entity> mComponentToEntity;
         std::unordered_map<Entity, Index> mEntityToComponent;
-        std::vector<std::bitset<ComponentCount>>& mEntityToBitset;
+        std::vector<std::bitset<REBORN_COMPONENTS_COUNT>>& mEntityToBitset;
     };
 }

@@ -806,9 +806,9 @@ void OgreBinarySerializer::ReadAnimationKeyFrames(Animation *anim, VertexAnimati
                 kf.timePos = Read<float>();
                 bool hasNormals = Read<bool>();
 
-                size_t vertexCount = anim->AssociatedVertexData(track)->count;
+                size_t _vertexCount = anim->AssociatedVertexData(track)->count;
                 size_t vertexSize = sizeof(float) * (hasNormals ? 6 : 3);
-                size_t numBytes = vertexCount * vertexSize;
+                size_t numBytes = _vertexCount * vertexSize;
 
                 uint8_t *morphBuffer = ReadBytes(numBytes);
                 kf.buffer = MemoryStreamPtr(new Assimp::MemoryIOStream(morphBuffer, numBytes, true));

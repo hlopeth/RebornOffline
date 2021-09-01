@@ -1,7 +1,7 @@
 #pragma once
 #include "ComponentTypes.h"
 #include "ECS/Component.h"
-#include <Graphics/VertexArrayObject.h>
+#include <Graphics/Mesh.h>
 #include <Graphics/GLSLProgram.h>
 
 namespace Reborn {
@@ -9,13 +9,13 @@ namespace Reborn {
 	{
 	public:
 		RenderComponent() = delete;
-		RenderComponent(const VertexArrayObject& _vao, const GLSLProgram& _program):
-			vao(_vao),
+		RenderComponent(const Mesh& _mesh, const GLSLProgram& _program):
+			mesh(_mesh), //TODO copy!!!
 			program(&_program)
 		{
 
 		}
-		VertexArrayObject vao;
+		Mesh mesh;
 		const GLSLProgram* program;
 	};
 }

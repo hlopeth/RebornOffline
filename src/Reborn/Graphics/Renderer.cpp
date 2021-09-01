@@ -205,12 +205,16 @@ void Reborn::Renderer::create(VertexArrayObject& vao)
 	bind(vao.vbo);
 	upload(vao.vbo);
 
-	//void* offsetAcc = 0;
 	for (int i = 0; i < vao.layout.size(); i++) {
 		auto& attrib = vao.layout[i];
 		glEnableVertexAttribArray(i);
-		glVertexAttribPointer(i, attrib.size, attrib.type, attrib.normalized ,attrib.stride, (void*)0);
-		//offsetAcc += attrib.stride;
+		glVertexAttribPointer(
+			attrib.index, 
+			attrib.size,
+			attrib.type, 
+			attrib.normalized,
+			attrib.stride, 
+			(void*)(attrib.offset * sizeof(float)));
 	}
 }
 
@@ -222,7 +226,7 @@ void Reborn::Renderer::create(GLTexture& texture)
 void Reborn::Renderer::upload(VertexBufferObject& vbo, GLenum usage)
 {
 	bind(vbo);
-	glBufferData(GL_ARRAY_BUFFER, vbo.size * sizeof(float), vbo.vertices.get(), usage);
+	glBufferData(GL_ARRAY_BUFFER, vbo.size * sizeof(float), vbo.vertices, usage);
 }
 
 void Reborn::Renderer::upload(GLTexture& texture, void* data, GLuint mipLevel)
