@@ -63,6 +63,11 @@ bool Reborn::GLSLShaderResouce::unload()
 	return true;
 }
 
+const char* Reborn::GLSLShaderResouce::getTypeStr()
+{
+	return "GLSLShaderResouce";
+}
+
 const Reborn::GLSLProgram& Reborn::GLSLShaderResouce::getProgram() const
 {
 	return program;

@@ -65,6 +65,11 @@ bool Reborn::ModelResource::unload()
 	return true;
 }
 
+const char* Reborn::ModelResource::getTypeStr()
+{
+	return "ModelResource";
+}
+
 const Reborn::Mesh& Reborn::ModelResource::getMesh() const
 {
 	return mesh;

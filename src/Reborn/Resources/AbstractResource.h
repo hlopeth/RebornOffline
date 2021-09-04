@@ -20,6 +20,7 @@ namespace Reborn {
 		//загружает ресурс из ПОЛНОГО (абсолютный путь) имени файла 
 		virtual bool tryLoad(const std::string& filename) = 0;
 		virtual bool unload() = 0;
+		virtual const char* getTypeStr() = 0;
 	protected:
 		ResourceTypeID type;
 		bool loaded = false;

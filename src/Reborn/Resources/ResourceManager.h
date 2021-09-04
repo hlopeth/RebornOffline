@@ -77,6 +77,8 @@ namespace Reborn {
 
 		bool reloadResource(const std::string& filename);
 
+		const std::unordered_map<std::string, AbstractResource*>& getAllResources() const;
+
 	private:
 		std::string getFullFilename(const std::string& filename);
 		std::string assetsPath;

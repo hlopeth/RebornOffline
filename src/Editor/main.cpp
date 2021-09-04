@@ -4,6 +4,7 @@
 #include "CameraController.h"
 #include "TestVector.h"
 #include "TestMatrix.h"
+#include "ResourceView.h"
 
 
 using namespace Reborn;
@@ -12,8 +13,8 @@ Reborn::WindowConfiguration getWindowConfig() {
     Reborn::WindowConfiguration defaultConfig = { "Editor" };
     defaultConfig.x = 100;
     defaultConfig.y = 100;
-    defaultConfig.width = 800;
-    defaultConfig.height = 600;
+    defaultConfig.width = 1000;
+    defaultConfig.height = 800;
     defaultConfig.resizable = true;
     defaultConfig.fullscreen = false;
 
@@ -44,10 +45,14 @@ void drawDockspace(Entity cameraControllerEntity, ImGuiComponent& _this) {
     dockspace_id = ImGui::GetID("MainDockSpace");
     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
     
+
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("File"))
         {
+            if (ImGui::MenuItem("Resources", "", false)) {
+                showResourceView = true;
+            }
             if (ImGui::MenuItem("Exit", "", false))
             {
                 Application::get()->eventDispatcher().triggerEvent(Reborn::ApplicationShouldCloseEvent());
@@ -56,13 +61,14 @@ void drawDockspace(Entity cameraControllerEntity, ImGuiComponent& _this) {
         }
         ImGui::EndMenuBar();
     }
-    ImGui::End();
+    ImGui::End(); 
+    drawResourceView();
 }
 
 void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
-    static ImVec4 lightColor = ImVec4(1.f, 1.f, 1.f, 1.0f);
+    static ImVec4 lightColor = ImVec4(.5f, .5f, .5f, 1.0f);
     static float lightStr = 1.0;
-    static ImVec4 ambientColor = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+    static ImVec4 ambientColor = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
     bool p_open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
 
@@ -150,7 +156,7 @@ public:
         const auto* res = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolyrat/rat.fbx");
         const Mesh& m = res->getMesh();
 
-        renderer().getCamera().setPosition(Vector3(0, 3, 3));
+        renderer().getCamera().setPosition(Vector3(5, 5, -8));
 
         cameraController.init(this);
     }

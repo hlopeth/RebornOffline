@@ -33,6 +33,11 @@ bool Reborn::TextResource::unload()
 	return true;
 }
 
+const char* Reborn::TextResource::getTypeStr()
+{
+	return "TextResource";
+}
+
 const std::string& Reborn::TextResource::getText() const
 {
 	return text;

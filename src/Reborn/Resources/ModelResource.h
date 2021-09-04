@@ -8,6 +8,7 @@ namespace Reborn {
 		ModelResource();
 		virtual bool tryLoad(const std::string& path) override;
 		virtual bool unload() override;
+		virtual const char* getTypeStr() override;
 		const Mesh& getMesh() const;
 	private:
 		Mesh mesh;

@@ -49,6 +49,11 @@ bool Reborn::ResourceManager::reloadResource(const std::string& filename)
 	}
 }
 
+const std::unordered_map<std::string, Reborn::AbstractResource*>& Reborn::ResourceManager::getAllResources() const
+{
+	return filenameToData;
+}
+
 std::string Reborn::ResourceManager::getFullFilename(const std::string& filename)
 {
 	return assetsPath + '/' + filename;
