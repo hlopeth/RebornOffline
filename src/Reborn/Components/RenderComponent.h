@@ -10,19 +10,10 @@ namespace Reborn {
 	public:
 		RenderComponent() = delete;
 		RenderComponent(const Mesh& _mesh, const GLSLProgram& _program):
-			mesh(_mesh), //TODO copy!!!
+			mesh(&_mesh),
 			program(&_program)
-		{
-			LOG_DEBUG << "RenderComponent copy";
-
-		}
-		RenderComponent(Mesh&& _mesh, const GLSLProgram& _program) :
-			mesh(std::move(_mesh)),
-			program(&_program)
-		{
-
-		}
-		Mesh mesh;
+		{}
+		const Mesh* mesh;
 		const GLSLProgram* program;
 	};
 }

@@ -96,11 +96,15 @@ void Reborn::Renderer::endFrame()
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
 }
 
-void Reborn::Renderer::drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset)
+void Reborn::Renderer::drawVAO(const VertexArrayObject& vao, GLuint offset)
 {
 	bind(vao);
 	glDrawElements(GL_TRIANGLES, vao.ebo.size, GL_UNSIGNED_INT, (void*)offset);
-	//glDrawArrays(GL_TRIANGLES, offset, vertices);
+}
+
+void Reborn::Renderer::drawMesh(const Mesh& mesh)
+{
+	drawVAO(mesh.getVAO());
 }
 
 const SDL_GLContext& Reborn::Renderer::getContext()
@@ -290,17 +294,17 @@ void Reborn::Renderer::setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.id);
 }
 
-void Reborn::Renderer::bind(BufferObject& buf)
+void Reborn::Renderer::bind(const BufferObject& buf)
 {
 	glBindBuffer(buf.type, buf.id);
 }
 
-void Reborn::Renderer::bind(VertexArrayObject& vao)
+void Reborn::Renderer::bind(const VertexArrayObject& vao)
 {
 	glBindVertexArray(vao.id);
 }
 
-void Reborn::Renderer::bind(Framebuffer& fbo)
+void Reborn::Renderer::bind(const Framebuffer& fbo)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.id);
 }

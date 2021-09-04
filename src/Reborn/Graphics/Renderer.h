@@ -8,6 +8,7 @@
 #include "GLTexture.h"
 #include <Math/Matrix.h>
 #include <Math/Vector.h>
+#include "Mesh.h"
 #include "Camera.h"
 
 namespace Reborn {
@@ -16,7 +17,8 @@ namespace Reborn {
 		Renderer(Window& window, const Vector2& sceneFraimbufferSize = Vector2(500, 500));
 		void beginFrame();
 		void endFrame();
-		void drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset = 0);
+		void drawVAO(const VertexArrayObject& vao, GLuint offset = 0);
+		void drawMesh(const Mesh& mesh);
 		const SDL_GLContext& getContext();
 		Camera& getCamera();
 		const Camera& getCamera() const;
@@ -42,9 +44,9 @@ namespace Reborn {
 		void updateTextureParameters(GLTexture& texture);
 		void setFramebufferTexture(Framebuffer& fbo, GLTexture& texture, GLenum attachment);
 		void setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment);
-		void bind(BufferObject& buf);
-		void bind(VertexArrayObject& vao);
-		void bind(Framebuffer& fbo);
+		void bind(const BufferObject& buf);
+		void bind(const VertexArrayObject& vao);
+		void bind(const Framebuffer& fbo);
 		void bindMainFramebuffer();
 		void bind(GLTexture& texture);
 		void bind(Renderbuffer& rbo);

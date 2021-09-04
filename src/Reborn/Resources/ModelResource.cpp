@@ -4,6 +4,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <Core/Application.h>
+
 Reborn::ModelResource::ModelResource(): AbstractResource(0x6fc4f895)
 {
 }
@@ -48,6 +50,9 @@ bool Reborn::ModelResource::tryLoad(const std::string& path)
 		}
 
 		mesh = Mesh(numIndices, indices, firstMesh->mNumVertices, positions, normals);
+
+		Application::get()->renderer().create(mesh.getVAO());
+		loaded = true;
 		return true;
 	}
 	return false;
@@ -55,6 +60,8 @@ bool Reborn::ModelResource::tryLoad(const std::string& path)
 
 bool Reborn::ModelResource::unload()
 {
+	Application::get()->renderer().destroy(mesh.getVAO());
+	loaded = false;
 	return true;
 }
 

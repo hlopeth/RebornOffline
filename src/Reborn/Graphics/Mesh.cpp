@@ -32,6 +32,7 @@ Reborn::Mesh::Mesh(
     if (_UV1 != nullptr) {
         memcpy(_vertexData.get() + uv1Offset(), _UV1, sizeof(Vector2) * _vertexCount);
     }
+    createVAO();
 }
 
 Reborn::Mesh::Mesh(const Mesh& mesh):
@@ -45,6 +46,7 @@ Reborn::Mesh::Mesh(const Mesh& mesh):
     )
 {
     LOG_DEBUG << "copy constructor";
+    createVAO();
 }
 
 Reborn::Mesh::Mesh(Mesh && mesh):
@@ -65,6 +67,7 @@ Reborn::Mesh::Mesh(Mesh && mesh):
     mesh._hasUV1 = false;
     LOG_DEBUG << "move constructor";
 
+    createVAO();
 }
 
 Reborn::Mesh& Reborn::Mesh::operator=(const Mesh & mesh)
@@ -91,6 +94,7 @@ Reborn::Mesh& Reborn::Mesh::operator=(const Mesh & mesh)
     if (mesh.UV1() != nullptr) {
         memcpy(_vertexData.get() + uv1Offset(), mesh.UV1(), sizeof(Vector2) * _vertexCount);
     }
+    createVAO();
     return *this;
 }
 
@@ -114,17 +118,14 @@ bool Reborn::Mesh::hasIndices() const
     return _hasIndeces;
 }
 
-Reborn::VertexArrayObject Reborn::Mesh::getVAO() const
+const Reborn::VertexArrayObject& Reborn::Mesh::getVAO() const
 {
-    int vertexSize = _hasPositions * 3 + _hasNormals * 3 + _hasUV1 * 2;
-    Reborn::VertexBufferObject vbo(_vertexData.get(), _vertexCount * vertexSize);
-    Reborn::ElementBufferObject ebo(_indexData.get(), _indexCount);
-    std::vector<VertexAttribute> attributes{
-        positionVertexAttribute(false, 0, positionsOffset()),
-        normalVertexAttribute(false, 0, normalsOffset()),
-        uv1VertexAttribute(false, 0, uv1Offset())
-    };
-    return VertexArrayObject(vbo, ebo, attributes);
+    return _vao;
+}
+
+Reborn::VertexArrayObject& Reborn::Mesh::getVAO()
+{
+    return _vao;
 }
 
 Reborn::Vector3* Reborn::Mesh::positions() const
@@ -190,4 +191,17 @@ int Reborn::Mesh::normalsOffset() const
 int Reborn::Mesh::uv1Offset() const
 {
     return (_hasPositions * 3 + _hasNormals * 3) * _vertexCount;
+}
+
+void Reborn::Mesh::createVAO()
+{
+    int vertexSize = _hasPositions * 3 + _hasNormals * 3 + _hasUV1 * 2;
+    Reborn::VertexBufferObject vbo(_vertexData.get(), _vertexCount * vertexSize);
+    Reborn::ElementBufferObject ebo(_indexData.get(), _indexCount);
+    std::vector<VertexAttribute> attributes{
+        positionVertexAttribute(false, 0, positionsOffset()),
+        normalVertexAttribute(false, 0, normalsOffset()),
+        uv1VertexAttribute(false, 0, uv1Offset())
+    };
+    _vao = VertexArrayObject(vbo, ebo, attributes);
 }

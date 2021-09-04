@@ -5,6 +5,7 @@
 
 namespace Reborn {
 	struct VertexArrayObject {
+		VertexArrayObject() = default;
 		VertexArrayObject(
 			const VertexBufferObject& _vbo,
 			const ElementBufferObject& _ebo,
@@ -14,8 +15,8 @@ namespace Reborn {
 			ebo(_ebo),
 			layout(_layout) 
 		{}
-		VertexBufferObject vbo;
-		ElementBufferObject ebo;
+		VertexBufferObject vbo = VertexBufferObject(nullptr, 0);
+		ElementBufferObject ebo = ElementBufferObject(nullptr, 0);
 		std::vector<VertexAttribute> layout;
 		GLuint id = -1;
 	};

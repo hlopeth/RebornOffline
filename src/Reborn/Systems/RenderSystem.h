@@ -15,50 +15,11 @@ namespace Reborn {
 		}
 
 		virtual void onManagedEntityAdded([[maybe_unused]] Entity entity) override {
-			auto& entityManager = Application::get()->entityManager();
-			auto& renderComponent = entityManager.getComponent<RenderComponent>(entity);
-			Mesh* meshRef = &renderComponent.mesh;
-
-			auto search = meshToVAO.find(meshRef);
-			if (search == meshToVAO.end()) {
-				meshToVAO.insert({ meshRef, RefCounter<VertexArrayObject>(meshRef->getVAO()) });
-				vaoToCreate.push_back(&meshToVAO.at(meshRef).data);
-			} else {
-				search->second.addRef();
-			}
 		};
 		virtual void onManagedEntityRemoved([[maybe_unused]] Entity entity) override {
-			auto& entityManager = Application::get()->entityManager();
-			auto& renderComponent = entityManager.getComponent<RenderComponent>(entity);
-			Mesh* meshRef = &renderComponent.mesh;
-
-			auto search = meshToVAO.find(meshRef);
-			if (search == meshToVAO.end()) {
-				LOG_WARN << "RenderSystem::onManagedEntityRemoved: VertexArrayObject was deleted before RenderComponent";
-			} else {
-				RefCounter<VertexArrayObject>& refCounter = search->second;
-				refCounter.removeRef();
-
-				if (!refCounter.hasRefs()) {
-					std::remove(vaoToCreate.begin(), vaoToCreate.end(), &refCounter.data);
-					meshToVAO.erase(search);
-					Application::get()->renderer().destroy(refCounter.data);
-				}
-			}
 		};
 
-		void process(Renderer& renderer) {
-
-			for (auto i = 0; i < vaoToCreate.size(); i++) {
-				renderer.create(*vaoToCreate[i]);
-			}
-			vaoToCreate.clear();
-
-			for (auto i = 0; i < vaoToDestroy.size(); i++) {
-				renderer.destroy(vaoToDestroy[i]);
-			}
-			vaoToDestroy.clear();
-			
+		void process(Renderer& renderer) {			
 			const Matrix4& proj = renderer.getCamera().getViewProjection();
 
 			auto& entityManager = Application::get()->entityManager();
@@ -73,12 +34,10 @@ namespace Reborn {
 				renderer.setUniform(*renderComponent.program, "uNormalTransform", transform.inverse(), false);
 				renderer.setUniform(*renderComponent.program, "uLightColor", renderer.lightColor * renderer.lightStr);
 				renderer.setUniform(*renderComponent.program, "uAmbientColor", renderer.ambientColor);
-				renderer.drawVAO(meshToVAO.at(&renderComponent.mesh).data, renderComponent.mesh.vertexCount());
+
+				renderer.drawMesh(*renderComponent.mesh);
 			}
 		};
 	private:
-		std::unordered_map<Mesh*, RefCounter<VertexArrayObject>> meshToVAO;
-		std::vector<VertexArrayObject*> vaoToCreate;
-		std::vector<VertexArrayObject> vaoToDestroy;
 	};
 }

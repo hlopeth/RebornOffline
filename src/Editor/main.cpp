@@ -78,23 +78,18 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
     
     const char* model_items[] = { "rat", "deer", "cat", "wolf"};
     std::string model_paths[] = { 
-        "models/lowpolyrat/rat.fbx"
-        "models/lowpolydeer/deer.fbx"
-        "models/lowpolycat/cat.fbx"
+        "models/lowpolyrat/rat.fbx",
+        "models/lowpolydeer/deer.fbx",
+        "models/lowpolycat/cat.fbx",
         "models/lowpolywolf/wolf.fbx"
     };
     static int model_item_current = 3;
-    ImGui::Combo("Model", &model_item_current, model_items, IM_ARRAYSIZE(model_items));
-
-
-    Renderer& renderer = Application::get()->renderer();
-
-    if (ImGui::Button("Apply")) {
-        Application::get()->entityManager().removeComponent<RenderComponent>(mainEntity);
+    if (ImGui::Combo("Model", &model_item_current, model_items, IM_ARRAYSIZE(model_items))) {
+        auto& rc = Application::get()->entityManager().getComponent<RenderComponent>(mainEntity);
         
-        auto* modelRes = Application::get()->resourceManager().getResourceOrCreate<ModelResource>(model_paths[model_item_current]);
-        auto* progrRes = Application::get()->resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/lowpoly");
-        Application::get()->entityManager().addComponent<RenderComponent>(mainEntity, modelRes->getMesh(), progrRes->getProgram());
+        const std::string& filename = model_paths[model_item_current];
+        auto* modelRes = Application::get()->resourceManager().getResourceOrCreate<ModelResource>(filename);
+        rc.mesh = &modelRes->getMesh();
         //renderer.setSceneFramebufferSize(rects[item_current]);
     }
 
@@ -104,6 +99,7 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
     }
     ImGui::End();
 
+    Renderer& renderer = Application::get()->renderer();
     //renderer.setClearColor(Vector3(color.x, color.y, color.z));
     renderer.lightColor = Vector3(lightColor.x, lightColor.y, lightColor.z);
     renderer.ambientColor = Vector3(ambientColor.x, ambientColor.y, ambientColor.z);
