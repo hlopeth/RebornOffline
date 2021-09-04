@@ -32,22 +32,6 @@ Reborn::Mesh::Mesh(
     if (_UV1 != nullptr) {
         memcpy(_vertexData.get() + uv1Offset(), _UV1, sizeof(Vector2) * _vertexCount);
     }
-    LOG_DEBUG << "constructor";
-    /*for (int i = 0; i < _indexCount; i++) {
-        LOG_DEBUG << indices()[i];
-    }
-
-    for (size_t i = 0; i < _vertexCount; i++) {
-        LOG_DEBUG << positions()[i];
-    }
-    if (hasNormals()) {
-        for (size_t i = 0; i < _vertexCount; i++) {
-            LOG_DEBUG << normals()[i];
-        }
-    }
-    for (size_t i = 0; i < _vertexCount * 3; i++) {
-        LOG_DEBUG << _vertexData[i];
-    }*/
 }
 
 Reborn::Mesh::Mesh(const Mesh& mesh):

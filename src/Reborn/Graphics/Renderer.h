@@ -62,6 +62,9 @@ namespace Reborn {
 
 		~Renderer();
 
+		Vector3 lightColor = Vector3(1.0);
+		float lightStr = 1.0;
+		Vector3 ambientColor = Vector3(1.0);
 	private:
 		bool initImGui(SDL_Window* window);
 		SDL_GLContext _context;

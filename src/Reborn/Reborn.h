@@ -30,6 +30,7 @@
 
 #include "Resources/TextResource.h"
 #include "Resources/GLSLShaderResource.h"
+#include "Resources/ModelResource.h"
 
 #include "Graphics/Mesh.h"
 

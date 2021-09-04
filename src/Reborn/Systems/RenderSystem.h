@@ -70,6 +70,9 @@ namespace Reborn {
 				renderer.useProgram(*renderComponent.program);
 				Matrix4 mvp = proj * transform;
 				renderer.setUniform(*renderComponent.program, "uTransform", mvp, true);
+				renderer.setUniform(*renderComponent.program, "uNormalTransform", transform.inverse(), false);
+				renderer.setUniform(*renderComponent.program, "uLightColor", renderer.lightColor * renderer.lightStr);
+				renderer.setUniform(*renderComponent.program, "uAmbientColor", renderer.ambientColor);
 				renderer.drawVAO(meshToVAO.at(&renderComponent.mesh).data, renderComponent.mesh.vertexCount());
 			}
 		};
