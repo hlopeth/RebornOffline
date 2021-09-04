@@ -30,19 +30,19 @@ namespace Reborn {
 		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix4& value, bool transpose = true);
 
 		void create(GLSLProgram& program);
-		void create(VertexBufferObject& vbo);
+		void create(BufferObject& buf);
 		void create(Framebuffer& fbo);
 		void create(Renderbuffer& rbo);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);
-		void upload(VertexBufferObject& vbo, GLenum usage = GL_STATIC_DRAW);
+		void upload(BufferObject& buf, GLenum usage = GL_STATIC_DRAW);
 		void upload(GLTexture& texture, void* data, GLuint mipLevel = 0);
 		void upload(Renderbuffer& rbo);
 		void updateTextureParameters(GLTexture& texture);
 		void setFramebufferTexture(Framebuffer& fbo, GLTexture& texture, GLenum attachment);
 		void setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment);
-		void bind(VertexBufferObject& vbo);
+		void bind(BufferObject& buf);
 		void bind(VertexArrayObject& vao);
 		void bind(Framebuffer& fbo);
 		void bindMainFramebuffer();

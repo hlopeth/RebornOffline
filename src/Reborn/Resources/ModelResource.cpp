@@ -1,13 +1,13 @@
 #include "Core.h"
-#include "MeshResource.h"
+#include "ModelResource.h"
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
 
-Reborn::MeshResource::MeshResource(): AbstractResource(0x6fc4f895)
+Reborn::ModelResource::ModelResource(): AbstractResource(0x6fc4f895)
 {
 }
 
-bool Reborn::MeshResource::tryLoad(const std::string& path)
+bool Reborn::ModelResource::tryLoad(const std::string& path)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, 0);
@@ -19,11 +19,13 @@ bool Reborn::MeshResource::tryLoad(const std::string& path)
 		return false;
 	}
 
-
+	if (scene->HasMeshes()) {
+		aiMesh* firstMesh = scene->mMeshes[0];
+	}
 	return false;
 }
 
-bool Reborn::MeshResource::unload()
+bool Reborn::ModelResource::unload()
 {
 	return false;
 }

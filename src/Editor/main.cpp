@@ -216,7 +216,22 @@ private:
             Vector3(-1.f,  1.f, -1.f)
         };
 
-        Mesh cubeMesh(0, nullptr, 6 * 6, vertices);
+        const uint32_t indices[] = {
+            0,1,2,
+            3,4,5,
+            6,7,8,
+            9,10,11,
+            12,13,14,
+            15,16,17,
+            18,19,20,
+            21,22,23,
+            24,25,26,
+            27,28,29,
+            30,31,32,
+            33,34,35
+        };
+
+        Mesh cubeMesh(36, indices, 36, vertices);
 
         cubeEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(cubeEntity);

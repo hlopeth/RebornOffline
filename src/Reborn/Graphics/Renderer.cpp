@@ -99,7 +99,8 @@ void Reborn::Renderer::endFrame()
 void Reborn::Renderer::drawVAO(VertexArrayObject& vao, GLuint vertices, GLuint offset)
 {
 	bind(vao);
-	glDrawArrays(GL_TRIANGLES, offset, vertices);
+	glDrawElements(GL_TRIANGLES, vao.ebo.size, GL_UNSIGNED_INT, (void*)offset);
+	//glDrawArrays(GL_TRIANGLES, offset, vertices);
 }
 
 const SDL_GLContext& Reborn::Renderer::getContext()
@@ -181,9 +182,9 @@ void Reborn::Renderer::create(GLSLProgram& program)
 	program.id = shaderProgram;
 }
 
-void Reborn::Renderer::create(VertexBufferObject& vbo)
+void Reborn::Renderer::create(BufferObject& buf)
 {
-	glGenBuffers(1, &(vbo.id));
+	glGenBuffers(1, &(buf.id));
 }
 
 void Reborn::Renderer::create(Framebuffer& fbo)
@@ -205,6 +206,10 @@ void Reborn::Renderer::create(VertexArrayObject& vao)
 	bind(vao.vbo);
 	upload(vao.vbo);
 
+	create(vao.ebo);
+	bind(vao.ebo);
+	upload(vao.ebo);
+
 	for (int i = 0; i < vao.layout.size(); i++) {
 		auto& attrib = vao.layout[i];
 		glEnableVertexAttribArray(i);
@@ -223,10 +228,10 @@ void Reborn::Renderer::create(GLTexture& texture)
 	glGenTextures(1, &(texture.id));
 }
 
-void Reborn::Renderer::upload(VertexBufferObject& vbo, GLenum usage)
+void Reborn::Renderer::upload(BufferObject& buf, GLenum usage)
 {
-	bind(vbo);
-	glBufferData(GL_ARRAY_BUFFER, vbo.size * sizeof(float), vbo.vertices, usage);
+	bind(buf);
+	glBufferData(buf.type, buf.byteSize, buf.data, usage);
 }
 
 void Reborn::Renderer::upload(GLTexture& texture, void* data, GLuint mipLevel)
@@ -285,9 +290,9 @@ void Reborn::Renderer::setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.id);
 }
 
-void Reborn::Renderer::bind(VertexBufferObject& vbo)
+void Reborn::Renderer::bind(BufferObject& buf)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
+	glBindBuffer(buf.type, buf.id);
 }
 
 void Reborn::Renderer::bind(VertexArrayObject& vao)

@@ -134,12 +134,13 @@ Reborn::VertexArrayObject Reborn::Mesh::getVAO() const
 {
     int vertexSize = _hasPositions * 3 + _hasNormals * 3 + _hasUV1 * 2;
     Reborn::VertexBufferObject vbo(_vertexData.get(), _vertexCount * vertexSize);
+    Reborn::ElementBufferObject ebo(_indexData.get(), _indexCount);
     std::vector<VertexAttribute> attributes{
         positionVertexAttribute(false, 0, positionsOffset()),
         normalVertexAttribute(false, 0, normalsOffset()),
         uv1VertexAttribute(false, 0, uv1Offset())
     };
-    return VertexArrayObject(vbo, attributes);
+    return VertexArrayObject(vbo, ebo, attributes);
 }
 
 Reborn::Vector3* Reborn::Mesh::positions() const

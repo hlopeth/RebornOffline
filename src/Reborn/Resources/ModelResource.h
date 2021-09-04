@@ -1,11 +1,14 @@
 #pragma once
 #include "AbstractResource.h"
+#include "Graphics/Mesh.h"
 
 namespace Reborn {
-	class MeshResource : public AbstractResource {
+	class ModelResource : public AbstractResource {
 	public:
-		MeshResource();
+		ModelResource();
 		virtual bool tryLoad(const std::string& path) override;
 		virtual bool unload() override;
+	private:
+		Mesh mesh;
 	};
 }
