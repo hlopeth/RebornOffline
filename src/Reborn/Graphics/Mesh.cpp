@@ -32,6 +32,22 @@ Reborn::Mesh::Mesh(
     if (_UV1 != nullptr) {
         memcpy(_vertexData.get() + uv1Offset(), _UV1, sizeof(Vector2) * _vertexCount);
     }
+    LOG_DEBUG << "constructor";
+    /*for (int i = 0; i < _indexCount; i++) {
+        LOG_DEBUG << indices()[i];
+    }
+
+    for (size_t i = 0; i < _vertexCount; i++) {
+        LOG_DEBUG << positions()[i];
+    }
+    if (hasNormals()) {
+        for (size_t i = 0; i < _vertexCount; i++) {
+            LOG_DEBUG << normals()[i];
+        }
+    }
+    for (size_t i = 0; i < _vertexCount * 3; i++) {
+        LOG_DEBUG << _vertexData[i];
+    }*/
 }
 
 Reborn::Mesh::Mesh(const Mesh& mesh):
@@ -43,7 +59,56 @@ Reborn::Mesh::Mesh(const Mesh& mesh):
         mesh.normals(),
         mesh.UV1()
     )
-{}
+{
+    LOG_DEBUG << "copy constructor";
+}
+
+Reborn::Mesh::Mesh(Mesh && mesh):
+    _vertexData(std::move(mesh._vertexData)),
+    _indexData(std::move(mesh._indexData)),
+    _indexCount(mesh._indexCount),
+    _vertexCount(mesh._vertexCount),
+    _hasIndeces(mesh._hasIndeces),
+    _hasPositions(mesh._hasPositions),
+    _hasNormals(mesh._hasNormals),
+    _hasUV1(mesh._hasUV1)
+{
+    mesh._indexCount = 0;
+    mesh._hasIndeces = false;
+    mesh._vertexCount = 0;
+    mesh._hasPositions = false;
+    mesh._hasNormals= false;
+    mesh._hasUV1 = false;
+    LOG_DEBUG << "move constructor";
+
+}
+
+Reborn::Mesh& Reborn::Mesh::operator=(const Mesh & mesh)
+{
+    _indexCount = mesh.indexCount();
+    _vertexCount = mesh.vertexCount();
+
+    _indexData = std::make_unique<uint32_t[]>(_indexCount);
+    _hasIndeces = true;
+    memcpy(_indexData.get(), mesh.indices(), sizeof(uint32_t) * _indexCount);
+
+    _hasPositions = mesh.positions() != nullptr;
+    _hasNormals = mesh.normals() != nullptr;
+    _hasUV1 = mesh.UV1() != nullptr;
+
+    int vertexSize = _hasPositions * 3 + _hasNormals * 3 + _hasUV1 * 2;
+    _vertexData = std::make_unique<float[]>(vertexSize * _vertexCount);
+
+    memcpy(_vertexData.get() + positionsOffset(), mesh.positions(), sizeof(Vector3) * _vertexCount);
+
+    if (mesh.normals() != nullptr) {
+        memcpy(_vertexData.get() + normalsOffset(), mesh.normals(), sizeof(Vector3) * _vertexCount);
+    }
+    if (mesh.UV1() != nullptr) {
+        memcpy(_vertexData.get() + uv1Offset(), mesh.UV1(), sizeof(Vector2) * _vertexCount);
+    }
+    return *this;
+}
 
 bool Reborn::Mesh::hasPositions() const
 {

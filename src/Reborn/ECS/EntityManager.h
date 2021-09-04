@@ -31,15 +31,15 @@ namespace Reborn {
         };
 
         void removeEntity(Entity cameraControllerEntity) {
+            // Send message to systems
+            for (auto& system : mSystems)
+                system->onEntityRemoved(cameraControllerEntity);
             // Remove components
             for (std::size_t i = 0; i < REBORN_COMPONENTS_COUNT; ++i)
             {
                 if (mComponentContainers[i])
                     mComponentContainers[i]->tryRemove(cameraControllerEntity);
             }
-            // Send message to systems
-            for (auto& system : mSystems)
-                system->onEntityRemoved(cameraControllerEntity);
             // Remove entity
             mEntities.remove(cameraControllerEntity);
         };

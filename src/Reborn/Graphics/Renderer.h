@@ -39,7 +39,6 @@ namespace Reborn {
 		void upload(VertexBufferObject& vbo, GLenum usage = GL_STATIC_DRAW);
 		void upload(GLTexture& texture, void* data, GLuint mipLevel = 0);
 		void upload(Renderbuffer& rbo);
-		void createLayout(VertexArrayObject vao);
 		void updateTextureParameters(GLTexture& texture);
 		void setFramebufferTexture(Framebuffer& fbo, GLTexture& texture, GLenum attachment);
 		void setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment);
@@ -52,6 +51,7 @@ namespace Reborn {
 		bool isFramebufferComplete(Framebuffer& fbo);
 		void destroy(Framebuffer& fbo);
 		void destroy(GLSLProgram& program);
+		void destroy(VertexArrayObject& vao);
 		void useProgram(const GLSLProgram& program);
 		const GLTexture& getSceneTexture();
 

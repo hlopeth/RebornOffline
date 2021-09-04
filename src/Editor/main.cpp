@@ -132,7 +132,7 @@ public:
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
 
-        createTriangleEntity(mainEntity);
+        createCubeEntity(mainEntity);
 
         renderer().getCamera().setPosition(Vector3(0, 3, 3));
 
@@ -140,7 +140,7 @@ public:
     }
 
     ~EditorApp() {
-
+        entityManager().removeEntity(mainEntity);
     }
 private:
     void setupResourceManager() {
@@ -162,72 +162,67 @@ private:
         const uint32_t indeces[] = { 0, 1 ,2 };
         Mesh triangleMesh(3, indeces, 3, vertices);
 
+
         triangleEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(triangleEntity);
-        //entityManager().getComponent<Transform3DComponent>(triangleEntity).position.z = -3;
-        entityManager().addComponent<RenderComponent>(triangleEntity, triangleMesh, shaderResource->getProgram());
+        entityManager().addComponent<RenderComponent>(triangleEntity, std::move(triangleMesh), shaderResource->getProgram());
         return true;
     }
 
-    /*bool createCubeEntity(Entity& cubeEntity) {
+    bool createCubeEntity(Entity& cubeEntity) {
         const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/simple_triangle");
 
-        std::shared_ptr<float[]> vertices(new float[] {
-            -1.f, -1.f, -1.f,
-             1.f, -1.f, -1.f,
-             1.f,  1.f, -1.f,
-             1.f,  1.f, -1.f,
-            -1.f,  1.f, -1.f,
-            -1.f, -1.f, -1.f,
+        const Vector3 vertices[] = {
+            Vector3(-1.f, -1.f, -1.f),
+            Vector3(1.f, -1.f, -1.f),
+            Vector3(1.f,  1.f, -1.f),
+            Vector3(1.f,  1.f, -1.f),
+            Vector3(-1.f,  1.f, -1.f),
+            Vector3(-1.f, -1.f, -1.f),
 
-            -1.f, -1.f,  1.f,
-             1.f, -1.f,  1.f,
-             1.f,  1.f,  1.f,
-             1.f,  1.f,  1.f,
-            -1.f,  1.f,  1.f,
-            -1.f, -1.f,  1.f,
+            Vector3(-1.f, -1.f,  1.f),
+            Vector3(1.f, -1.f,  1.f),
+            Vector3(1.f,  1.f,  1.f),
+            Vector3(1.f,  1.f,  1.f),
+            Vector3(-1.f,  1.f,  1.f),
+            Vector3(-1.f, -1.f,  1.f),
 
-            -1.f,  1.f,  1.f,
-            -1.f,  1.f, -1.f,
-            -1.f, -1.f, -1.f,
-            -1.f, -1.f, -1.f,
-            -1.f, -1.f,  1.f,
-            -1.f,  1.f,  1.f,
+            Vector3(-1.f,  1.f,  1.f),
+            Vector3(-1.f,  1.f, -1.f),
+            Vector3(-1.f, -1.f, -1.f),
+            Vector3(-1.f, -1.f, -1.f),
+            Vector3(-1.f, -1.f,  1.f),
+            Vector3(-1.f,  1.f,  1.f),
 
-             1.f,  1.f,  1.f,
-             1.f,  1.f, -1.f,
-             1.f, -1.f, -1.f,
-             1.f, -1.f, -1.f,
-             1.f, -1.f,  1.f,
-             1.f,  1.f,  1.f,
+            Vector3(1.f,  1.f,  1.f),
+            Vector3(1.f,  1.f, -1.f),
+            Vector3(1.f, -1.f, -1.f),
+            Vector3(1.f, -1.f, -1.f),
+            Vector3(1.f, -1.f,  1.f),
+            Vector3(1.f,  1.f,  1.f),
 
-            -1.f, -1.f, -1.f,
-             1.f, -1.f, -1.f,
-             1.f, -1.f,  1.f,
-             1.f, -1.f,  1.f,
-            -1.f, -1.f,  1.f,
-            -1.f, -1.f, -1.f,
+            Vector3(-1.f, -1.f, -1.f),
+            Vector3(1.f, -1.f, -1.f),
+            Vector3(1.f, -1.f,  1.f),
+            Vector3(1.f, -1.f,  1.f),
+            Vector3(-1.f, -1.f,  1.f),
+            Vector3(-1.f, -1.f, -1.f),
 
-            -1.f,  1.f, -1.f,
-             1.f,  1.f, -1.f,
-             1.f,  1.f,  1.f,
-             1.f,  1.f,  1.f,
-            -1.f,  1.f,  1.f,
-            -1.f,  1.f, -1.f,
-            });
-        VertexBufferObject vbo(vertices, 3 * 6 * 6);
-        std::vector<VertexAttribute> layout;
-        layout.emplace_back(3, 3 * sizeof(float), GL_FALSE, GL_FLOAT);
-        VertexArrayObject triangleVAO(vbo, layout);
+            Vector3(-1.f,  1.f, -1.f),
+            Vector3(1.f,  1.f, -1.f),
+            Vector3(1.f,  1.f,  1.f),
+            Vector3(1.f,  1.f,  1.f),
+            Vector3(-1.f,  1.f,  1.f),
+            Vector3(-1.f,  1.f, -1.f)
+        };
 
-        renderer().create(triangleVAO);
+        Mesh cubeMesh(0, nullptr, 6 * 6, vertices);
 
         cubeEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(cubeEntity);
-        //entityManager().getComponent<Transform3DComponent>(cubeEntity).position.z = -3;
-        entityManager().addComponent<RenderComponent>(cubeEntity, triangleVAO, shaderResource->getProgram());
+        entityManager().addComponent<RenderComponent>(cubeEntity, std::move(cubeMesh), shaderResource->getProgram());
         return true;
-    }*/
+    }
 
     CameraController cameraController;
 };

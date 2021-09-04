@@ -249,11 +249,6 @@ void Reborn::Renderer::upload(Renderbuffer& rbo)
 	glRenderbufferStorage(GL_RENDERBUFFER, rbo.internalFormat, rbo.width, rbo.height);
 }
 
-void Reborn::Renderer::createLayout(VertexArrayObject vao)
-{
-
-}
-
 void Reborn::Renderer::updateTextureParameters(GLTexture& texture)
 {
 	bind(texture);
@@ -362,6 +357,12 @@ void Reborn::Renderer::destroy(GLSLProgram& program)
 {
 	glDeleteProgram(program.id);
 	program.id = -1;
+}
+
+void Reborn::Renderer::destroy(VertexArrayObject& vao)
+{
+	glDeleteBuffers(1, &vao.vbo.id);
+	glDeleteVertexArrays(1, &vao.id);
 }
 
 void Reborn::Renderer::useProgram(const GLSLProgram& program)

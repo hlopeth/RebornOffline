@@ -13,6 +13,13 @@ namespace Reborn {
 			mesh(_mesh), //TODO copy!!!
 			program(&_program)
 		{
+			LOG_DEBUG << "RenderComponent copy";
+
+		}
+		RenderComponent(Mesh&& _mesh, const GLSLProgram& _program) :
+			mesh(std::move(_mesh)),
+			program(&_program)
+		{
 
 		}
 		Mesh mesh;

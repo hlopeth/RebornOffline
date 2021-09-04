@@ -15,8 +15,9 @@ namespace Reborn {
 			const Vector2* _UV1 = nullptr
 			);
 		Mesh(
-			const Mesh& mesh
+			Mesh&& mesh
 		);
+		Mesh& operator=(const Mesh& mesh);
 		bool hasPositions() const;
 		bool hasNormals() const;
 		bool hasUV1() const;
@@ -28,6 +29,11 @@ namespace Reborn {
 		uint32_t* indices() const;
 		size_t vertexCount() const;
 		size_t indexCount() const;
+	public:
+		//prevent copy
+		Mesh(
+			const Mesh& mesh
+		);
 	private:
 		int positionsOffset() const;
 		int normalsOffset() const;

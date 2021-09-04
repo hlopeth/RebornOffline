@@ -4,7 +4,7 @@ namespace Reborn {
 	template<class T>
 	class RefCounter {
 	public:
-		RefCounter(T _data): data(_data) {}
+		RefCounter(T _data): data(_data), _refs(1) {}
 		bool hasRefs() const {
 			return _refs > 0;
 		}
@@ -19,6 +19,6 @@ namespace Reborn {
 		}
 		T data;
 	private:
-		uint32_t _refs = 0;
+		int32_t _refs = 0;
 	};
 }
