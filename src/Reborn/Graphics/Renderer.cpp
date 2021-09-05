@@ -38,14 +38,10 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	LOG_INFO << "using OpenGL " << glVersion;
 
-	glClearColor(0.2, 0.2, 0.2, 1.0);
-
 	glEnable(GL_DEBUG_OUTPUT);
-	//glDebugMessageCallback(glMessageCallback, 0);
-
-	create(sceneFraimbuffer);
-	bind(sceneFraimbuffer);
-
+	glDebugMessageCallback(glMessageCallback, 0);
+	
+	GLTexture colorAttachmentTexture;
 	colorAttachmentTexture.width = sceneFraimbufferSize.x;
 	colorAttachmentTexture.height = sceneFraimbufferSize.y;
 	colorAttachmentTexture.textureType = GL_TEXTURE_2D;
@@ -54,33 +50,125 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	colorAttachmentTexture.texelType = GL_UNSIGNED_BYTE;
 	colorAttachmentTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	colorAttachmentTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	create(colorAttachmentTexture);
-	bind(colorAttachmentTexture);
-	upload(colorAttachmentTexture, NULL);
-	updateTextureParameters(colorAttachmentTexture);
+	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, colorAttachmentTexture);
 
+	GLTexture outlinedGeomTexture;
+	outlinedGeomTexture.width = sceneFraimbufferSize.x;
+	outlinedGeomTexture.height = sceneFraimbufferSize.y;
+	outlinedGeomTexture.textureType = GL_TEXTURE_2D;
+	outlinedGeomTexture.internalFromat = GL_RGB;
+	outlinedGeomTexture.texelFormat = GL_RGB;
+	outlinedGeomTexture.texelType = GL_UNSIGNED_BYTE;
+	outlinedGeomTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	outlinedGeomTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment1, outlinedGeomTexture);
+
+	Renderbuffer depthStencilRenderbuffer;
 	depthStencilRenderbuffer.width = sceneFraimbufferSize.x;
 	depthStencilRenderbuffer.height = sceneFraimbufferSize.y;
 	depthStencilRenderbuffer.internalFormat = GL_DEPTH24_STENCIL8;
-	create(depthStencilRenderbuffer);
-	bind(depthStencilRenderbuffer);
-	upload(depthStencilRenderbuffer);
+	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::depthStensilAttachment, depthStencilRenderbuffer);
 
-	setFramebufferTexture(sceneFraimbuffer, colorAttachmentTexture, GL_COLOR_ATTACHMENT0);
-	setFramebufferRenderbuffer(sceneFraimbuffer, depthStencilRenderbuffer, GL_DEPTH_STENCIL_ATTACHMENT);
-
+	create(sceneFraimbuffer);
 	if (!isFramebufferComplete(sceneFraimbuffer)) {
-		LOG_ERROR << "main framebuffer is not complete";
+		LOG_ERROR << "scene framebuffer is not complete";
+	}
+
+	GLTexture postprocessTexture;
+	postprocessTexture.width = sceneFraimbufferSize.x;
+	postprocessTexture.height = sceneFraimbufferSize.y;
+	postprocessTexture.textureType = GL_TEXTURE_2D;
+	postprocessTexture.internalFromat = GL_RGB;
+	postprocessTexture.texelFormat = GL_RGB;
+	postprocessTexture.texelType = GL_UNSIGNED_BYTE;
+	postprocessTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	postprocessTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	postprocessFramebuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, postprocessTexture);
+
+	create(postprocessFramebuffer);
+	if (!isFramebufferComplete(postprocessFramebuffer)) {
+		LOG_ERROR << "postprocess framebuffer is not complete";
 	}
 
 	bindMainFramebuffer();
+
+	uint32_t indices[] = { 0, 2, 1, 0, 2, 3 };
+	Vector3 vertices[] = {
+		Vector3(-1,-1, 0),
+		Vector3( 1,-1, 0),
+		Vector3( 1, 1, 0),
+		Vector3(-1, 1, 0)
+	};
+	Vector2 uv1[] = {
+		Vector2(0,0),
+		Vector2(1,0),
+		Vector2(1,1),
+		Vector2(0,1)
+	};
+	Mesh screenQuad(
+		6,
+		indices,
+		4,
+		vertices,
+		nullptr,
+		uv1
+	);
+	screenQuadVAO = screenQuad.getVAO();
+	uint32_t* p = (uint32_t*)screenQuadVAO.ebo.data;
+	create(screenQuadVAO);
+
+
+	std::string vertex =
+		"#version 330 core \n"
+		"layout(location = 0) in vec3 aPos; \n"
+		"layout(location = 2) in vec2 aUV; \n"
+		"out vec2 vUV;\n"
+		"void main() \n"
+		"{ \n"
+		"	vUV = aUV;\n"
+		"	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); \n"
+		"} \n";
+
+	std::string fragment =
+		"#version 330 core \n"
+		"out vec4 FragColor; \n"
+		"uniform sampler2D uTexture;\n"
+		"uniform sampler2D uScreenTexture;\n"
+		"uniform vec2 uTexelSize;\n"
+		"in vec2 vUV;\n"
+		"void main() \n"
+		"{ \n"
+		"	vec4 screenTex = texture(uScreenTexture, vUV);\n"
+		"	float s0 = texture(uTexture, vUV).r;\n"	
+		"	float s1 = texture(uTexture, vUV + vec2(1,1) * uTexelSize).r;\n"	
+		"	float s2 = texture(uTexture, vUV + vec2(1,0) * uTexelSize).r;\n"	
+		"	float s3 = texture(uTexture, vUV + vec2(1,-1) * uTexelSize).r;\n"	
+		"	float s4 = texture(uTexture, vUV + vec2(0,-1) * uTexelSize).r;\n"	
+		"	float s5 = texture(uTexture, vUV + vec2(-1,-1) * uTexelSize).r;\n"	
+		"	float s7 = texture(uTexture, vUV + vec2(-1,1) * uTexelSize).r;\n"	
+		"	float s6 = texture(uTexture, vUV + vec2(-1,0) * uTexelSize).r;\n"	
+		"	float s8 = texture(uTexture, vUV + vec2(0,1) * uTexelSize).r;\n"	
+		"	float s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8;\n"	
+		"	float r = 0;\n"
+		"	if(s < 5 && s > 0) {r = 1;}\n"
+		"	vec3 outlineColor = vec3(0.0, 1.0, 0.0) * r;\n"
+		"	FragColor = screenTex + vec4(outlineColor, 1.0);\n"
+		"} \n";
+	postprocessPropgram = GLSLProgram(
+		vertex, fragment
+	);
+	create(postprocessPropgram);
 }
 
 void Reborn::Renderer::beginFrame()
 {
 	bind(sceneFraimbuffer);
 	glViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Vector4 clearColor0( 0.2, 0.2, 0.2, 1);
+	glClearBufferfv(GL_COLOR, 0, clearColor0.d);
+	Vector4 clearColor1( 0, 0, 0, 1 );
+	glClearBufferfv(GL_COLOR, 1, clearColor1.d);
+	glClear(GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -88,6 +176,19 @@ bool p_open = true;
 
 void Reborn::Renderer::endFrame()
 {
+	bind(postprocessFramebuffer);
+
+	useProgram(postprocessPropgram);
+	glActiveTexture(GL_TEXTURE0);
+	bind(sceneFraimbuffer.colorAttachment1.value.texture);
+	setUniform(postprocessPropgram, "uTexture", 0);
+	glActiveTexture(GL_TEXTURE1);
+	bind(sceneFraimbuffer.colorAttachment0.value.texture);
+	setUniform(postprocessPropgram, "uScreenTexture", 1);
+	Vector2 textureSize(sceneFraimbuffer.colorAttachment1.value.texture.width, sceneFraimbuffer.colorAttachment1.value.texture.height);
+	setUniform(postprocessPropgram, "uTexelSize", Vector2(1.0, 1.0)/textureSize*2.0);
+	drawVAO(screenQuadVAO);
+	
 	bindMainFramebuffer();
 	glViewport(0, 0, _window.width(), _window.height());
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -120,6 +221,12 @@ Reborn::Camera& Reborn::Renderer::getCamera()
 const Reborn::Camera& Reborn::Renderer::getCamera() const
 {
 	return _camera;
+}
+
+void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const int& value)
+{
+	GLuint location = glGetUniformLocation(program.id, name);
+	glUniform1i(location, value);
 }
 
 void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const float& value)
@@ -194,6 +301,27 @@ void Reborn::Renderer::create(BufferObject& buf)
 void Reborn::Renderer::create(Framebuffer& fbo)
 {
 	glGenFramebuffers(1, &(fbo.id));
+	bind(fbo);
+	std::vector<GLenum> drawAttachments;
+	drawAttachments.reserve(4);
+	if (create(fbo.colorAttachment0)) {
+		attach(fbo, fbo.colorAttachment0);		
+		drawAttachments.push_back(GL_COLOR_ATTACHMENT0);
+	}
+	if (create(fbo.colorAttachment1)) {
+		attach(fbo, fbo.colorAttachment1);
+		drawAttachments.push_back(GL_COLOR_ATTACHMENT1);
+	}
+	if (create(fbo.colorAttachment2)) {
+		attach(fbo, fbo.colorAttachment2);
+		drawAttachments.push_back(GL_COLOR_ATTACHMENT2);
+	}
+	if (create(fbo.depthStensilAttachment)) {
+		attach(fbo, fbo.depthStensilAttachment);
+	}
+
+	int s = drawAttachments.size();
+	glDrawBuffers(drawAttachments.size(), drawAttachments.data());
 }
 
 void Reborn::Renderer::create(Renderbuffer& rbo)
@@ -216,7 +344,7 @@ void Reborn::Renderer::create(VertexArrayObject& vao)
 
 	for (int i = 0; i < vao.layout.size(); i++) {
 		auto& attrib = vao.layout[i];
-		glEnableVertexAttribArray(i);
+		glEnableVertexAttribArray(attrib.index);
 		glVertexAttribPointer(
 			attrib.index, 
 			attrib.size,
@@ -381,12 +509,15 @@ void Reborn::Renderer::useProgram(const GLSLProgram& program)
 
 const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()
 {
-	return colorAttachmentTexture;
+	return postprocessFramebuffer.colorAttachment0.value.texture;
 }
 
 void Reborn::Renderer::setClearColor(const Vector3& color)
 {
-	glClearColor(color.r, color.g, color.b, 1.0f);
+	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	bind(sceneFraimbuffer);
+	GLfloat clearColor[] = { color.r, color.g, color.b, 1.0f };
+	glClearBufferfv(GL_COLOR, 0, clearColor);
 }
 
 const Reborn::Vector2& Reborn::Renderer::getSceneFraimbufferSize()
@@ -397,15 +528,25 @@ const Reborn::Vector2& Reborn::Renderer::getSceneFraimbufferSize()
 void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
 {
 	sceneFraimbufferSize = newSize;
-	colorAttachmentTexture.width = newSize.x;
-	colorAttachmentTexture.height = newSize.y;
-	bind(colorAttachmentTexture);
-	upload(colorAttachmentTexture, nullptr);
+	sceneFraimbuffer.colorAttachment0.value.texture.width = newSize.x;
+	sceneFraimbuffer.colorAttachment0.value.texture.height = newSize.y;
+	bind(sceneFraimbuffer.colorAttachment0.value.texture);
+	upload(sceneFraimbuffer.colorAttachment0.value.texture, nullptr);
 
-	depthStencilRenderbuffer.width = newSize.x;
-	depthStencilRenderbuffer.height = newSize.y;
-	bind(depthStencilRenderbuffer);
-	upload(depthStencilRenderbuffer);
+	sceneFraimbuffer.colorAttachment1.value.texture.width = newSize.x;
+	sceneFraimbuffer.colorAttachment1.value.texture.height = newSize.y;
+	bind(sceneFraimbuffer.colorAttachment1.value.texture);
+	upload(sceneFraimbuffer.colorAttachment1.value.texture, nullptr);
+
+	sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.width = newSize.x;
+	sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.height = newSize.y;
+	bind(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
+	upload(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
+
+	postprocessFramebuffer.colorAttachment0.value.texture.width = newSize.x;
+	postprocessFramebuffer.colorAttachment0.value.texture.height = newSize.y;
+	bind(postprocessFramebuffer.colorAttachment0.value.texture);
+	upload(postprocessFramebuffer.colorAttachment0.value.texture, nullptr);
 }
 
 Reborn::Renderer::~Renderer()
@@ -415,6 +556,48 @@ Reborn::Renderer::~Renderer()
 	ImGui::DestroyContext();
 
 	SDL_GL_DeleteContext(_context);
+}
+
+bool Reborn::Renderer::create(FramebufferAttachment& fboAttachment)
+{
+	if (fboAttachment.attachment == FramebufferAttachmentType::emptyAttachment) {
+		return false;
+	}
+
+	if (fboAttachment.type == GL_TEXTURE_2D) {
+		create(fboAttachment.value.texture);
+		bind(fboAttachment.value.texture);
+		upload(fboAttachment.value.texture, NULL);
+		updateTextureParameters(fboAttachment.value.texture);
+	}
+	else if(fboAttachment.type == GL_RENDERBUFFER) {
+		create(fboAttachment.value.renderbuffer);
+		bind(fboAttachment.value.renderbuffer);
+		upload(fboAttachment.value.renderbuffer);
+		return true;
+	}
+	else {
+		LOG_ERROR << "Reborn::Renderer::create invalid attachment type " << fboAttachment.type;
+		return false;
+	}
+
+	return true;
+}
+
+void Reborn::Renderer::attach(Framebuffer& fbo, FramebufferAttachment& fboAttachment) {
+	if (fboAttachment.attachment == FramebufferAttachmentType::emptyAttachment) {
+		return;
+	}
+	bind(fbo);
+	if (fboAttachment.type == GL_TEXTURE_2D) {
+		setFramebufferTexture(fbo, fboAttachment.value.texture, fboAttachment.attachment);
+	}
+	else if (fboAttachment.type == GL_RENDERBUFFER) {
+		setFramebufferRenderbuffer(fbo, fboAttachment.value.renderbuffer, fboAttachment.attachment);
+	}
+	else {
+		LOG_ERROR << "Reborn::Renderer::attach invalid attachment type " << fboAttachment.type;
+	}
 }
 
 bool Reborn::Renderer::initImGui(SDL_Window* window) {

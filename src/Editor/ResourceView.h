@@ -14,9 +14,9 @@ void drawResourceView() {
 		ImGuiTableFlags tableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY | ImGuiTableFlags_SortMulti;
 
 		if (ImGui::BeginTable("Resources", 3, tableFlags)) {
-			ImGui::TableSetupColumn("Resource type");
-			ImGui::TableSetupColumn("Filepath");
-			ImGui::TableSetupColumn("Reload");
+			ImGui::TableSetupColumn("Resource type", ImGuiTableColumnFlags_DefaultSort);
+			ImGui::TableSetupColumn("Filepath", ImGuiTableColumnFlags_DefaultSort);
+			ImGui::TableSetupColumn("Reload", ImGuiTableColumnFlags_DefaultSort);
 			ImGui::TableHeadersRow();
 			const auto& resources = resourceManager.getAllResources();
 			int id = 0;

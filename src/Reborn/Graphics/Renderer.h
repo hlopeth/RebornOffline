@@ -23,6 +23,7 @@ namespace Reborn {
 		Camera& getCamera();
 		const Camera& getCamera() const;
 
+		void setUniform(const GLSLProgram& program, const GLchar* name, const int& value);
 		void setUniform(const GLSLProgram& program, const GLchar* name, const float& value);
 		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector2& value);
 		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector3& value);
@@ -68,13 +69,16 @@ namespace Reborn {
 		float lightStr = 1.0;
 		Vector3 ambientColor = Vector3(1.0);
 	private:
+		bool create(FramebufferAttachment& fboAttachment);
+		void attach(Framebuffer& fbo, FramebufferAttachment& fboAttachment);
 		bool initImGui(SDL_Window* window);
 		SDL_GLContext _context;
 		Window& _window;
 		Vector2 sceneFraimbufferSize;
 		Framebuffer sceneFraimbuffer;
-		GLTexture colorAttachmentTexture;
-		Renderbuffer depthStencilRenderbuffer;
+		Framebuffer postprocessFramebuffer;
 		Camera _camera;
+		VertexArrayObject screenQuadVAO;
+		GLSLProgram postprocessPropgram;
 	};
 }

@@ -15,5 +15,6 @@ namespace Reborn {
 		{}
 		const Mesh* mesh;
 		const GLSLProgram* program;
+		bool outline = false;
 	};
 }

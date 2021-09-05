@@ -198,10 +198,16 @@ void Reborn::Mesh::createVAO()
     int vertexSize = _hasPositions * 3 + _hasNormals * 3 + _hasUV1 * 2;
     Reborn::VertexBufferObject vbo(_vertexData.get(), _vertexCount * vertexSize);
     Reborn::ElementBufferObject ebo(_indexData.get(), _indexCount);
-    std::vector<VertexAttribute> attributes{
-        positionVertexAttribute(false, 0, positionsOffset()),
-        normalVertexAttribute(false, 0, normalsOffset()),
-        uv1VertexAttribute(false, 0, uv1Offset())
-    };
+    std::vector<VertexAttribute> attributes;
+
+    if (_hasPositions) {
+        attributes.push_back(positionVertexAttribute(false, 0, positionsOffset()));
+    }
+    if (_hasNormals) {
+        attributes.push_back(normalVertexAttribute(false, 0, normalsOffset()));
+    }
+    if (_hasUV1) {
+        attributes.push_back(uv1VertexAttribute(false, 0, uv1Offset()));
+    }    
     _vao = VertexArrayObject(vbo, ebo, attributes);
 }

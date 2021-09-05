@@ -34,6 +34,7 @@ namespace Reborn {
 				renderer.setUniform(*renderComponent.program, "uModel", transform, true);
 				renderer.setUniform(*renderComponent.program, "uLightColor", renderer.lightColor * renderer.lightStr);
 				renderer.setUniform(*renderComponent.program, "uAmbientColor", renderer.ambientColor);
+				renderer.setUniform(*renderComponent.program, "uOutlined", 1.f);
 
 				renderer.drawMesh(*renderComponent.mesh);
 			}

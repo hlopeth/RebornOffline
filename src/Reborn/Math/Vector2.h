@@ -53,6 +53,9 @@ namespace Reborn {
 		Vector2 operator*(const Vector2& t) const {
 			return Vector2(x * t.x, y * t.y);
 		}
+		Vector2 operator/(const Vector2& t) const {
+			return Vector2(x / t.x, y / t.y);
+		}
 		Vector2 operator*(float t) const {
 			return Vector2(x * t, y * t);
 		}
