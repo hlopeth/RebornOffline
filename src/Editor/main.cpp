@@ -96,12 +96,6 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
         const std::string& filename = model_paths[model_item_current];
         auto* modelRes = Application::get()->resourceManager().getResourceOrCreate<ModelResource>(filename);
         rc.mesh = &modelRes->getMesh();
-        //renderer.setSceneFramebufferSize(rects[item_current]);
-    }
-
-    if (ImGui::Button("Reload resources")) {
-        const std::string resource = "shaders/simple_triangle";
-        bool result = Application::get()->resourceManager().reloadResource(resource);
     }
     ImGui::End();
 
