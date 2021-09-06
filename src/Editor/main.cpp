@@ -66,6 +66,7 @@ void drawDockspace(Entity cameraControllerEntity, ImGuiComponent& _this) {
 }
 
 void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
+    Renderer& renderer = Application::get()->renderer();
     static ImVec4 lightColor = ImVec4(.5f, .5f, .5f, 1.0f);
     static float lightStr = 1.0;
     static ImVec4 ambientColor = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
@@ -97,9 +98,9 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
         auto* modelRes = Application::get()->resourceManager().getResourceOrCreate<ModelResource>(filename);
         rc.mesh = &modelRes->getMesh();
     }
+    ImGui::ColorPicker4("Outline color", (float*)&renderer.outlineColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
     ImGui::End();
 
-    Renderer& renderer = Application::get()->renderer();
     //renderer.setClearColor(Vector3(color.x, color.y, color.z));
     renderer.lightColor = Vector3(lightColor.x, lightColor.y, lightColor.z);
     renderer.ambientColor = Vector3(ambientColor.x, ambientColor.y, ambientColor.z);

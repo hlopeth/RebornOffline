@@ -141,6 +141,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 		"uniform sampler2D uTexture;\n"
 		"uniform sampler2D uScreenTexture;\n"
 		"uniform vec2 uTexelSize;\n"
+		"uniform vec3 uOutlineColor;\n"
 		"in vec2 vUV;\n"
 		"void main() \n"
 		"{ \n"
@@ -157,7 +158,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 		"	float s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8;\n"	
 		"	float r = 0;\n"
 		"	if(s < 5 && s > 0) {r = 1;}\n"
-		"	vec3 outlineColor = vec3(0.0, 1.0, 0.0) * r;\n"
+		"	vec3 outlineColor = uOutlineColor * r;\n"
 		"	FragColor = screenTex + vec4(outlineColor, 1.0);\n"
 		"} \n";
 	postprocessPropgram = GLSLProgram(
@@ -193,6 +194,7 @@ void Reborn::Renderer::endFrame()
 	setUniform(postprocessPropgram, "uScreenTexture", 1);
 	Vector2 textureSize(sceneFraimbuffer.colorAttachment1.value.texture.width, sceneFraimbuffer.colorAttachment1.value.texture.height);
 	setUniform(postprocessPropgram, "uTexelSize", Vector2(1.0, 1.0)/textureSize*2.0);
+	setUniform(postprocessPropgram, "uOutlineColor", outlineColor);
 	drawVAO(screenQuadVAO);
 	
 	bindMainFramebuffer();

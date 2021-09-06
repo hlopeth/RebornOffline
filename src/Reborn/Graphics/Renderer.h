@@ -68,6 +68,7 @@ namespace Reborn {
 		Vector3 lightColor = Vector3(1.0);
 		float lightStr = 1.0;
 		Vector3 ambientColor = Vector3(1.0);
+		Vector3 outlineColor = Vector3(1.0);
 	private:
 		bool create(FramebufferAttachment& fboAttachment);
 		void attach(Framebuffer& fbo, FramebufferAttachment& fboAttachment);
