@@ -50,6 +50,8 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	colorAttachmentTexture.texelType = GL_UNSIGNED_BYTE;
 	colorAttachmentTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	colorAttachmentTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	colorAttachmentTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	colorAttachmentTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, colorAttachmentTexture);
 
 	GLTexture outlinedGeomTexture;
@@ -61,6 +63,8 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	outlinedGeomTexture.texelType = GL_UNSIGNED_BYTE;
 	outlinedGeomTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	outlinedGeomTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	outlinedGeomTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	outlinedGeomTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment1, outlinedGeomTexture);
 
 	Renderbuffer depthStencilRenderbuffer;
@@ -83,6 +87,8 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	postprocessTexture.texelType = GL_UNSIGNED_BYTE;
 	postprocessTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	postprocessTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	postprocessTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	postprocessTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	postprocessFramebuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, postprocessTexture);
 
 	create(postprocessFramebuffer);
@@ -399,6 +405,8 @@ void Reborn::Renderer::updateTextureParameters(GLTexture& texture)
 		{
 		case GL_TEXTURE_MIN_FILTER:
 		case GL_TEXTURE_MAG_FILTER:
+		case GL_TEXTURE_WRAP_S:
+		case GL_TEXTURE_WRAP_T:
 			glTexParameteri(texture.textureType, param.name, param.value.iValue);
 			break;
 		default:
