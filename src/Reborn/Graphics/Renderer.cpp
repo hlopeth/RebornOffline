@@ -8,6 +8,15 @@
 
 GLuint compileShader(const std::string& source, GLenum type);
 
+std::string postprocessVertex =
+#include "shaders/postprocessVertex.glsl"
+;
+
+std::string postprocessFragment =
+#include "shaders/postprocessFragment.glsl"
+;
+
+
 void GLAPIENTRY glMessageCallback(
 	GLenum source,
 	GLenum type,
@@ -124,46 +133,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	create(screenQuadVAO);
 
 
-	std::string vertex =
-		"#version 330 core \n"
-		"layout(location = 0) in vec3 aPos; \n"
-		"layout(location = 2) in vec2 aUV; \n"
-		"out vec2 vUV;\n"
-		"void main() \n"
-		"{ \n"
-		"	vUV = aUV;\n"
-		"	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); \n"
-		"} \n";
-
-	std::string fragment =
-		"#version 330 core \n"
-		"out vec4 FragColor; \n"
-		"uniform sampler2D uTexture;\n"
-		"uniform sampler2D uScreenTexture;\n"
-		"uniform vec2 uTexelSize;\n"
-		"uniform vec3 uOutlineColor;\n"
-		"in vec2 vUV;\n"
-		"void main() \n"
-		"{ \n"
-		"	vec4 screenTex = texture(uScreenTexture, vUV);\n"
-		"	float s0 = texture(uTexture, vUV).r;\n"	
-		"	float s1 = texture(uTexture, vUV + vec2(1,1) * uTexelSize).r;\n"	
-		"	float s2 = texture(uTexture, vUV + vec2(1,0) * uTexelSize).r;\n"	
-		"	float s3 = texture(uTexture, vUV + vec2(1,-1) * uTexelSize).r;\n"	
-		"	float s4 = texture(uTexture, vUV + vec2(0,-1) * uTexelSize).r;\n"	
-		"	float s5 = texture(uTexture, vUV + vec2(-1,-1) * uTexelSize).r;\n"	
-		"	float s7 = texture(uTexture, vUV + vec2(-1,1) * uTexelSize).r;\n"	
-		"	float s6 = texture(uTexture, vUV + vec2(-1,0) * uTexelSize).r;\n"	
-		"	float s8 = texture(uTexture, vUV + vec2(0,1) * uTexelSize).r;\n"	
-		"	float s = s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8;\n"	
-		"	float r = 0;\n"
-		"	if(s < 5 && s > 0) {r = 1;}\n"
-		"	vec3 outlineColor = uOutlineColor * r;\n"
-		"	FragColor = screenTex + vec4(outlineColor, 1.0);\n"
-		"} \n";
-	postprocessPropgram = GLSLProgram(
-		vertex, fragment
-	);
+	postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
 	create(postprocessPropgram);
 }
 
