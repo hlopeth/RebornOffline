@@ -1,6 +1,6 @@
 #pragma once
 #include "AbstractResource.h"
-#include "Graphics/Mesh.h"
+#include "Graphics/Model.h"
 
 namespace Reborn {
 	class ModelResource : public AbstractResource {
@@ -9,8 +9,9 @@ namespace Reborn {
 		virtual bool tryLoad(const std::string& path) override;
 		virtual bool unload() override;
 		virtual const char* getTypeStr() override;
-		const Mesh& getMesh() const;
+
+		const Model& getModel() const;
 	private:
-		Mesh mesh;
+		Model model;
 	};
 }

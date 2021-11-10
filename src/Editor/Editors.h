@@ -5,16 +5,21 @@ using namespace Reborn;
 
 void transform3dEditor(Transform3DComponent& transform, float speed = 0.1) {
     if (ImGui::TreeNode("Transform3DComponent")) {
-        ImGui::DragFloat3("position", transform.position.d, speed);
-        ImGui::DragFloat3("scale", transform.scale.d, speed);
+        Vector3 pos = transform.getPosition();
+        Vector3 scale = transform.getScale();
+
+        ImGui::DragFloat3("position", pos.d, speed);
+        ImGui::DragFloat3("scale", scale.d, speed);
         Vector3 rotation 
             = Vector3(
-                toDegrees(transform.rotation.x),
-                toDegrees(transform.rotation.y),
-                toDegrees(transform.rotation.z)
+                toDegrees(transform.getRotation().x),
+                toDegrees(transform.getRotation().y),
+                toDegrees(transform.getRotation().z)
             ); 
         ImGui::DragFloat3("rotation", rotation.d, 1);
-        transform.rotation = Vector3(toRadians(rotation.x), toRadians(rotation.y), toRadians(rotation.z));
+        transform.setPosition(pos);
+        transform.setScale(scale);
+        transform.setRotation(Vector3(toRadians(rotation.x), toRadians(rotation.y), toRadians(rotation.z)));
         ImGui::TreePop();
     }
 }

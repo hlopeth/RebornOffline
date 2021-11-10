@@ -96,7 +96,7 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
         
         const std::string& filename = model_paths[model_item_current];
         auto* modelRes = Application::get()->resourceManager().getResourceOrCreate<ModelResource>(filename);
-        rc.mesh = &modelRes->getMesh();
+        rc.vao = modelRes->getModel().meshes[0].getVAO();
     }
     ImGui::ColorPicker4("Outline color", (float*)&renderer.outlineColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
     ImGui::End();
@@ -145,11 +145,13 @@ public:
         Entity sceneViewEntity = entityMng.createEntity();
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
+        const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/lowpoly");
+        const ModelResource* modelResource = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolywolf/wolf.fbx");
 
-        createModelEntity(mainEntity);
+        createModelEntity(mainEntity, *shaderResource, *modelResource);
 
         const auto* res = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolyrat/rat.fbx");
-        const Mesh& m = res->getMesh();
+        const Mesh& m = res->getModel().meshes[0];
 
         renderer().getCamera().setPosition(Vector3(5, 5, -8));
 
@@ -256,17 +258,20 @@ private:
         return true;
     }
 
-    bool createModelEntity(Entity& outEntity) {
-        const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/lowpoly");
-        const ModelResource* modelResource = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolywolf/wolf.fbx");
-
+    bool createModelEntity(
+        Entity& outEntity, 
+        const GLSLShaderResouce& shaderResource, 
+        const ModelResource& modelResource
+    ) {
         outEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(outEntity);
-        entityManager().addComponent<RenderComponent>(outEntity, modelResource->getMesh(), shaderResource->getProgram());
+        entityManager().addComponent<RenderComponent>(outEntity, modelResource.getModel().meshes[0], shaderResource.getProgram());
 
         Transform3DComponent& transform = entityManager().getComponent<Transform3DComponent>(outEntity);
-        transform.scale = Vector3(0.01);
-        transform.rotation.x = -PI / 2.0;
+        transform.setScale(Vector3(0.01));
+        Vector3 rot = transform.getRotation();
+        rot.x = -PI / 2.0;
+        transform.setRotation(rot);
         return true;
     }
 

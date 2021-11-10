@@ -27,16 +27,16 @@ namespace Reborn {
 				auto& transform3DComponent = entityManager.getComponent<Transform3DComponent>(entity);
 				auto& renderComponent = entityManager.getComponent<RenderComponent>(entity);
 				//auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(cameraControllerEntity);
-				const Matrix4 transform = transfromMatrix(transform3DComponent.position, transform3DComponent.scale, transform3DComponent.rotation);
+				const Matrix4& model = transform3DComponent.getModelMatrix();
 				renderer.useProgram(*renderComponent.program);
-				Matrix4 mvp = proj * transform;
+				Matrix4 mvp = proj * model;
 				renderer.setUniform(*renderComponent.program, "uTransform", mvp, true);
-				renderer.setUniform(*renderComponent.program, "uModel", transform, true);
+				renderer.setUniform(*renderComponent.program, "uModel", model, true);
 				renderer.setUniform(*renderComponent.program, "uLightColor", renderer.lightColor * renderer.lightStr);
 				renderer.setUniform(*renderComponent.program, "uAmbientColor", renderer.ambientColor);
 				renderer.setUniform(*renderComponent.program, "uOutlined", 1.f);
 
-				renderer.drawMesh(*renderComponent.mesh);
+				renderer.drawVAO(renderComponent.vao);
 			}
 		};
 	private:

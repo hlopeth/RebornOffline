@@ -10,10 +10,12 @@ namespace Reborn {
 	public:
 		RenderComponent() = delete;
 		RenderComponent(const Mesh& _mesh, const GLSLProgram& _program):
-			mesh(&_mesh),
-			program(&_program)
+			//mesh(&_mesh),
+			program(&_program),
+			vao(_mesh.getVAO())
 		{}
-		const Mesh* mesh;
+		//const Mesh* mesh;
+		VertexArrayObject vao;
 		const GLSLProgram* program;
 		bool outline = false;
 	};
