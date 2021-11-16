@@ -10,7 +10,7 @@
 namespace Reborn {
 	class RenderSystem : public EntitySystem {
 	public:
-		RenderSystem() {
+		RenderSystem(EntityManager& _entityManager): entityManager(_entityManager) {
 			setRequirements<Transform3DComponent, RenderComponent>();
 		}
 
@@ -22,16 +22,16 @@ namespace Reborn {
 		void process(Renderer& renderer) {			
 			const Matrix4& proj = renderer.getCamera().getViewProjection();
 
-			auto& entityManager = Application::get()->entityManager();
 			for (Entity entity : getManagedEntities()) {
 				auto& transform3DComponent = entityManager.getComponent<Transform3DComponent>(entity);
 				auto& renderComponent = entityManager.getComponent<RenderComponent>(entity);
 				//auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(cameraControllerEntity);
-				const Matrix4& model = transform3DComponent.getModelMatrix();
+				//const Matrix4& model = transform3DComponent.getModelMatrix();
+				const Matrix4 world = transform3DComponent.world;
 				renderer.useProgram(*renderComponent.program);
-				Matrix4 mvp = proj * model;
+				Matrix4 mvp = proj * world;
 				renderer.setUniform(*renderComponent.program, "uTransform", mvp, true);
-				renderer.setUniform(*renderComponent.program, "uModel", model, true);
+				renderer.setUniform(*renderComponent.program, "uModel", world, true);
 				renderer.setUniform(*renderComponent.program, "uLightColor", renderer.lightColor * renderer.lightStr);
 				renderer.setUniform(*renderComponent.program, "uAmbientColor", renderer.ambientColor);
 				renderer.setUniform(*renderComponent.program, "uOutlined", 1.f);
@@ -40,5 +40,6 @@ namespace Reborn {
 			}
 		};
 	private:
+		EntityManager& entityManager;
 	};
 }

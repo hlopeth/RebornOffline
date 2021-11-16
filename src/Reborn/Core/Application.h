@@ -27,6 +27,7 @@ namespace Reborn {
 		Application(WindowConfiguration windowConfig);
 		std::unique_ptr<Window> window;
 		EntitySystem* imGuiSystem = nullptr;
+		EntitySystem* updateTransformSystem = nullptr;
 		EntitySystem* rendererSystem = nullptr;
 		EntitySystem* tickSystem = nullptr;
 	private: 

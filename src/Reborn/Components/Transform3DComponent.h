@@ -1,6 +1,7 @@
 #pragma once
 #include "ComponentTypes.h"
 #include <ECS/Component.h>
+#include <ECS/Entity.h>
 #include <Graphics/Transform.h>
 
 namespace Reborn {
@@ -8,6 +9,9 @@ namespace Reborn {
 	{
 	public:
 		Transform3DComponent() {};
+		Transform3DComponent(
+			const Transform& _transform
+		) : transform(_transform) {};
 		Transform3DComponent(
 			const Vector3& position,
 			const Vector3& scale,
@@ -21,8 +25,19 @@ namespace Reborn {
 		void setScale(Vector3 newScale);
 		void setRotation(Vector3 newRotation);
 		const Matrix4& getModelMatrix() const;
-		Transform3DComponent* parent = nullptr;
+		const Transform& getTransform() const;
+		void setTransform(const Transform& tr);
+		Entity getParent() const;
+		bool setParent(Entity parent);
+		const std::vector<Entity>& getChilds() const;
+		Matrix4 world;
 	private:
+		void addChild(Entity child);
+		void deatachChild(Entity child);
+		void deatachParent();
+		bool hasTransform3d(Entity entity);
+		Entity parent = NoEntity;
+		std::vector<Entity> childs;
 		Transform transform = Transform();
 	};
 }

@@ -23,7 +23,7 @@ Reborn::WindowConfiguration getWindowConfig() {
 
 ImGuiID dockspace_id;
 bool first_frame = true;
-Entity mainEntity;
+Entity mainEntity = NoEntity;
 
 void drawDockspace(Entity cameraControllerEntity, ImGuiComponent& _this) {
     bool p_open = true;
@@ -66,6 +66,11 @@ void drawDockspace(Entity cameraControllerEntity, ImGuiComponent& _this) {
 }
 
 void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
+    auto& entityManager = Application::get()->entityManager();
+    auto& resourceManager = Application::get()->resourceManager();
+    if (mainEntity == NoEntity) {
+        return;
+    }
     Renderer& renderer = Application::get()->renderer();
     static ImVec4 lightColor = ImVec4(.5f, .5f, .5f, 1.0f);
     static float lightStr = 1.0;
@@ -78,25 +83,29 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
     ImGui::SliderFloat("Light strength", &lightStr, 0.0, 1.0, "% .01f");
     ImGui::ColorPicker4("Ambient color", (float*)&ambientColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
 
-    auto& transform = Application::get()->entityManager().getComponent<Transform3DComponent>(mainEntity);
+    auto& transform = entityManager.getComponent<Transform3DComponent>(mainEntity);
     transform3dEditor(transform);
 
     cameraEditor(Application::get()->renderer().getCamera());
     
-    const char* model_items[] = { "rat", "deer", "cat", "wolf"};
+    const char* model_items[] = { "rat", "deer", "cat", "wolf", "forest"};
     std::string model_paths[] = { 
         "models/lowpolyrat/rat.fbx",
         "models/lowpolydeer/deer.fbx",
         "models/lowpolycat/cat.fbx",
-        "models/lowpolywolf/wolf.fbx"
+        "models/lowpolywolf/wolf.fbx",
+        "models/lowpoly_forest/ENFOR_EEVEE.obj"
     };
     static int model_item_current = 3;
     if (ImGui::Combo("Model", &model_item_current, model_items, IM_ARRAYSIZE(model_items))) {
-        auto& rc = Application::get()->entityManager().getComponent<RenderComponent>(mainEntity);
-        
+        Transform transformCopy = entityManager.getComponent<Transform3DComponent>(mainEntity).getTransform();
+        entityManager.removeEntity(mainEntity);
+        mainEntity = NoEntity;
+        const GLSLShaderResouce* shaderResource = resourceManager.getResourceOrCreate<GLSLShaderResouce>("shaders/lowpoly");
         const std::string& filename = model_paths[model_item_current];
-        auto* modelRes = Application::get()->resourceManager().getResourceOrCreate<ModelResource>(filename);
-        rc.vao = modelRes->getModel().meshes[0].getVAO();
+        auto* modelResource = resourceManager.getResourceOrCreate<ModelResource>(filename);
+        createModelEntity(mainEntity, shaderResource->getProgram(), modelResource->getModel());
+        entityManager.getComponent<Transform3DComponent>(mainEntity).setTransform(transformCopy);
     }
     ImGui::ColorPicker4("Outline color", (float*)&renderer.outlineColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
     ImGui::End();
@@ -118,6 +127,7 @@ void drawMainScene(Entity cameraControllerEntity, ImGuiComponent& _this) {
 
         ImVec2 viewprtSize = window->InnerClipRect.GetSize();
         viewprtSize.y -= 15;
+        Application::get()->renderer().setSceneFramebufferSize(Vector2(viewprtSize.x, viewprtSize.y));
         Application::get()->renderer().getCamera().setAspect(viewprtSize.x / viewprtSize.y);
         ImGui::Image((void*)(intptr_t)(sceneTexture.id), viewprtSize);
         ImGui::End();
@@ -148,10 +158,10 @@ public:
         const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/lowpoly");
         const ModelResource* modelResource = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolywolf/wolf.fbx");
 
-        createModelEntity(mainEntity, *shaderResource, *modelResource);
 
-        const auto* res = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolyrat/rat.fbx");
-        const Mesh& m = res->getModel().meshes[0];
+        createModelEntity(mainEntity, shaderResource->getProgram(), modelResource->getModel());
+        entityManager().getComponent<Transform3DComponent>(mainEntity).setScale(Vector3(0.02));
+        entityManager().getComponent<Transform3DComponent>(mainEntity).setRotation(Vector3(-PI/2, 0, 0));
 
         renderer().getCamera().setPosition(Vector3(5, 5, -8));
 
@@ -255,23 +265,6 @@ private:
         cubeEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(cubeEntity);
         entityManager().addComponent<RenderComponent>(cubeEntity, std::move(cubeMesh), shaderResource->getProgram());
-        return true;
-    }
-
-    bool createModelEntity(
-        Entity& outEntity, 
-        const GLSLShaderResouce& shaderResource, 
-        const ModelResource& modelResource
-    ) {
-        outEntity = entityManager().createEntity();
-        entityManager().addComponent<Transform3DComponent>(outEntity);
-        entityManager().addComponent<RenderComponent>(outEntity, modelResource.getModel().meshes[0], shaderResource.getProgram());
-
-        Transform3DComponent& transform = entityManager().getComponent<Transform3DComponent>(outEntity);
-        transform.setScale(Vector3(0.01));
-        Vector3 rot = transform.getRotation();
-        rot.x = -PI / 2.0;
-        transform.setRotation(rot);
         return true;
     }
 

@@ -8,6 +8,7 @@
 
 #include <Systems/TestSystem.h>
 #include <Systems/ImGuiSystem.h>
+#include <Systems/UpdateTransformSystem.h>
 #include <Systems/RenderSystem.h>
 #include <Systems/TickSystem.h>
 #include "backends/imgui_impl_sdl.h"
@@ -41,7 +42,8 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	_entityManager.registerComponent<TickComponent>();
 	auto testSystem = _entityManager.createSystem<TestSystem>();
 	imGuiSystem = _entityManager.createSystem<ImGuiSystem>();
-	rendererSystem = _entityManager.createSystem<RenderSystem>();
+	updateTransformSystem = _entityManager.createSystem<UpdateTransformSystem>(_entityManager);
+	rendererSystem = _entityManager.createSystem<RenderSystem>(_entityManager);
 	tickSystem = _entityManager.createSystem<TickSystem>();
 
 	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
@@ -82,6 +84,7 @@ void Reborn::Application::Run()
 
 	while (!shouldClose)
 	{
+		static_cast<UpdateTransformSystem*>(updateTransformSystem)->update();		
 		PoolEvents();		
 
 		static_cast<TickSystem*>(tickSystem)->update();

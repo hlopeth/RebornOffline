@@ -40,7 +40,7 @@ set(SOURCE_FILES
 	"Resources/TextResource.cpp" 
 	"Resources/GLSLShaderResouce.cpp"
 	"Math/MathUtils.cpp"
-	 "Graphics/Camera.cpp" "Resources/ModelResource.cpp" "Graphics/Mesh.cpp" "Graphics/VertexAttribute.cpp" "Components/Transform3DComponent.cpp" "Graphics/Transform.cpp")
+	 "Graphics/Camera.cpp" "Resources/ModelResource.cpp" "Graphics/Mesh.cpp" "Graphics/VertexAttribute.cpp" "Components/Transform3DComponent.cpp" "Graphics/Transform.cpp" "Utils.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(

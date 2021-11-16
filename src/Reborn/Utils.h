@@ -1,24 +1,12 @@
 #pragma once
+#include <Graphics/GLSLProgram.h>
+#include <Graphics/Model.h>
+#include <ECS/Entity.h>
 
 namespace Reborn {
-	template<class T>
-	class RefCounter {
-	public:
-		RefCounter(T _data): data(_data), _refs(1) {}
-		bool hasRefs() const {
-			return _refs > 0;
-		}
-		void addRef() {
-			_refs++;
-		}
-		void removeRef() {
-			_refs--;
-		}
-		uint32_t refs() const {
-			return _refs;
-		}
-		T data;
-	private:
-		int32_t _refs = 0;
-	};
+    bool createModelEntity(
+        Entity& outEntity,
+        const GLSLProgram& glslProgram,
+        const Model& model
+    );
 }

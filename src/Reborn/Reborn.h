@@ -34,4 +34,6 @@
 
 #include "Graphics/Mesh.h"
 
+#include "Utils.h"
+
 #include "EntryPoint.h"

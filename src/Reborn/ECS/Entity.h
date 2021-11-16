@@ -9,4 +9,5 @@ namespace Reborn
 
 	typedef uint32_t Index;
 	static constexpr auto InvalidIndex = UINT32_MAX;
+	static constexpr Entity NoEntity = -1;
 }

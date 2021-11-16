@@ -15,7 +15,7 @@ namespace Reborn {
 		const Vector3& getScale() const;
 		const Vector3& getRotation() const;
 		const Matrix4& getModelMatrix() const;
-		const Matrix4& getModelMatrix(Transform& parent) const;
+		const Matrix4& getModelMatrix(const Matrix4& parentModel) const;
 		void setPosition(Vector3 newPosition);
 		void setScale(Vector3 newScale);
 		void setRotation(Vector3 newRotation);

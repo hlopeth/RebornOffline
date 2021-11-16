@@ -9,7 +9,7 @@ namespace Reborn {
     public:
         ComponentContainer(std::vector<std::bitset<REBORN_COMPONENTS_COUNT>>& entityToBitset) :
             mEntityToBitset(entityToBitset) {
-
+            mComponents.reserve(REBORN_COMPONENTS_COUNT);
         }
 
         T& get(Entity entity) {

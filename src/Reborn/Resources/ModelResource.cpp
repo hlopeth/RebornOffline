@@ -106,7 +106,7 @@ Reborn::ModelResource::ModelResource(): AbstractResource(0x6fc4f895)
 bool Reborn::ModelResource::tryLoad(const std::string& path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate  | aiProcess_GenNormals);
 
 	if (!scene) {
 		LOG_ERROR 

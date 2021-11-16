@@ -107,7 +107,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	bindMainFramebuffer();
 
-	uint32_t indices[] = { 0, 2, 1, 0, 2, 3 };
+	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
 	Vector3 vertices[] = {
 		Vector3(-1,-1, 0),
 		Vector3( 1,-1, 0),

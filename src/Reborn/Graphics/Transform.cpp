@@ -36,16 +36,17 @@ const Matrix4& Reborn::Transform::getModelMatrix() const
 	if (modelMatrixIsDirty) {
 		Reborn::Transform* transform = const_cast<Transform*>(this);
 		transform->model = transfromMatrix(transform->position, transform->scale, transform->rotation);
+		transform->modelMatrixIsDirty = false;
 	}
 	return model;
 }
 
-const Matrix4& Reborn::Transform::getModelMatrix(Transform& parent) const
+const Matrix4& Reborn::Transform::getModelMatrix(const Matrix4& parentModel) const
 {
 	Reborn::Transform* transform = const_cast<Transform*>(this);
 	getModelMatrix();
-	const Matrix4& parentModel = parent.getModelMatrix();
-	transform->model = parentModel * transform->model;	
+	transform->model = parentModel * transform->model;
+	transform->modelMatrixIsDirty = true;
 	return model;
 }
 
