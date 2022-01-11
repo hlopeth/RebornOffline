@@ -5,6 +5,8 @@
 #include <Components/RenderComponent.h>
 
 using namespace Reborn;
+
+std::vector<const Mesh*> tempMeshContainer;
  
 void createChildNodelEntity(
     Entity& outEntity,
@@ -21,9 +23,13 @@ void createChildNodelEntity(
     outEntity = entityManager.createEntity();
     entityManager.addComponent<Transform3DComponent>(outEntity, model.transforms[node.transformIndex]);
     Transform3DComponent& transform = entityManager.getComponent<Transform3DComponent>(outEntity);
-    if (node.meshIndex != -1) {
-        const Mesh& mesh = model.meshes[node.meshIndex];
-        entityManager.addComponent<RenderComponent>(outEntity, mesh, glslProgram);
+    if (node.numMeshes > 0) {
+        tempMeshContainer.resize(node.numMeshes);
+        for (size_t i = 0; i < node.numMeshes; i++)
+        {
+            tempMeshContainer[i] = &(model.meshes[node.meshIndices[i]]);
+        }
+        entityManager.addComponent<RenderComponent>(outEntity, tempMeshContainer.data(), node.numMeshes, glslProgram);
     }
     if (parent != -1) {
         transform.setParent(parent);

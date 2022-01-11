@@ -7,7 +7,8 @@ namespace Reborn {
 	public:
 		struct Node {
 			std::string name = "";
-			int meshIndex = -1;
+			size_t numMeshes = 0;
+			std::vector<int> meshIndices;
 			int transformIndex = -1;
 			int parentIndex = -1;
 			std::vector<int> childIndices;

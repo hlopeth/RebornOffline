@@ -36,7 +36,9 @@ namespace Reborn {
 				renderer.setUniform(*renderComponent.program, "uAmbientColor", renderer.ambientColor);
 				renderer.setUniform(*renderComponent.program, "uOutlined", 1.f);
 
-				renderer.drawVAO(renderComponent.vao);
+				for (int i = 0; i < renderComponent.VAOs.size(); i++) {
+					renderer.drawVAO(renderComponent.VAOs[i]);
+				}
 			}
 		};
 	private:

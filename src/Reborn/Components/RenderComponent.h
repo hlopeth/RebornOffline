@@ -10,12 +10,20 @@ namespace Reborn {
 	public:
 		RenderComponent() = delete;
 		RenderComponent(const Mesh& _mesh, const GLSLProgram& _program):
-			//mesh(&_mesh),
-			program(&_program),
-			vao(_mesh.getVAO())
-		{}
-		//const Mesh* mesh;
-		VertexArrayObject vao;
+			program(&_program)
+		{
+			VAOs.push_back(_mesh.getVAO());
+		}
+		RenderComponent(const Mesh** meshes, size_t numMeshes, const GLSLProgram& _program) :
+			program(&_program)
+		{
+			VAOs.reserve(numMeshes);
+			for (int i = 0; i < numMeshes; i++)
+			{
+				VAOs.push_back(meshes[i]->getVAO());
+			}
+		}
+		std::vector<VertexArrayObject> VAOs;
 		const GLSLProgram* program;
 		bool outline = false;
 	};
