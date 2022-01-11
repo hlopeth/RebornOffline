@@ -10,7 +10,7 @@ std::vector<const Mesh*> tempMeshContainer;
  
 void createChildNodelEntity(
     Entity& outEntity,
-    const GLSLProgram& glslProgram,
+    Material& material,
     const Model& model,
     int nodeIndex,
     const Entity parent
@@ -29,7 +29,7 @@ void createChildNodelEntity(
         {
             tempMeshContainer[i] = &(model.meshes[node.meshIndices[i]]);
         }
-        entityManager.addComponent<RenderComponent>(outEntity, tempMeshContainer.data(), node.numMeshes, glslProgram);
+        entityManager.addComponent<RenderComponent>(outEntity, tempMeshContainer.data(), node.numMeshes, material);
     }
     if (parent != -1) {
         transform.setParent(parent);
@@ -37,19 +37,19 @@ void createChildNodelEntity(
     
     for (int i = 0; i < node.childIndices.size(); i++) {
         Entity childeEntity = entityManager.createEntity();
-        createChildNodelEntity(childeEntity, glslProgram, model, node.childIndices[i], outEntity);
+        createChildNodelEntity(childeEntity, material, model, node.childIndices[i], outEntity);
     }
 }
 
 bool Reborn::createModelEntity(
     Entity& outEntity,
-    const GLSLProgram& glslProgram,
+    Material& material,
     const Model& model
 )
 {
     if (model.nodes.size() < 1) {
         return false;
     }
-    createChildNodelEntity(outEntity, glslProgram, model, 0, -1);
+    createChildNodelEntity(outEntity, material, model, 0, -1);
     return true;
 }

@@ -28,13 +28,13 @@ namespace Reborn {
 				//auto [transform3DComponent, renderComponent] = entityManager.getComponents<Transform3DComponent, RenderComponent>(cameraControllerEntity);
 				//const Matrix4& model = transform3DComponent.getModelMatrix();
 				const Matrix4 world = transform3DComponent.world;
-				renderer.useProgram(*renderComponent.program);
 				Matrix4 mvp = proj * world;
-				renderer.setUniform(*renderComponent.program, "uTransform", mvp, true);
-				renderer.setUniform(*renderComponent.program, "uModel", world, true);
-				renderer.setUniform(*renderComponent.program, "uLightColor", renderer.lightColor * renderer.lightStr);
-				renderer.setUniform(*renderComponent.program, "uAmbientColor", renderer.ambientColor);
-				renderer.setUniform(*renderComponent.program, "uOutlined", 1.f);
+				renderComponent.material->setParameter("uTransform", mvp);
+				renderComponent.material->setParameter("uModel", world);
+				renderComponent.material->setParameter("uLightColor", renderer.lightColor * renderer.lightStr);
+				renderComponent.material->setParameter("uAmbientColor", renderer.ambientColor);
+				renderComponent.material->setParameter("uOutlined", 1.f);
+				renderComponent.material->setup(renderer);
 
 				for (int i = 0; i < renderComponent.VAOs.size(); i++) {
 					renderer.drawVAO(renderComponent.VAOs[i]);

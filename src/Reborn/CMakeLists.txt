@@ -47,7 +47,7 @@ set(SOURCE_FILES
 	"Components/Transform3DComponent.cpp"
 	"Graphics/Transform.cpp"
 	"Utils.cpp" 
-)
+ "Graphics/Material.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
