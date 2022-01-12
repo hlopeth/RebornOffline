@@ -1,5 +1,6 @@
 #include "Core.h"
 #include "ModelResource.h"
+#include "GLSLShaderResource.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -38,6 +39,20 @@ void loadMesh(Reborn::Model* model, const aiMesh* assimpMesh) {
 	model->meshes.emplace_back(numIndices, indices, numVertices, positions, normals);
 }
 
+void loadMaterial(Reborn::Model* model, const aiMaterial* assimpMaterial) {
+	const auto& resManager = Reborn::Application::get()->resourceManager();
+	const Reborn::GLSLShaderResouce* defaultShaderResource = resManager.getDefaultResource<Reborn::GLSLShaderResouce>();
+	if (defaultShaderResource == nullptr)
+		return;
+
+	const Reborn::GLSLProgram& defaultProgram = defaultShaderResource->getProgram();
+	Reborn::Material material(defaultProgram);
+	aiColor3D diffuseColor;
+	assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);
+	material.setParameter(RB_MATPARAM_DIFFUSE, Reborn::Vector3(diffuseColor.r, diffuseColor.g, diffuseColor.b));
+	model->materials.push_back(material);
+}
+
 int loadTransform(
 	Reborn::Model* model,
 	const aiNode* node) {
@@ -66,8 +81,11 @@ int loadChildNode(
 	if (currentNode->mNumMeshes > 0) {
 		rebornNode.numMeshes = currentNode->mNumMeshes;
 		rebornNode.meshIndices.resize(currentNode->mNumMeshes);
+		rebornNode.materialIndices.resize(currentNode->mNumMeshes);
 		for (int i = 0; i < currentNode->mNumMeshes; i++) {
-			rebornNode.meshIndices[i] = currentNode->mMeshes[i];
+			auto meshIndex = currentNode->mMeshes[i];
+			rebornNode.meshIndices[i] = meshIndex;
+			rebornNode.materialIndices[i] = scene->mMeshes[meshIndex]->mMaterialIndex;
 		}
 	}
 	else {
@@ -99,6 +117,10 @@ void loadModel(Reborn::Model* model, const aiScene* scene)
 	for (int i = 0; i < scene->mNumMeshes; i++) {
 		const aiMesh* assimpMesh = scene->mMeshes[i];
 		loadMesh(model, assimpMesh);
+	}
+	for (int i = 0; i < scene->mNumMaterials; i++) {
+		const aiMaterial* assimpMaterial = scene->mMaterials[i];
+		loadMaterial(model, assimpMaterial);
 	}
 	loadNodes(model, scene);
 }

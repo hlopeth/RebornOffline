@@ -6,7 +6,6 @@
 namespace Reborn {
     bool createModelEntity(
         Entity& outEntity,
-        Material& material,
         const Model& model
     );
 }

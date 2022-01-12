@@ -9,21 +9,24 @@ namespace Reborn {
 	{
 	public:
 		RenderComponent() = delete;
-		RenderComponent(const Mesh& _mesh, Material& _material):
-			material(&_material)
+		RenderComponent(const Mesh& mesh, Material& material)
 		{
-			VAOs.push_back(_mesh.getVAO());
+			VAOs.push_back(mesh.getVAO());
+			materials.push_back(material);
 		}
-		RenderComponent(const Mesh** meshes, size_t numMeshes, Material& _material) :
-			material(&_material)
+		RenderComponent(const Mesh** meshes, size_t numMeshes, const Material** materials, size_t numMaterials)
 		{
 			VAOs.reserve(numMeshes);
 			for (int i = 0; i < numMeshes; i++)	{
 				VAOs.push_back(meshes[i]->getVAO());
 			}
+			this->materials.reserve(numMaterials);
+			for (int i = 0; i < numMaterials; i++) {
+				this->materials.push_back(*materials[i]);
+			}
 		}
 		std::vector<VertexArrayObject> VAOs;
-		Material* material;
+		std::vector<Material> materials;
 		bool outline = false;
 	};
 }

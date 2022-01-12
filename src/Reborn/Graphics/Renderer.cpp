@@ -9,11 +9,11 @@
 GLuint compileShader(const std::string& source, GLenum type);
 
 std::string postprocessVertex =
-#include "shaders/postprocessVertex.glsl"
+#include "shaders/postprocess/postprocessVertex.glsl"
 ;
 
 std::string postprocessFragment =
-#include "shaders/postprocessFragment.glsl"
+#include "shaders/postprocess/postprocessFragment.glsl"
 ;
 
 

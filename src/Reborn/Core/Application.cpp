@@ -11,9 +11,20 @@
 #include <Systems/UpdateTransformSystem.h>
 #include <Systems/RenderSystem.h>
 #include <Systems/TickSystem.h>
+
+#include <Resources/GLSLShaderResource.h>
+
 #include "backends/imgui_impl_sdl.h"
 
 SDL_Event evt;
+
+std::string defaultVertex =
+#include <Graphics/shaders/lowpoly/vertex.glsl>
+;
+
+std::string defaultFragment =
+#include <Graphics/shaders/lowpoly/fragment.glsl>
+;
 
 Reborn::Application* Reborn::Application::appInstance = nullptr;
 
@@ -47,6 +58,12 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	tickSystem = _entityManager.createSystem<TickSystem>();
 
 	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
+
+	//Default resources
+	Reborn::GLSLProgram defaultProgram = Reborn::GLSLProgram(defaultVertex, defaultFragment);
+	_renderer->create(defaultProgram);
+	Reborn::GLSLShaderResouce* defaultShaderResource = new Reborn::GLSLShaderResouce(defaultProgram);
+	_resourceManager.addDefaultResource<Reborn::GLSLShaderResouce>(defaultShaderResource);
 }
 
 bool Reborn::Application::internalInit(Reborn::Application* (createApplication)())

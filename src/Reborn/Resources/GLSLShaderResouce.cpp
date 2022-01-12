@@ -9,10 +9,10 @@ Reborn::GLSLShaderResouce::GLSLShaderResouce():
 }
 
 Reborn::GLSLShaderResouce::GLSLShaderResouce(
-	const std::string& _vertexSource, 
-	const std::string& _fragmentSource
+	const Reborn::GLSLProgram& _program
 ):
-	AbstractResource(0x78fd24ec)
+	AbstractResource(0x78fd24ec),
+	program(_program)
 {
 }
 

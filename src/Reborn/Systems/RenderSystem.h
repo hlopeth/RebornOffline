@@ -29,14 +29,14 @@ namespace Reborn {
 				//const Matrix4& model = transform3DComponent.getModelMatrix();
 				const Matrix4 world = transform3DComponent.world;
 				Matrix4 mvp = proj * world;
-				renderComponent.material->setParameter("uTransform", mvp);
-				renderComponent.material->setParameter("uModel", world);
-				renderComponent.material->setParameter("uLightColor", renderer.lightColor * renderer.lightStr);
-				renderComponent.material->setParameter("uAmbientColor", renderer.ambientColor);
-				renderComponent.material->setParameter("uOutlined", 1.f);
-				renderComponent.material->setup(renderer);
 
 				for (int i = 0; i < renderComponent.VAOs.size(); i++) {
+					renderComponent.materials[i].setParameter(RB_MATPARAM_MODEL_TO_CLIP, mvp);
+					renderComponent.materials[i].setParameter(RB_MATPARAM_MODEL_TO_WORLD, world);
+					renderComponent.materials[i].setParameter(RB_MATPARAM_LIGHT_COLOR, renderer.lightColor * renderer.lightStr);
+					renderComponent.materials[i].setParameter(RB_MATPARAM_AMBIENT, renderer.ambientColor);
+					renderComponent.materials[i].setParameter(RB_MATPARAM_OUTLINED, 1.f);
+					renderComponent.materials[i].setup(renderer);
 					renderer.drawVAO(renderComponent.VAOs[i]);
 				}
 			}

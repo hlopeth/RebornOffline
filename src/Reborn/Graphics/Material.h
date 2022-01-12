@@ -5,6 +5,17 @@
 #include <Math/Matrix.h>
 
 namespace Reborn {
+
+	//default parameter names
+
+	#define RB_MATPARAM_MODEL_TO_WORLD "uModelToWorld"
+	#define RB_MATPARAM_MODEL_TO_CLIP "uModelToClip"
+	#define RB_MATPARAM_AMBIENT "uAmbientColor"
+	#define RB_MATPARAM_DIFFUSE "uDiffuseColor"
+	#define RB_MATPARAM_SPECULAR "uSpecularColor"
+	#define RB_MATPARAM_LIGHT_COLOR "uLightColor"
+	#define RB_MATPARAM_OUTLINED "uOutlined"
+
 	struct MaterialParameter {
 		enum Type {
 			Float,
@@ -30,15 +41,23 @@ namespace Reborn {
 			Matrix4 mat4Value;
 		};
 
-		Type type = Count;
-		Value value = {0};
+		MaterialParameter() = default;
+
+		MaterialParameter(const MaterialParameter& src) {
+			*this = src;
+		}
 
 		MaterialParameter& operator=(const MaterialParameter& other) {
 			this->type = other.type;
 			memcpy(&(this->value), &(other.value), sizeof Value);
 			return *this;
 		}
+
+		Type type = Count;
+		Value value = { 0 };
 	};
+
+	typedef std::unordered_map<std::string, Reborn::MaterialParameter> MaterialParameters;
 
 	class Material {
 	public:
@@ -57,6 +76,6 @@ namespace Reborn {
 		const GLSLProgram& getProgram() const;
 	private:
 		const GLSLProgram& program;
-		std::unordered_map<std::string, Reborn::MaterialParameter> parameters;
+		MaterialParameters parameters;
 	};
 }

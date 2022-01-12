@@ -107,16 +107,12 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
         
         const std::string& filename = model_paths[model_item_current];
         auto* modelResource = resourceManager.getResourceOrCreate<ModelResource>(filename);
-        createModelEntity(mainEntity, *lowPolyMaterial, modelResource->getModel());
+        createModelEntity(mainEntity, modelResource->getModel());
         entityManager.getComponent<Transform3DComponent>(mainEntity).setTransform(transformCopy);
     }
     ImGui::ColorPicker4("Outline color", (float*)&renderer.outlineColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
 
     static Vector4 mainMaterialColor = Vector4(1.f, 1.f, 1.f, 1.f);
-    ImGui::ColorPicker4("Main color", (float*)&mainMaterialColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
-    if (lowPolyMaterial) {
-        lowPolyMaterial->setParameter("uMainColor", mainMaterialColor.xyz);
-    }
 
     ImGui::End();
 
@@ -170,7 +166,7 @@ public:
         const ModelResource* modelResource = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolywolf/wolf.fbx");
 
 
-        createModelEntity(mainEntity, *lowPolyMaterial, modelResource->getModel());
+        createModelEntity(mainEntity, modelResource->getModel());
         entityManager().getComponent<Transform3DComponent>(mainEntity).setScale(Vector3(0.02));
         entityManager().getComponent<Transform3DComponent>(mainEntity).setRotation(Vector3(-PI/2, 0, 0));
 

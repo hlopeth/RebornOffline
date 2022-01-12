@@ -73,6 +73,20 @@ namespace Reborn {
 			defaultResources.insert({ newDefaultResource->getType(), reinterpret_cast<AbstractResource*>(newDefaultResource) });
 		}
 
+		template<typename ResourceType>
+		const ResourceType* getDefaultResource() const {
+			ResourceType rType;
+			ResourceTypeID id = rType.getType();
+			auto search = defaultResources.find(id);
+			if (search != defaultResources.end()) {
+				return static_cast<const ResourceType*>(search->second);
+			}
+			else {
+				return nullptr;
+			}
+		}
+
+
 		void removeResource(const std::string& filename);
 
 		bool reloadResource(const std::string& filename);

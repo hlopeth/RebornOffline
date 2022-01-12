@@ -7,10 +7,10 @@
 using namespace Reborn;
 
 std::vector<const Mesh*> tempMeshContainer;
+std::vector<const Material*> tempMaterials;
  
 void createChildNodelEntity(
     Entity& outEntity,
-    Material& material,
     const Model& model,
     int nodeIndex,
     const Entity parent
@@ -25,11 +25,14 @@ void createChildNodelEntity(
     Transform3DComponent& transform = entityManager.getComponent<Transform3DComponent>(outEntity);
     if (node.numMeshes > 0) {
         tempMeshContainer.resize(node.numMeshes);
+        tempMaterials.resize(node.numMeshes);
         for (size_t i = 0; i < node.numMeshes; i++)
         {
             tempMeshContainer[i] = &(model.meshes[node.meshIndices[i]]);
+            tempMaterials[i] = &(model.materials[node.materialIndices[i]]);
+            
         }
-        entityManager.addComponent<RenderComponent>(outEntity, tempMeshContainer.data(), node.numMeshes, material);
+        entityManager.addComponent<RenderComponent>(outEntity, tempMeshContainer.data(), node.numMeshes, tempMaterials.data(), node.numMeshes);
     }
     if (parent != -1) {
         transform.setParent(parent);
@@ -37,19 +40,18 @@ void createChildNodelEntity(
     
     for (int i = 0; i < node.childIndices.size(); i++) {
         Entity childeEntity = entityManager.createEntity();
-        createChildNodelEntity(childeEntity, material, model, node.childIndices[i], outEntity);
+        createChildNodelEntity(childeEntity, model, node.childIndices[i], outEntity);
     }
 }
 
 bool Reborn::createModelEntity(
     Entity& outEntity,
-    Material& material,
     const Model& model
 )
 {
     if (model.nodes.size() < 1) {
         return false;
     }
-    createChildNodelEntity(outEntity, material, model, 0, -1);
+    createChildNodelEntity(outEntity, model, 0, -1);
     return true;
 }

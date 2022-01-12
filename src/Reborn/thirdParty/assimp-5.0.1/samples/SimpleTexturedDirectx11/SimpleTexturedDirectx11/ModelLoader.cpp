@@ -151,6 +151,7 @@ void ModelLoader::processNode(aiNode * node, const aiScene * scene)
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+		//TODO Надо батчить меши в один большой с несколькими материалами
 		meshes.push_back(this->processMesh(mesh, scene));
 	}
 

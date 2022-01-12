@@ -7,7 +7,7 @@ namespace Reborn {
 	class GLSLShaderResouce : public AbstractResource {
 	public:
 		GLSLShaderResouce();
-		GLSLShaderResouce(const std::string& vertexSource, const std::string& fragmentSource);
+		GLSLShaderResouce(const Reborn::GLSLProgram& _program);
 		virtual bool tryLoad(const std::string& path) override;
 		virtual bool unload() override;
 		virtual const char* getTypeStr() override;

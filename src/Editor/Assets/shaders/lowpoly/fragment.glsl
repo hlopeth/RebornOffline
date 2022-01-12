@@ -8,12 +8,12 @@ in float vLight;
 
 uniform vec3 uLightColor;
 uniform vec3 uAmbientColor;
-uniform vec3 uMainColor;
+uniform vec3 uDiffuseColor;
 uniform float uOutlined;
 
 void main()
 {
-   FragColor = uMainColor;
+   FragColor = uDiffuseColor;
    vec3 lightColor = mix(uAmbientColor, uLightColor, vLight);
    FragColor.xyz *= vec3(lightColor);
    outline = step(0.5, uOutlined) * vec3(1.0, 0.0, 0.0);
