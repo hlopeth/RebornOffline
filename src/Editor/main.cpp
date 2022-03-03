@@ -90,13 +90,14 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
 
     cameraEditor(Application::get()->renderer().getCamera());
     
-    const char* model_items[] = { "rat", "deer", "cat", "wolf", "mill"};
+    const char* model_items[] = { "rat", "deer", "cat", "wolf", "mill", "forest"};
     std::string model_paths[] = { 
         "models/lowpolyrat/rat.fbx",
         "models/lowpolydeer/deer.fbx",
         "models/lowpolycat/cat.fbx",
         "models/lowpolywolf/wolf.fbx",
         "models/Low_Poly_Low_Poly_Mill_obj/low-poly-mill.obj",
+        "models/lowpoly_forest/ENFOR_EEVEE.obj",
     };
     static int model_item_current = 3;
     if (ImGui::Combo("Model", &model_item_current, model_items, IM_ARRAYSIZE(model_items))) {
