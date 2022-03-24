@@ -175,7 +175,7 @@ void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 	glViewport(0, 0, _window.width(), _window.height());
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	imguiManager.render(*this);
+	imguiManager.render();
 
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
 }
@@ -586,6 +586,11 @@ bool Reborn::Renderer::initImGui(SDL_Window* window) {
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	return true;
+}
+
+void Reborn::Renderer::newImGuiFrame()
+{
+	ImGui_ImplOpenGL3_NewFrame();
 }
 
 void Reborn::Renderer::drawImGui(ImDrawData* drawData)

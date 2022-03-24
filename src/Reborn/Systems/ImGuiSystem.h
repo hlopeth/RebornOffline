@@ -19,9 +19,7 @@ namespace Reborn {
 		};
 
 		void process(SDL_Window &window) {
-			ImGui_ImplSDL2_NewFrame(&window);
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui::NewFrame();
+			if (!Application::get()->imGuiManaget().newFrame()) return;
 
 			auto& entityManager = Application::get()->entityManager();
 			for (Entity cameraControllerEntity : getManagedEntities()) {

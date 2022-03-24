@@ -9,11 +9,16 @@ namespace Reborn {
 	public:
 		ImGuiManager() = default;
 
-		void init(Renderer& renderer, Window& window);
-		void render(Renderer& renderer);
+		void init(Renderer* renderer, Window* window);
+		//return false when imGui system not initialized and no imgui should be drawn
+		bool newFrame();
+		void render();
 		void processEvent(SDL_Event& evt);
-		void destroy(Renderer& renderer);
+		void destroy();
+		bool initialized();
 	private:
-		bool initialized = false;
+		bool _initialized = false;
+		Renderer* _renderer = nullptr;
+		Window* _window = nullptr;
 	};
 }

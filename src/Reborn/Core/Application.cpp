@@ -45,7 +45,7 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	}
 
 	//init imgui
-	_imguiManager.init(*_renderer, *window);
+	_imguiManager.init(_renderer.get(), window.get());
 
 	_entityManager.registerComponent<TestComponent>();
 	_entityManager.registerComponent<Transform3DComponent>();
@@ -124,7 +124,7 @@ void Reborn::Application::Close()
 
 Reborn::Application::~Application()
 {
-	_imguiManager.destroy(*_renderer);
+	_imguiManager.destroy();
 	_eventDispatcher.unsubscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 }
 
@@ -198,4 +198,9 @@ Reborn::Renderer& Reborn::Application::renderer() {
 Reborn::EntityManager& Reborn::Application::entityManager()
 {
 	return _entityManager;
+}
+
+Reborn::ImGuiManager& Reborn::Application::imGuiManaget()
+{
+	return _imguiManager;
 }

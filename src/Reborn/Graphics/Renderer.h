@@ -68,6 +68,7 @@ namespace Reborn {
 
 		//imGui
 		bool initImGui(SDL_Window* window);
+		void newImGuiFrame();
 		void drawImGui(ImDrawData* drawData);
 		void destroyImGui();
 

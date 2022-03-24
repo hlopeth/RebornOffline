@@ -15,7 +15,11 @@ void Reborn::Renderer::beginFrame()
 {
 }
 
-void Reborn::Renderer::endFrame()
+void Reborn::Renderer::drawImGui(ImDrawData* drawData)
+{
+}
+
+void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 {
 }
 
@@ -205,6 +209,10 @@ void Reborn::Renderer::attach(Framebuffer& fbo, FramebufferAttachment& fboAttach
 bool Reborn::Renderer::initImGui(SDL_Window* window) 
 {
 	return false;
+}
+
+void Reborn::Renderer::newImGuiFrame()
+{
 }
 
 void Reborn::Renderer::destroyImGui()

@@ -22,6 +22,7 @@ namespace Reborn {
 
 		EventDispatcher& eventDispatcher();
 		ResourceManager& resourceManager();
+		ImGuiManager& imGuiManaget();
 		Renderer& renderer();
 		EntityManager& entityManager();
 	protected:

@@ -3,37 +3,59 @@
 #include <backends/imgui_impl_sdl.h>
 #include <Graphics/Renderer.h>
 
-void Reborn::ImGuiManager::init(Renderer& renderer, Window& window)
+void Reborn::ImGuiManager::init(Renderer* renderer, Window* window)
 {
+	if (renderer == nullptr || window == nullptr) {
+		_initialized = false;
+		return;
+	}
+	_renderer = renderer;
+	_window = window;
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-	initialized = renderer.initImGui(&window.getSDLWindow());
+	_initialized = renderer->initImGui(&window->getSDLWindow());
 }
 
-void Reborn::ImGuiManager::render(Renderer& renderer)
+bool Reborn::ImGuiManager::newFrame()
 {
-	if (initialized)
+	if (_initialized) {
+		ImGui_ImplSDL2_NewFrame(&_window->getSDLWindow());
+		_renderer->newImGuiFrame();
+		ImGui::NewFrame();
+	}
+	return _initialized;
+}
+
+void Reborn::ImGuiManager::render()
+{
+	if (_initialized)
 	{
-		renderer.drawImGui(ImGui::GetDrawData());
+		_renderer->drawImGui(ImGui::GetDrawData());
 	}
 }
 
 void Reborn::ImGuiManager::processEvent(SDL_Event& evt)
 {
-	if (initialized)
+	if (_initialized)
 	{
 		ImGui_ImplSDL2_ProcessEvent(&evt);
 	}
 }
 
-void  Reborn::ImGuiManager::destroy(Renderer& renderer)
+void  Reborn::ImGuiManager::destroy()
 {
-	if (initialized)
+	if (_initialized)
 	{
-		renderer.destroyImGui();
+		_renderer->destroyImGui();
+		ImGui_ImplSDL2_Shutdown();
+		ImGui::DestroyContext();
 	}
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
+}
+
+bool Reborn::ImGuiManager::initialized()
+{
+	return _initialized;
 }
