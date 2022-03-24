@@ -16,8 +16,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(SOURCE_FILES
 	"Reborn.h"
 	 
-	"Core/Application.h"
+	"Core/Application.h" 
 	"Core/Application.cpp" 
+	"Core/ImGuiManager.cpp" 
 	"EntryPoint.h"
 	"ECS/EntitySystem.h" 
 	 
@@ -35,7 +36,8 @@ set(SOURCE_FILES
 	"KeyCodes.h"
 	"SDLUtils.h"
 	"SDLUtils.cpp"
-	"Graphics/Renderer.cpp"
+	"Graphics/RendererImpl/RendererGL.cpp"
+	#"Graphics/RendererImpl/RendererStub.cpp"
 	"Resources/ResourceManager.cpp" 
 	"Resources/TextResource.cpp" 
 	"Resources/GLSLShaderResouce.cpp"

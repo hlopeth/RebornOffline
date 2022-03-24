@@ -14,8 +14,6 @@
 
 #include <Resources/GLSLShaderResource.h>
 
-#include "backends/imgui_impl_sdl.h"
-
 SDL_Event evt;
 
 std::string defaultVertex =
@@ -46,6 +44,9 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 		_renderer = std::make_unique<Renderer>(static_cast<Window&>(*window));
 	}
 
+	//init imgui
+	_imguiManager.init(*_renderer, *window);
+
 	_entityManager.registerComponent<TestComponent>();
 	_entityManager.registerComponent<Transform3DComponent>();
 	_entityManager.registerComponent<ImGuiComponent>();
@@ -68,14 +69,14 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 
 bool Reborn::Application::internalInit(Reborn::Application* (createApplication)())
 {
-	appInstance = createApplication();
-	if (appInstance == nullptr) {
-		LOG_FATAL << "createApplication returned nullptr";
-		return false;
-	}
 	Uint32 sdlInitFlags = SDL_INIT_VIDEO;
 	if (SDL_Init(sdlInitFlags) != 0) {
 		LOG_ERROR << "Error while sdl init. \n" << SDL_GetError();
+		return false;
+	}
+	appInstance = createApplication();
+	if (appInstance == nullptr) {
+		LOG_FATAL << "createApplication returned nullptr";
 		return false;
 	}
 
@@ -111,7 +112,7 @@ void Reborn::Application::Run()
 
 		_renderer->beginFrame();
 		static_cast<RenderSystem*>(rendererSystem)->process(*_renderer);
-		_renderer->endFrame();
+		_renderer->endFrame(_imguiManager);
 	}
 
 }
@@ -123,6 +124,7 @@ void Reborn::Application::Close()
 
 Reborn::Application::~Application()
 {
+	_imguiManager.destroy(*_renderer);
 	_eventDispatcher.unsubscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 }
 
@@ -130,7 +132,7 @@ void Reborn::Application::PoolEvents()
 {
 	while (SDL_PollEvent(&evt) != 0)
 	{
-		ImGui_ImplSDL2_ProcessEvent(&evt);
+		_imguiManager.processEvent(evt);
 		switch (evt.type)
 		{
 		case SDL_QUIT: 

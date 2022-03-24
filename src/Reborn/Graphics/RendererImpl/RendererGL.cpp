@@ -1,19 +1,19 @@
 ﻿#pragma once
 #include "Core.h"
 #include <glad/glad.h>
-#include "Renderer.h"
-#include "backends/imgui_impl_sdl.h"
+#include "../Renderer.h"
 #include "backends/imgui_impl_opengl3.h"
+#include <backends/imgui_impl_sdl.h>
 #include <Math/MathUtils.h>
 
 GLuint compileShader(const std::string& source, GLenum type);
 
 std::string postprocessVertex =
-#include "shaders/postprocess/postprocessVertex.glsl"
+#include "../shaders/postprocess/postprocessVertex.glsl"
 ;
 
 std::string postprocessFragment =
-#include "shaders/postprocess/postprocessFragment.glsl"
+#include "../shaders/postprocess/postprocessFragment.glsl"
 ;
 
 
@@ -40,7 +40,11 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	sceneFraimbufferSize(_sceneFraimbufferSize),
 	_camera(Reborn::toRadians(60), 1, 100, 1)
 {
-	initImGui(&window.getSDLWindow());
+
+	if (!gladLoadGL()) {
+		LOG_ERROR << "ImGuiSystem::init Failed to init glad";
+		return;
+	}
 
 	auto glVersion = glGetString(GL_VERSION);
 	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
@@ -151,7 +155,7 @@ void Reborn::Renderer::beginFrame()
 
 bool p_open = true;
 
-void Reborn::Renderer::endFrame()
+void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 {
 	bind(postprocessFramebuffer);
 
@@ -171,7 +175,8 @@ void Reborn::Renderer::endFrame()
 	glViewport(0, 0, _window.width(), _window.height());
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	imguiManager.render(*this);
+
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
 }
 
@@ -531,10 +536,6 @@ void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
 
 Reborn::Renderer::~Renderer()
 {
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
-
 	SDL_GL_DeleteContext(_context);
 }
 
@@ -581,19 +582,20 @@ void Reborn::Renderer::attach(Framebuffer& fbo, FramebufferAttachment& fboAttach
 }
 
 bool Reborn::Renderer::initImGui(SDL_Window* window) {
-	if (!gladLoadGL()) {
-		LOG_ERROR << "ImGuiSystem::init Failed to init glad";
-		return false;
-	}
-
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 	ImGui_ImplSDL2_InitForOpenGL(window, _context);
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	return true;
+}
+
+void Reborn::Renderer::drawImGui(ImDrawData* drawData)
+{
+	ImGui_ImplOpenGL3_RenderDrawData(drawData);
+}
+
+void Reborn::Renderer::destroyImGui()
+{
+	ImGui_ImplOpenGL3_Shutdown();
 }
 
 GLuint compileShader(const std::string& source, GLenum type)

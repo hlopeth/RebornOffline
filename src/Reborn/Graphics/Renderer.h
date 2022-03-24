@@ -10,13 +10,16 @@
 #include <Math/Vector.h>
 #include "Mesh.h"
 #include "Camera.h"
+#include <Core/ImGuiManager.h>
+
+struct ImDrawData;
 
 namespace Reborn {
 	class Renderer {
 	public:
 		Renderer(Window& window, const Vector2& sceneFraimbufferSize = Vector2(500, 500));
 		void beginFrame();
-		void endFrame();
+		void endFrame(ImGuiManager& imguiManager);
 		void drawVAO(const VertexArrayObject& vao, GLuint offset = 0);
 		void drawMesh(const Mesh& mesh);
 		const SDL_GLContext& getContext();
@@ -63,6 +66,11 @@ namespace Reborn {
 		const Vector2& getSceneFraimbufferSize();
 		void setSceneFramebufferSize(const Vector2& newSize);
 
+		//imGui
+		bool initImGui(SDL_Window* window);
+		void drawImGui(ImDrawData* drawData);
+		void destroyImGui();
+
 		~Renderer();
 
 		Vector3 lightColor = Vector3(1.0);
@@ -72,7 +80,6 @@ namespace Reborn {
 	private:
 		bool create(FramebufferAttachment& fboAttachment);
 		void attach(Framebuffer& fbo, FramebufferAttachment& fboAttachment);
-		bool initImGui(SDL_Window* window);
 		SDL_GLContext _context;
 		Window& _window;
 		Vector2 sceneFraimbufferSize;

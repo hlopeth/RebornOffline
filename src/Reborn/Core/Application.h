@@ -5,6 +5,7 @@
 #include <Event/EventDispatcher.h>
 #include <Resources/ResourceManager.h>
 #include <ECS/EntityManager.h>
+#include "ImGuiManager.h"
 
 namespace Reborn {
 	class Application
@@ -41,5 +42,6 @@ namespace Reborn {
 		EventDispatcher _eventDispatcher;
 		ResourceManager _resourceManager;
 		EntityManager _entityManager;
+		ImGuiManager _imguiManager;
 	};
 }
