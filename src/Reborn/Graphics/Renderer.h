@@ -1,18 +1,19 @@
 #pragma once
-#include <SDL_opengl.h>
+#include "Platform.h"
 #include "Core/Window.h"
 #include "VertexArrayObject.h"
-#include "GLSLProgram.h"
 #include "Framebuffer.h"
 #include "Renderbuffer.h"
-#include "GLTexture.h"
 #include <Math/Matrix.h>
 #include <Math/Vector.h>
 #include "Mesh.h"
 #include "Camera.h"
 #include <Core/ImGuiManager.h>
+#include "ShaderProgram.h"
+#include "TextureHandler.h"
 
 struct ImDrawData;
+
 
 namespace Reborn {
 	class Renderer {
@@ -20,46 +21,46 @@ namespace Reborn {
 		Renderer(Window& window, const Vector2& sceneFraimbufferSize = Vector2(500, 500));
 		void beginFrame();
 		void endFrame(ImGuiManager& imguiManager);
-		void drawVAO(const VertexArrayObject& vao, GLuint offset = 0);
+		void drawVAO(const VertexArrayObject& vao, UIntValue offset = 0);
 		void drawMesh(const Mesh& mesh);
-		const SDL_GLContext& getContext();
+		const RenderingContext& getContext();
 		Camera& getCamera();
 		const Camera& getCamera() const;
 
-		void setUniform(const GLSLProgram& program, const GLchar* name, const int& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const float& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector2& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector3& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector4& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix2& value, bool transpose = true);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix3& value, bool transpose = true);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix4& value, bool transpose = true);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const float& value);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const int& value);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const Vector2& value);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const Vector3& value);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const Vector4& value);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const Matrix2& value, bool transpose = true);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const Matrix3& value, bool transpose = true);
+		void setUniform(const ShaderProgram& program, const CharValue* name, const Matrix4& value, bool transpose = true);
 
-		void create(GLSLProgram& program);
+		void create(ShaderProgram& program);
 		void create(BufferObject& buf);
 		void create(Framebuffer& fbo);
 		void create(Renderbuffer& rbo);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
-		void create(GLTexture& texture);
-		void upload(BufferObject& buf, GLenum usage = GL_STATIC_DRAW);
-		void upload(GLTexture& texture, void* data, GLuint mipLevel = 0);
+		void create(TextureHandler& texture);
+		void upload(BufferObject& buf, EnumValue usage = REBORN_STATIC_DRAW);
+		void upload(TextureHandler& texture, void* data, UIntValue mipLevel = 0);
 		void upload(Renderbuffer& rbo);
-		void updateTextureParameters(GLTexture& texture);
-		void setFramebufferTexture(Framebuffer& fbo, GLTexture& texture, GLenum attachment);
-		void setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment);
+		void updateTextureParameters(TextureHandler& texture);
+		void setFramebufferTexture(Framebuffer& fbo, TextureHandler& texture, EnumValue attachment);
+		void setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, EnumValue attachment);
 		void bind(const BufferObject& buf);
 		void bind(const VertexArrayObject& vao);
 		void bind(const Framebuffer& fbo);
 		void bindMainFramebuffer();
-		void bind(GLTexture& texture);
+		void bind(TextureHandler& texture);
 		void bind(Renderbuffer& rbo);
 		bool isFramebufferComplete(Framebuffer& fbo);
 		void destroy(Framebuffer& fbo);
-		void destroy(GLSLProgram& program);
+		void destroy(ShaderProgram& program);
 		void destroy(VertexArrayObject& vao);
-		void useProgram(const GLSLProgram& program);
-		const GLTexture& getSceneTexture();
+		void useProgram(const ShaderProgram& program);
+		const TextureHandler& getSceneTexture();
 
 		void setClearColor(const Vector3& color);
 
@@ -81,13 +82,13 @@ namespace Reborn {
 	private:
 		bool create(FramebufferAttachment& fboAttachment);
 		void attach(Framebuffer& fbo, FramebufferAttachment& fboAttachment);
-		SDL_GLContext _context;
+		RenderingContext _context;
 		Window& _window;
 		Vector2 sceneFraimbufferSize;
 		Framebuffer sceneFraimbuffer;
 		Framebuffer postprocessFramebuffer;
 		Camera _camera;
 		VertexArrayObject screenQuadVAO;
-		GLSLProgram postprocessPropgram;
+		ShaderProgram postprocessPropgram;
 	};
 }

@@ -4,7 +4,7 @@
 #include <Math/MathUtils.h>
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize) :
-	_context(0),
+	_context(window.createGLContext()),
 	_window(window),
 	sceneFraimbufferSize(_sceneFraimbufferSize),
 	_camera(Reborn::toRadians(60), 1, 100, 1)
@@ -23,7 +23,7 @@ void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 {
 }
 
-void Reborn::Renderer::drawVAO(const VertexArrayObject& vao, UIntValue offset)
+void Reborn::Renderer::drawVAO(const VertexArrayObject& vao, GLuint offset)
 {
 }
 
@@ -31,7 +31,7 @@ void Reborn::Renderer::drawMesh(const Mesh& mesh)
 {
 }
 
-const RenderingContext& Reborn::Renderer::getContext()
+const SDL_GLContext& Reborn::Renderer::getContext()
 {
 	return _context;
 }
@@ -46,35 +46,35 @@ const Reborn::Camera& Reborn::Renderer::getCamera() const
 	return _camera;
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const int& value)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const int& value)
 {
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const float& value)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const float& value)
 {
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const Vector2& value)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const Vector2& value)
 {
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const Vector3& value)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const Vector3& value)
 {
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const Vector4& value)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const Vector4& value)
 {
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const Matrix2& value, bool transpose)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const Matrix2& value, bool transpose)
 {
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const Matrix3& value, bool transpose)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const Matrix3& value, bool transpose)
 {
 }
 
-void Reborn::Renderer::setUniform(const ShaderProgram& program, const CharValue* name, const Matrix4& value, bool transpose)
+void Reborn::Renderer::setUniform(const ShaderProgram& program, const GLchar* name, const Matrix4& value, bool transpose)
 {
 }
 
@@ -102,11 +102,11 @@ void Reborn::Renderer::create(TextureHandler& texture)
 {
 }
 
-void Reborn::Renderer::upload(BufferObject& buf, EnumValue usage)
+void Reborn::Renderer::upload(BufferObject& buf, GLenum usage)
 {
 }
 
-void Reborn::Renderer::upload(TextureHandler& texture, void* data, UIntValue mipLevel)
+void Reborn::Renderer::upload(TextureHandler& texture, void* data, GLuint mipLevel)
 {
 }
 
@@ -118,11 +118,11 @@ void Reborn::Renderer::updateTextureParameters(TextureHandler& texture)
 {
 }
 
-void Reborn::Renderer::setFramebufferTexture(Framebuffer& fbo, TextureHandler& texture, EnumValue attachment)
+void Reborn::Renderer::setFramebufferTexture(Framebuffer& fbo, TextureHandler& texture, GLenum attachment)
 {
 }
 
-void Reborn::Renderer::setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, EnumValue attachment)
+void Reborn::Renderer::setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment)
 {
 }
 

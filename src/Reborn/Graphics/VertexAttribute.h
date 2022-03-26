@@ -1,26 +1,26 @@
 #pragma once
-#include <SDL_opengl.h>
+#include "Platform.h"
 
 namespace Reborn {
-	const GLuint GL_POSITION_INDEX = 0;
-	const GLuint GL_NORMAL_INDEX = 1;
-	const GLuint GL_UV1_INDEX = 2;
+	const UIntValue REBORN_POSITION_INDEX = 0;
+	const UIntValue REBORN_NORMAL_INDEX = 1;
+	const UIntValue REBORN_UV1_INDEX = 2;
 
 	struct VertexAttribute
 	{
 		VertexAttribute(
-			GLuint _index,
+			UIntValue _index,
 			size_t _size,
-			GLenum _type,
+			EnumValue _type,
 			bool _normalized,
 			size_t _stride,
 			int _offset
 		);
-		GLuint index;
+		UIntValue index;
 		size_t size;
 		size_t stride;
 		bool normalized;
-		GLenum type;
+		EnumValue type;
 		int offset;
 	};
 

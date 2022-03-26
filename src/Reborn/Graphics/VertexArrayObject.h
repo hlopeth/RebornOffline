@@ -1,5 +1,4 @@
 #pragma once
-#include <SDL_opengl.h>
 #include "VertexBufferObject.h"
 #include "VertexAttribute.h"
 
@@ -18,7 +17,7 @@ namespace Reborn {
 		VertexBufferObject vbo = VertexBufferObject(nullptr, 0);
 		ElementBufferObject ebo = ElementBufferObject(nullptr, 0);
 		std::vector<VertexAttribute> layout;
-		GLuint id = -1;
+		UIntValue id = -1;
 	};
 
 }

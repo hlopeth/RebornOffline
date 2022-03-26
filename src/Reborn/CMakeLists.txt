@@ -38,6 +38,7 @@ set(SOURCE_FILES
 	"SDLUtils.cpp"
 	#"Graphics/RendererImpl/RendererGL.cpp"
 	"Graphics/RendererImpl/RendererStub.cpp"
+	#"Graphics/RendererImpl/RendererDirectX11.cpp"
 	"Resources/ResourceManager.cpp" 
 	"Resources/TextResource.cpp" 
 	"Resources/GLSLShaderResouce.cpp"
@@ -65,6 +66,8 @@ target_precompile_headers(
 	<fstream>
 	<functional>
 )
+
+#add_compile_definitions(REBORN_OPENGL)
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})
 target_link_libraries(Reborn Glad_lib)

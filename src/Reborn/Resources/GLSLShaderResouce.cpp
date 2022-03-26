@@ -9,7 +9,7 @@ Reborn::GLSLShaderResouce::GLSLShaderResouce():
 }
 
 Reborn::GLSLShaderResouce::GLSLShaderResouce(
-	const Reborn::GLSLProgram& _program
+	const Reborn::ShaderProgram& _program
 ):
 	AbstractResource(0x78fd24ec),
 	program(_program)
@@ -68,7 +68,7 @@ const char* Reborn::GLSLShaderResouce::getTypeStr()
 	return "GLSLShaderResouce";
 }
 
-const Reborn::GLSLProgram& Reborn::GLSLShaderResouce::getProgram() const
+const Reborn::ShaderProgram& Reborn::GLSLShaderResouce::getProgram() const
 {
 	return program;
 }

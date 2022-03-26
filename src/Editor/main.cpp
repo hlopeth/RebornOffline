@@ -126,7 +126,7 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
 void drawMainScene(Entity cameraControllerEntity, ImGuiComponent& _this) {
     bool p_open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
-    const GLTexture& sceneTexture = Application::get()->renderer().getSceneTexture();
+    const TextureHandler& sceneTexture = Application::get()->renderer().getSceneTexture();
     if (p_open) {
         ImGui::Begin("Scene View", &p_open, window_flags);
         ImGuiWindow* window = ImGui::GetCurrentWindow();

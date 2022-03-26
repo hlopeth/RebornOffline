@@ -1,11 +1,11 @@
 #pragma once
-#include <SDL_opengl.h>
+#include "Platform.h"
 
 namespace Reborn {
 	struct Renderbuffer {
-		GLsizei width;
-		GLsizei height;
-		GLenum internalFormat;
-		GLuint id;
+		SizeiValue width;
+		SizeiValue height;
+		EnumValue internalFormat;
+		UIntValue id;
 	};
 }

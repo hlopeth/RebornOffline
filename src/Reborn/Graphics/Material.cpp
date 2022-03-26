@@ -1,7 +1,7 @@
 #include "Core.h"
 #include "Material.h"
 
-Reborn::Material::Material(const GLSLProgram& _program):
+Reborn::Material::Material(const ShaderProgram& _program):
 	program(_program)
 {
 }
@@ -120,7 +120,7 @@ void Reborn::Material::setParameter(const std::string& paramName, Matrix4 value)
 	parameters[paramName] = newParam;
 }
 
-const Reborn::GLSLProgram& Reborn::Material::getProgram() const
+const Reborn::ShaderProgram& Reborn::Material::getProgram() const
 {
 	return program;
 }

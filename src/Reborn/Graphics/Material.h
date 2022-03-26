@@ -1,5 +1,5 @@
 #pragma once
-#include "GLSLProgram.h"
+#include "ShaderProgram.h"
 #include <Graphics/Renderer.h>
 #include <Math/Vector.h>
 #include <Math/Matrix.h>
@@ -62,7 +62,7 @@ namespace Reborn {
 	class Material {
 	public:
 		Material() = delete;
-		Material(const GLSLProgram& _program);
+		Material(const ShaderProgram& _program);
 		void setup(Renderer& renderer) const;
 		const MaterialParameter& getParameter(const std::string& paramName) const;
 		void setParameter(const std::string& paramName, float value);
@@ -73,9 +73,9 @@ namespace Reborn {
 		void setParameter(const std::string& paramName, Matrix2 value);
 		void setParameter(const std::string& paramName, Matrix3 value);
 		void setParameter(const std::string& paramName, Matrix4 value);
-		const GLSLProgram& getProgram() const;
+		const ShaderProgram& getProgram() const;
 	private:
-		const GLSLProgram& program;
+		const ShaderProgram& program;
 		MaterialParameters parameters;
 	};
 }

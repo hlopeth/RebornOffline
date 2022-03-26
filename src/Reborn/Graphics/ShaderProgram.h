@@ -1,16 +1,16 @@
 #pragma once
-#include <SDL_opengl.h>
+#include "Platform.h"
 
 namespace Reborn {
-	class GLSLProgram {
+	class ShaderProgram {
 	public:
-		GLSLProgram() = default;
-		GLSLProgram(const std::string& _vertexSource, const std::string& _fragmentSource) {
+		ShaderProgram() = default;
+		ShaderProgram(const std::string& _vertexSource, const std::string& _fragmentSource) {
 			vertexSource = _vertexSource;
 			fragmentSource = _fragmentSource;
 		};
 		std::string vertexSource;
 		std::string fragmentSource;
-		GLuint id = -1;
+		UIntValue id = -1;
 	};
 }

@@ -61,7 +61,7 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 
 	//Default resources
-	Reborn::GLSLProgram defaultProgram = Reborn::GLSLProgram(defaultVertex, defaultFragment);
+	Reborn::ShaderProgram defaultProgram = Reborn::ShaderProgram(defaultVertex, defaultFragment);
 	_renderer->create(defaultProgram);
 	Reborn::GLSLShaderResouce* defaultShaderResource = new Reborn::GLSLShaderResouce(defaultProgram);
 	_resourceManager.addDefaultResource<Reborn::GLSLShaderResouce>(defaultShaderResource);
