@@ -44,7 +44,7 @@ void OpenGLRenderer::init(Window& window)
 
 	LOG_INFO << "using OpenGL " << glVersion;
 
-	_context = window.createGLContext();
+	_context = window.createRenderingContext();
 	initImGui(&window.getSDLWindow());
 
 	glEnable(GL_DEBUG_OUTPUT);

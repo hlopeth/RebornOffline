@@ -37,8 +37,8 @@ set(SOURCE_FILES
 	"SDLUtils.h"
 	"SDLUtils.cpp"
 	#"Graphics/RendererImpl/RendererGL.cpp"
-	"Graphics/RendererImpl/RendererStub.cpp"
-	#"Graphics/RendererImpl/RendererDirectX11.cpp"
+	#W"Graphics/RendererImpl/RendererStub.cpp"
+	"Graphics/RendererImpl/RendererDirectX11.cpp"
 	"Resources/ResourceManager.cpp" 
 	"Resources/TextResource.cpp" 
 	"Resources/GLSLShaderResouce.cpp"
@@ -68,6 +68,11 @@ target_precompile_headers(
 )
 
 #add_compile_definitions(REBORN_OPENGL)
+
+find_library(D3D11_LIBRARY d3d11.lib     PATHS     "$ENV{DXSDK_DIR}/Lib/x86" "C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86"     DOC "The directory where d3d11.lib resides")  
+find_library(D3DX11_LIBRARY d3dx11.lib     PATHS     "$ENV{DXSDK_DIR}/Lib/x86" "C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86"     DOC "The directory where d3dx11.lib resides")
+add_compile_definitions(REBORN_DIRECTX11)
+target_link_libraries(Reborn ${D3D11_LIBRARY} ${D3DX11_LIBRARY})
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})
 target_link_libraries(Reborn Glad_lib)

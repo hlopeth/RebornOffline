@@ -1,5 +1,6 @@
 #pragma once
 #include "SDL_video.h"
+#include "Platform.h"
 
 namespace Reborn {
 	struct WindowConfiguration {
@@ -15,7 +16,7 @@ namespace Reborn {
 	class Window {
 	public:
 		Window(SDL_Window* sdlWindow);
-		SDL_GLContext createGLContext();
+		RenderingContext createRenderingContext();
 		SDL_Window& getSDLWindow();
 		const int width() const;
 		const int height() const;
