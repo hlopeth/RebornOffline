@@ -39,7 +39,7 @@ RenderingContext Reborn::Window::createRenderingContext()
 
 	if (info.subsystem != SDL_SYSWM_WINDOWS) {
 		LOG_ERROR << "expected SDL_SYSWM_WINDOWS in func " << __func__ << ", in file " << __FILE__ << " line " << __LINE__;
-		return nullptr;
+		return { nullptr };
 	}
 
 	HWND hwnd = info.info.win.window;
@@ -187,7 +187,7 @@ RenderingContext Reborn::Window::createRenderingContext()
 	dxgiFactory->Release();
 
 	if (FAILED(hr))
-		return nullptr;
+		return { nullptr };
 
 	ID3D11RenderTargetView* pRenderTargetView = nullptr;
 
@@ -195,12 +195,12 @@ RenderingContext Reborn::Window::createRenderingContext()
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 	if (FAILED(hr))
-		return nullptr;
+		return { nullptr };
 
 	hr = pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView);
 	pBackBuffer->Release();
 	if (FAILED(hr))
-		return nullptr;
+		return { nullptr };
 
 	pImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, nullptr);
 
@@ -214,7 +214,7 @@ RenderingContext Reborn::Window::createRenderingContext()
 	vp.TopLeftY = 0;
 	pImmediateContext->RSSetViewports(1, &vp);
 
-	return pImmediateContext;
+	return { pImmediateContext, pd3dDevice, pSwapChain, pRenderTargetView };
 }
 #else 
 RenderingContext Reborn::Window::createRenderingContext()

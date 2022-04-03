@@ -13,6 +13,7 @@ set(SOURCE_FILES
     "imgui_widgets.cpp"
 
     "backends/imgui_impl_opengl3.cpp"
+    "backends/imgui_impl_dx11.cpp"
     "backends/imgui_impl_sdl.cpp"
 )
 

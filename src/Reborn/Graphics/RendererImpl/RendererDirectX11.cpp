@@ -2,6 +2,8 @@
 #include "Core.h"
 #include "../Renderer.h"
 #include <Math/MathUtils.h>
+#include "backends/imgui_impl_dx11.h"
+#include <backends/imgui_impl_sdl.h>
 
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize) :
@@ -16,12 +18,14 @@ void Reborn::Renderer::beginFrame()
 {
 }
 
-void Reborn::Renderer::drawImGui(ImDrawData* drawData)
-{
-}
 
 void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 {
+	_context.pDeviceContext->ClearRenderTargetView(_context.pRenderTargetView, ambientColor.d);
+
+	imguiManager.render();
+
+	_context.pSwapChain->Present(0, 0);
 }
 
 void Reborn::Renderer::drawVAO(const VertexArrayObject& vao, UIntValue offset)
@@ -181,6 +185,7 @@ const Reborn::TextureHandler& Reborn::Renderer::getSceneTexture()
 
 void Reborn::Renderer::setClearColor(const Vector3& color)
 {
+	this->ambientColor = color;
 }
 
 Reborn::Vector2 stubFramebufferSize;
@@ -209,13 +214,22 @@ void Reborn::Renderer::attach(Framebuffer& fbo, FramebufferAttachment& fboAttach
 
 bool Reborn::Renderer::initImGui(SDL_Window* window) 
 {
-	return false;
+	ImGui_ImplSDL2_InitForD3D(window);
+	ImGui_ImplDX11_Init(_context.pDevice, _context.pDeviceContext);
+	return true;
 }
 
 void Reborn::Renderer::newImGuiFrame()
 {
+	ImGui_ImplDX11_NewFrame();
+}
+
+void Reborn::Renderer::drawImGui(ImDrawData* drawData)
+{
+	ImGui_ImplDX11_RenderDrawData(drawData);
 }
 
 void Reborn::Renderer::destroyImGui()
 {
+	ImGui_ImplDX11_Shutdown();
 }
