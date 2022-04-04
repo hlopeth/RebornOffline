@@ -5,6 +5,12 @@
 #include "backends/imgui_impl_dx11.h"
 #include <backends/imgui_impl_sdl.h>
 
+//temp
+ID3D11Texture2D* m_renderTargetTexture = nullptr;
+ID3D11RenderTargetView* m_renderTargetView = nullptr;
+ID3D11ShaderResourceView* m_shaderResourceView = nullptr;
+
+
 ID3D11RenderTargetView* createRenderTargetView(RenderingContext& context) {
 	ID3D11RenderTargetView* renderTargetView = nullptr;
 	// Create a render target view
@@ -26,6 +32,56 @@ ID3D11RenderTargetView* createRenderTargetView(RenderingContext& context) {
 	return renderTargetView;
 }
 
+void createRenderTexture(RenderingContext& context, Reborn::Window& window) 
+{
+	HRESULT hr;
+
+	//https://www.rastertek.com/dx11tut22.html
+	// Setup the render target texture description.
+	D3D11_TEXTURE2D_DESC textureDesc;
+	ZeroMemory(&textureDesc, sizeof(textureDesc));
+	textureDesc.Width = window.width();
+	textureDesc.Height = window.height();
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; //!!!!
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+
+	hr = context.pDevice->CreateTexture2D(&textureDesc, nullptr, &m_renderTargetTexture);
+	if (FAILED(hr))
+	{
+		LOG_ERROR << "Failed to create render target texture";
+	}
+
+	// Setup the description of the render target view.
+	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+	renderTargetViewDesc.Format = textureDesc.Format;
+	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	renderTargetViewDesc.Texture2D.MipSlice = 0;
+	hr = context.pDevice->CreateRenderTargetView(m_renderTargetTexture, &renderTargetViewDesc, &m_renderTargetView);
+	if (FAILED(hr))
+	{
+		LOG_ERROR << "Failed to create render target view";
+	}
+
+	// Setup the description of the shader resource view.
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	shaderResourceViewDesc.Format = textureDesc.Format;
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+	shaderResourceViewDesc.Texture2D.MipLevels = 1;
+
+	hr = context.pDevice->CreateShaderResourceView(m_renderTargetTexture, &shaderResourceViewDesc, &m_shaderResourceView);
+	if (FAILED(hr))
+	{
+		LOG_ERROR << "Failed to create render shader resource view";
+	}
+}
+
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize) :
 	_context(window.createRenderingContext()),
 	_window(window),
@@ -37,6 +93,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	{
 		_context.pDeviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
 	}
+	createRenderTexture(_context, _window);
 }
 
 void Reborn::Renderer::beginFrame()
@@ -58,7 +115,7 @@ void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 
 	_context.pDeviceContext->ClearRenderTargetView(renderTargetView, ambientColor.d);
 
-	imguiManager.render();
+	//imguiManager.render();
 
 	_context.pSwapChain->Present(0, 0);
 }
