@@ -5,6 +5,26 @@
 #include "backends/imgui_impl_dx11.h"
 #include <backends/imgui_impl_sdl.h>
 
+ID3D11RenderTargetView* createRenderTargetView(RenderingContext& context) {
+	ID3D11RenderTargetView* renderTargetView = nullptr;
+	// Create a render target view
+	ID3D11Texture2D* pBackBuffer = nullptr;
+	HRESULT hr = context.pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	if (FAILED(hr))
+	{
+		LOG_ERROR << "Failed to create swap chain. file: " << __FILE__ << " line: " << __LINE__;
+		return nullptr;
+	}
+
+	hr = context.pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &renderTargetView);
+	if (FAILED(hr))
+	{
+		LOG_ERROR << "Failed to create render target view. file: " << __FILE__ << " line: " << __LINE__;
+		return nullptr;
+	}
+	pBackBuffer->Release();
+	return renderTargetView;
+}
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize) :
 	_context(window.createRenderingContext()),
@@ -12,6 +32,11 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	sceneFraimbufferSize(_sceneFraimbufferSize),
 	_camera(Reborn::toRadians(60), 1, 100, 1)
 {
+	renderTargetView = createRenderTargetView(_context);
+	if (renderTargetView != nullptr)
+	{
+		_context.pDeviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
+	}
 }
 
 void Reborn::Renderer::beginFrame()
@@ -21,7 +46,17 @@ void Reborn::Renderer::beginFrame()
 
 void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 {
-	_context.pDeviceContext->ClearRenderTargetView(_context.pRenderTargetView, ambientColor.d);
+	// Setup the viewport
+	D3D11_VIEWPORT vp;
+	vp.Width = (FLOAT)_window.width();
+	vp.Height = (FLOAT)_window.height();
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	_context.pDeviceContext->RSSetViewports(1, &vp);
+
+	_context.pDeviceContext->ClearRenderTargetView(renderTargetView, ambientColor.d);
 
 	imguiManager.render();
 

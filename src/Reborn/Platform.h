@@ -40,7 +40,6 @@ struct RenderingContext {
 	ID3D11DeviceContext* pDeviceContext;
 	ID3D11Device* pDevice;
 	IDXGISwapChain* pSwapChain;
-	ID3D11RenderTargetView* pRenderTargetView;
 };
 
 typedef FLOAT FloatValue;

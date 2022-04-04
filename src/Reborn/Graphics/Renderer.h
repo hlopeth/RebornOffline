@@ -90,5 +90,10 @@ namespace Reborn {
 		Camera _camera;
 		VertexArrayObject screenQuadVAO;
 		ShaderProgram postprocessPropgram;
+
+#ifdef REBORN_DIRECTX11
+		ID3D11RenderTargetView* renderTargetView;
+#endif // REBORN_DIRECTX11
+
 	};
 }
