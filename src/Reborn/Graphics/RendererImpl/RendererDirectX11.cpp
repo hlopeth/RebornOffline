@@ -4,11 +4,17 @@
 #include <Math/MathUtils.h>
 #include "backends/imgui_impl_dx11.h"
 #include <backends/imgui_impl_sdl.h>
+#include <d3dcompiler.h>
+#include <directxmath.h>
 
 //temp
 ID3D11Texture2D* m_renderTargetTexture = nullptr;
 ID3D11RenderTargetView* m_renderTargetView = nullptr;
 ID3D11ShaderResourceView* m_shaderResourceView = nullptr;
+
+ID3D11VertexShader* g_pVertexShader = nullptr;
+ID3D11PixelShader* g_pPixelShader = nullptr;
+ID3D11Buffer* g_pVertexBuffer = nullptr;
 
 
 ID3D11RenderTargetView* createRenderTargetView(RenderingContext& context) {
@@ -82,6 +88,11 @@ void createRenderTexture(RenderingContext& context, Reborn::Window& window)
 	}
 }
 
+struct SimpleVertex
+{
+	DirectX::XMFLOAT3 Pos;
+};
+
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize) :
 	_context(window.createRenderingContext()),
 	_window(window),
@@ -93,7 +104,81 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	{
 		_context.pDeviceContext->OMSetRenderTargets(1, &renderTargetView, nullptr);
 	}
-	createRenderTexture(_context, _window);
+
+	ID3DBlob* pErrorBlob = nullptr;
+	ID3DBlob* pVSBlob = nullptr;
+	ID3DBlob* pPSBlob = nullptr;
+
+
+
+	std::string vertex =
+	#include "../shaders/test.hlsl"
+	;
+		
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+	HRESULT hr = D3DCompile(
+		vertex.c_str(),
+		strlen(vertex.c_str()),
+		/*name*/nullptr,
+		/*defines*/nullptr,
+		/*includes*/nullptr,
+		"VS",
+		"vs_4_0",
+		dwShaderFlags,
+		0,
+		&pVSBlob,
+		&pErrorBlob
+	);
+	if (FAILED(hr)) {
+		LOG_ERROR << "failed to compile vertex shader" << reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer());
+	}
+	hr = _context.pDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
+	pVSBlob->Release();
+
+	hr = D3DCompile(
+		vertex.c_str(),
+		strlen(vertex.c_str()),
+		/*name*/nullptr,
+		/*defines*/nullptr,
+		/*includes*/nullptr,
+		"PS",
+		"ps_4_0",
+		dwShaderFlags,
+		0,
+		&pPSBlob,
+		&pErrorBlob
+	);
+	if (FAILED(hr)) {
+		LOG_ERROR << "failed to compile Pixel shader " << reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer());
+	}
+	hr = _context.pDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
+	pPSBlob->Release();
+
+	if(pErrorBlob) pErrorBlob->Release();
+
+
+	SimpleVertex vertices[] = {
+		DirectX::XMFLOAT3(0.0f, 0.5f, 0.5f),
+		DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f),
+		DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f),
+	};
+	D3D11_BUFFER_DESC bd = {};
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * 3;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+
+	D3D11_SUBRESOURCE_DATA InitData = {};
+	InitData.pSysMem = vertices;
+	hr = _context.pDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
+	if (FAILED(hr)) {
+		LOG_ERROR << "Faildes to create buffer";
+	}
+	
+
+
+	//createRenderTexture(_context, _window);
 }
 
 void Reborn::Renderer::beginFrame()
@@ -115,6 +200,17 @@ void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 
 	_context.pDeviceContext->ClearRenderTargetView(renderTargetView, ambientColor.d);
 
+	// Set vertex buffer
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	_context.pDeviceContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+
+	// Set primitive topology
+	_context.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	_context.pDeviceContext->VSSetShader(g_pVertexShader, nullptr, 0);
+	_context.pDeviceContext->PSSetShader(g_pPixelShader, nullptr, 0);
+	_context.pDeviceContext->Draw(3, 0);
 	//imguiManager.render();
 
 	_context.pSwapChain->Present(0, 0);
