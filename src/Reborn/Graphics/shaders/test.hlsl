@@ -9,9 +9,14 @@ R"(
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
-float4 VS( float4 Pos : POSITION ) : SV_POSITION
+
+struct vs_in {
+    float3 position_local : POS;
+};
+
+float4 VS( vs_in input) : SV_POSITION
 {
-    return Pos;
+    return float4(input.position_local, 1.0);;
 }
 
 

@@ -90,8 +90,9 @@ void createRenderTexture(RenderingContext& context, Reborn::Window& window)
 
 struct SimpleVertex
 {
-	DirectX::XMFLOAT3 Pos;
+	Reborn::Vector3 Pos;
 };
+
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize) :
 	_context(window.createRenderingContext()),
@@ -133,6 +134,17 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 		LOG_ERROR << "failed to compile vertex shader" << reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer());
 	}
 	hr = _context.pDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
+
+	ID3D11InputLayout* inputLayout = nullptr;
+	D3D11_INPUT_ELEMENT_DESC inputElemDescr[] = {
+		{ "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+	};
+	hr = _context.pDevice->CreateInputLayout(inputElemDescr, ARRAYSIZE(inputElemDescr), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &inputLayout);
+	if (FAILED(hr)) {
+		LOG_ERROR << "FUCK";
+	}
+	_context.pDeviceContext->IASetInputLayout(inputLayout);
+
 	pVSBlob->Release();
 
 	hr = D3DCompile(
@@ -156,28 +168,32 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	if(pErrorBlob) pErrorBlob->Release();
 
-
-	SimpleVertex vertices[] = {
-		DirectX::XMFLOAT3(0.0f, 0.5f, 0.5f),
-		DirectX::XMFLOAT3(0.5f, -0.5f, 0.5f),
-		DirectX::XMFLOAT3(-0.5f, -0.5f, 0.5f),
+	// Create vertex buffer
+	SimpleVertex vertices[] =
+	{
+		Reborn::Vector3(0.0f, 0.5f, 0.5f),
+		Reborn::Vector3(0.5f, -0.5f, 0.5f),
+		Reborn::Vector3(-0.5f, -0.5f, 0.5f),
 	};
+
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(SimpleVertex) * 3;
+	bd.StructureByteStride = sizeof(SimpleVertex);
+	bd.MiscFlags = 0;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
-
 	D3D11_SUBRESOURCE_DATA InitData = {};
 	InitData.pSysMem = vertices;
+	InitData.SysMemPitch = 0;
+	InitData.SysMemSlicePitch = 0;
+
 	hr = _context.pDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
 	if (FAILED(hr)) {
 		LOG_ERROR << "Faildes to create buffer";
 	}
 	
-
-
 	//createRenderTexture(_context, _window);
 }
 
@@ -200,13 +216,14 @@ void Reborn::Renderer::endFrame(Reborn::ImGuiManager& imguiManager)
 
 	_context.pDeviceContext->ClearRenderTargetView(renderTargetView, ambientColor.d);
 
+	// Set primitive topology
+	_context.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	// Set vertex buffer
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
 	_context.pDeviceContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
-	// Set primitive topology
-	_context.pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	_context.pDeviceContext->VSSetShader(g_pVertexShader, nullptr, 0);
 	_context.pDeviceContext->PSSetShader(g_pPixelShader, nullptr, 0);
