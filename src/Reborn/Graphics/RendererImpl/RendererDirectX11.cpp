@@ -137,7 +137,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	ID3D11InputLayout* inputLayout = nullptr;
 	D3D11_INPUT_ELEMENT_DESC inputElemDescr[] = {
-		{ "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{ "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 	hr = _context.pDevice->CreateInputLayout(inputElemDescr, ARRAYSIZE(inputElemDescr), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &inputLayout);
 	if (FAILED(hr)) {

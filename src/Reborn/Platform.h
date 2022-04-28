@@ -8,6 +8,7 @@
 #endif // REBORN_DIRECTX11
 #endif // REBORN_OPENGL
 
+#include "Graphics/Common/APIType.h"
 
 #ifdef REBORN_OPENGL
 
@@ -19,6 +20,7 @@
 	typedef GLsizei SizeiValue;
 	typedef GLchar CharValue;
 
+#define API_TYPE Reborn::APIType::OpenGL
 #define REBORN_STATIC_DRAW GL_STATIC_DRAW
 #define REBORN_TEXTURE_2D GL_TEXTURE_2D
 #define REBORN_RENDERBUFFER GL_RENDERBUFFER
@@ -35,7 +37,6 @@
 
 #else
 #ifdef REBORN_DIRECTX11
-
 struct RenderingContext {
 	ID3D11DeviceContext* pDeviceContext;
 	ID3D11Device* pDevice;
@@ -49,6 +50,7 @@ typedef unsigned int EnumValue;
 typedef int SizeiValue;
 typedef CHAR CharValue;
 
+#define API_TYPE Reborn::APIType::DirectX11
 #define REBORN_STATIC_DRAW 1
 #define REBORN_TEXTURE_2D 2
 #define REBORN_RENDERBUFFER 3
@@ -63,7 +65,6 @@ typedef CHAR CharValue;
 #define REBORN_FLOAT 10
 
 #else
-
 	typedef int RenderingContext;
 	typedef float FloatValue;
 	typedef int IntValue;
@@ -72,6 +73,7 @@ typedef CHAR CharValue;
 	typedef int SizeiValue;
 	typedef char CharValue;
 
+#define API_TYPE Reborn::APIType::NONE
 #define REBORN_STATIC_DRAW 1
 #define REBORN_TEXTURE_2D 2
 #define REBORN_RENDERBUFFER 3
