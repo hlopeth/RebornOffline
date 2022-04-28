@@ -43,14 +43,15 @@ set(SOURCE_FILES
 	"Resources/TextResource.cpp" 
 	"Resources/GLSLShaderResouce.cpp"
 	"Math/MathUtils.cpp"
-	"Graphics/Camera.cpp" 
+	"Graphics/Common/Camera.cpp" 
 	"Resources/ModelResource.cpp"
-	"Graphics/Mesh.cpp" 
-	"Graphics/VertexAttribute.cpp"
+	"Graphics/Common/Mesh.cpp" 
+	"Graphics/Common/VertexAttribute.cpp"
 	"Components/Transform3DComponent.cpp"
-	"Graphics/Transform.cpp"
+	"Components/RenderComponent.cpp"
+	"Graphics/Common/Transform.cpp"
 	"Utils.cpp" 
- "Graphics/Material.cpp")
+ "Graphics/Common/Material.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
@@ -67,11 +68,11 @@ target_precompile_headers(
 	<functional>
 )
 
-#add_compile_definitions(REBORN_OPENGL)
+add_compile_definitions(REBORN_OPENGL)
 
 find_library(D3D11_LIBRARY d3d11.lib     PATHS     "$ENV{DXSDK_DIR}/Lib/x86" "C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86"     DOC "The directory where d3d11.lib resides")  
 find_library(D3DX11_LIBRARY d3dx11.lib     PATHS     "$ENV{DXSDK_DIR}/Lib/x86" "C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86"     DOC "The directory where d3dx11.lib resides")
-add_compile_definitions(REBORN_DIRECTX11)
+#add_compile_definitions(REBORN_DIRECTX11)
 target_link_libraries(Reborn ${D3D11_LIBRARY} ${D3DX11_LIBRARY})
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})

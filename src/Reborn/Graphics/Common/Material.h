@@ -1,6 +1,5 @@
 #pragma once
 #include "ShaderProgram.h"
-#include <Graphics/Renderer.h>
 #include <Math/Vector.h>
 #include <Math/Matrix.h>
 
@@ -27,7 +26,7 @@ namespace Reborn {
 			tMatrix3,
 			tMatrix4,
 
-			Count
+			Undefined
 		};
 
 		union Value {
@@ -53,7 +52,7 @@ namespace Reborn {
 			return *this;
 		}
 
-		Type type = Count;
+		Type type = Type::Undefined;
 		Value value = { 0 };
 	};
 
@@ -62,9 +61,10 @@ namespace Reborn {
 	class Material {
 	public:
 		Material() = delete;
-		Material(const ShaderProgram& _program);
-		void setup(Renderer& renderer) const;
+		Material(const ShaderProgram* _program);
+		//void setup(Renderer& renderer) const;
 		const MaterialParameter& getParameter(const std::string& paramName) const;
+		const MaterialParameters& getParameters() const;
 		void setParameter(const std::string& paramName, float value);
 		void setParameter(const std::string& paramName, int value);
 		void setParameter(const std::string& paramName, Vector2 value);
@@ -73,9 +73,9 @@ namespace Reborn {
 		void setParameter(const std::string& paramName, Matrix2 value);
 		void setParameter(const std::string& paramName, Matrix3 value);
 		void setParameter(const std::string& paramName, Matrix4 value);
-		const ShaderProgram& getProgram() const;
+		const ShaderProgram* getProgram() const;
 	private:
-		const ShaderProgram& program;
+		const ShaderProgram* program;
 		MaterialParameters parameters;
 	};
 }

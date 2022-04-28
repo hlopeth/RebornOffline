@@ -24,15 +24,20 @@ Reborn::Mesh::Mesh(
     int vertexSize = _hasPositions * 3 + _hasNormals * 3 + _hasUV1 * 2;
     _vertexData = std::make_unique<float[]>(vertexSize * _vertexCount);
 
-    memcpy(_vertexData.get() + positionsOffset(), _positions, sizeof(Vector3) * _vertexCount);
+    if (_hasPositions)
+    {
+        memcpy(_vertexData.get() + positionsOffset(), _positions, sizeof(Vector3) * _vertexCount);
+    }
 
-    if (_normals != nullptr) {
+    if (_hasNormals) 
+    {
         memcpy(_vertexData.get() + normalsOffset(), _normals, sizeof(Vector3) * _vertexCount);
     }
-    if (_UV1 != nullptr) {
+
+    if (_hasUV1) 
+    {
         memcpy(_vertexData.get() + uv1Offset(), _UV1, sizeof(Vector2) * _vertexCount);
     }
-    createVAO();
 }
 
 Reborn::Mesh::Mesh(const Mesh& mesh):
@@ -44,10 +49,7 @@ Reborn::Mesh::Mesh(const Mesh& mesh):
         mesh.normals(),
         mesh.UV1()
     )
-{
-    LOG_DEBUG << "copy constructor";
-    createVAO();
-}
+{}
 
 Reborn::Mesh::Mesh(Mesh && mesh):
     _vertexData(std::move(mesh._vertexData)),
@@ -65,9 +67,6 @@ Reborn::Mesh::Mesh(Mesh && mesh):
     mesh._hasPositions = false;
     mesh._hasNormals= false;
     mesh._hasUV1 = false;
-    LOG_DEBUG << "move constructor";
-
-    createVAO();
 }
 
 Reborn::Mesh& Reborn::Mesh::operator=(const Mesh & mesh)
@@ -94,7 +93,6 @@ Reborn::Mesh& Reborn::Mesh::operator=(const Mesh & mesh)
     if (mesh.UV1() != nullptr) {
         memcpy(_vertexData.get() + uv1Offset(), mesh.UV1(), sizeof(Vector2) * _vertexCount);
     }
-    createVAO();
     return *this;
 }
 
@@ -118,52 +116,55 @@ bool Reborn::Mesh::hasIndices() const
     return _hasIndeces;
 }
 
-const Reborn::VertexArrayObject& Reborn::Mesh::getVAO() const
-{
-    return _vao;
-}
-
-Reborn::VertexArrayObject& Reborn::Mesh::getVAO()
-{
-    return _vao;
-}
-
 Reborn::Vector3* Reborn::Mesh::positions() const
 {
-    if (hasPositions()) {
+    if (hasPositions()) 
+    {
         return reinterpret_cast<Vector3*>(_vertexData.get() + positionsOffset());
     }
-    else {
+    else 
+    {
         return nullptr;
     }
 }
 
 Reborn::Vector3* Reborn::Mesh::normals() const
 {
-    if (hasNormals()) {
+    if (hasNormals()) 
+    {
         return reinterpret_cast<Vector3*>(_vertexData.get() + normalsOffset());
     }
-    else {
+    else 
+    {
         return nullptr;
     }
 }
 
 Reborn::Vector2* Reborn::Mesh::UV1() const
 {
-    if (hasUV1()) {
+    if (hasUV1()) 
+    {
         return reinterpret_cast<Vector2*>(_vertexData.get() + uv1Offset());
     }
-    else {
+    else 
+    {
         return nullptr;
     }
 }
 
+float* Reborn::Mesh::vertexData() const
+{
+    return _vertexData.get();
+}
+
 uint32_t* Reborn::Mesh::indices() const
 {
-    if (hasIndices()) {
+    if (hasIndices()) 
+    {
         return _indexData.get();
     }
-    else {
+    else 
+    {
         return nullptr;
     }
 }
@@ -191,23 +192,4 @@ int Reborn::Mesh::normalsOffset() const
 int Reborn::Mesh::uv1Offset() const
 {
     return (_hasPositions * 3 + _hasNormals * 3) * _vertexCount;
-}
-
-void Reborn::Mesh::createVAO()
-{
-    int vertexSize = _hasPositions * 3 + _hasNormals * 3 + _hasUV1 * 2;
-    Reborn::VertexBufferObject vbo(_vertexData.get(), _vertexCount * vertexSize);
-    Reborn::ElementBufferObject ebo(_indexData.get(), _indexCount);
-    std::vector<VertexAttribute> attributes;
-
-    if (_hasPositions) {
-        attributes.push_back(positionVertexAttribute(false, 0, positionsOffset()));
-    }
-    if (_hasNormals) {
-        attributes.push_back(normalVertexAttribute(false, 0, normalsOffset()));
-    }
-    if (_hasUV1) {
-        attributes.push_back(uv1VertexAttribute(false, 0, uv1Offset()));
-    }    
-    _vao = VertexArrayObject(vbo, ebo, attributes);
 }

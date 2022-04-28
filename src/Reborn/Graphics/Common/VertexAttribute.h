@@ -1,26 +1,28 @@
 #pragma once
-#include "Platform.h"
+#include "Types.h"
 
-namespace Reborn {
-	const UIntValue REBORN_POSITION_INDEX = 0;
-	const UIntValue REBORN_NORMAL_INDEX = 1;
-	const UIntValue REBORN_UV1_INDEX = 2;
+namespace Reborn 
+{
+	const uint16_t REBORN_POSITION_INDEX = 0;
+	const uint16_t REBORN_NORMAL_INDEX = 1;
+	const uint16_t REBORN_UV1_INDEX = 2;
 
 	struct VertexAttribute
 	{
 		VertexAttribute(
-			UIntValue _index,
+			uint32_t _index,
 			size_t _size,
-			EnumValue _type,
+			VertexType _type,
 			bool _normalized,
 			size_t _stride,
 			int _offset
 		);
-		UIntValue index;
+
+		uint32_t index;
 		size_t size;
 		size_t stride;
 		bool normalized;
-		EnumValue type;
+		VertexType type;
 		int offset;
 	};
 

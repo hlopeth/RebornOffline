@@ -1,6 +1,6 @@
 #pragma once
 #include "AbstractResource.h"
-#include "Graphics/Model.h"
+#include "Graphics/Common/Model.h"
 
 namespace Reborn {
 	class ModelResource : public AbstractResource {

@@ -4,9 +4,9 @@
 using namespace Reborn;
 
 VertexAttribute::VertexAttribute(
-	UIntValue _index,
+	uint32_t _index,
 	size_t _size,
-	EnumValue _type,
+	VertexType  _type,
 	bool _normalized,
 	size_t _stride,
 	int _offset
@@ -27,7 +27,7 @@ VertexAttribute Reborn::positionVertexAttribute(
 	return VertexAttribute(
 		REBORN_POSITION_INDEX,
 		3,
-		REBORN_FLOAT,
+		VertexType::FLOAT,
 		normalized,
 		stride,
 		offset
@@ -42,7 +42,7 @@ VertexAttribute Reborn::normalVertexAttribute(
 	return VertexAttribute(
 		REBORN_NORMAL_INDEX,
 		3,
-		REBORN_FLOAT,
+		VertexType::FLOAT,
 		normalized,
 		stride,
 		offset
@@ -57,7 +57,7 @@ VertexAttribute Reborn::uv1VertexAttribute(
 	return VertexAttribute(
 		REBORN_UV1_INDEX,
 		2,
-		REBORN_FLOAT,
+		VertexType::FLOAT,
 		normalized,
 		stride,
 		offset

@@ -34,7 +34,7 @@ void GLAPIENTRY glMessageCallback(
 	}
 }
 
-Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
+Reborn::Renderer::Renderer_d(Window& window, const Vector2& _sceneFraimbufferSize):
 	_context(window.createRenderingContext()),
 	_window(window),
 	sceneFraimbufferSize(_sceneFraimbufferSize),
