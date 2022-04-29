@@ -1,6 +1,6 @@
 #pragma once
-#include <Graphics/Material.h>
-#include <Graphics/Model.h>
+#include <Graphics/Common/Material.h>
+#include <Graphics/Common/Model.h>
 #include <ECS/Entity.h>
 
 namespace Reborn {

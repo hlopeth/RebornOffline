@@ -2,7 +2,7 @@
 #include "ComponentTypes.h"
 #include <ECS/Component.h>
 #include <ECS/Entity.h>
-#include <Graphics/Transform.h>
+#include <Graphics/Common/Transform.h>
 
 namespace Reborn {
 	class Transform3DComponent : public Component<Transform3DComponent, ComponentTypes::Transform3D>

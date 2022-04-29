@@ -12,9 +12,10 @@
 #include <Systems/RenderSystem.h>
 #include <Systems/TickSystem.h>
 
-#include <Resources/GLSLShaderResource.h>
-
 SDL_Event evt;
+
+#ifdef REBORN_OPENGL
+#include <Resources/GLSLShaderResource.h>
 
 std::string defaultVertex =
 #include <Graphics/shaders/lowpoly/vertex.glsl>
@@ -23,6 +24,7 @@ std::string defaultVertex =
 std::string defaultFragment =
 #include <Graphics/shaders/lowpoly/fragment.glsl>
 ;
+#endif // REBORN_OPENGL
 
 Reborn::Application* Reborn::Application::appInstance = nullptr;
 
@@ -41,7 +43,12 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 		shouldClose = true;
 	}
 	else {
+#ifdef REBORN_OPENGL
+		_renderer = std::make_unique<GLRenderer>(static_cast<Window&>(*window));
+#else
 		_renderer = std::make_unique<Renderer>(static_cast<Window&>(*window));
+#endif // REBORN_OPENGL
+
 	}
 
 	//init imgui
@@ -61,10 +68,12 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 
 	//Default resources
-	Reborn::ShaderProgram defaultProgram = Reborn::ShaderProgram(defaultVertex, defaultFragment);
-	_renderer->create(defaultProgram);
+#ifdef REBORN_OPENGL
+	GLRenderer* glRenderer = static_cast<GLRenderer*>(_renderer.get());
+	Reborn::GLShaderProgram defaultProgram = glRenderer->create(defaultVertex, defaultFragment);
 	Reborn::GLSLShaderResouce* defaultShaderResource = new Reborn::GLSLShaderResouce(defaultProgram);
 	_resourceManager.addDefaultResource<Reborn::GLSLShaderResouce>(defaultShaderResource);
+#endif // REBORN_OPENGL
 }
 
 bool Reborn::Application::internalInit(Reborn::Application* (createApplication)())
