@@ -6,6 +6,7 @@
 #include <Math/Matrix.h>
 #include <Math/MathUtils.h>
 #include <Utils.h>
+#include <Graphics/Common/Renderer.h>
 
 #ifdef REBORN_OPENGL
 #include <Graphics/Platform/OpenGL/GLRenderer.h>
@@ -23,10 +24,8 @@ namespace Reborn {
 		virtual void onManagedEntityRemoved([[maybe_unused]] Entity entity) override {
 		};
 
-#ifdef REBORN_OPENGL
-		void process(GLRenderer& renderer) {			
+		void process(Renderer& renderer) {			
 			const Matrix4& proj = renderer.getCamera().getViewProjection();
-
 			for (Entity entity : getManagedEntities()) {
 				auto& transform3DComponent = entityManager.getComponent<Transform3DComponent>(entity);
 				auto& renderComponent = entityManager.getComponent<RenderComponent>(entity);
@@ -34,25 +33,26 @@ namespace Reborn {
 				//const Matrix4& model = transform3DComponent.getModelMatrix();
 				const Matrix4 world = transform3DComponent.world;
 				Matrix4 mvp = proj * world;
-
 				for (int i = 0; i < renderComponent.VAOs.size(); i++) {
 					renderComponent.materials[i].setParameter(RB_MATPARAM_MODEL_TO_CLIP, mvp);
 					renderComponent.materials[i].setParameter(RB_MATPARAM_MODEL_TO_WORLD, world);
 					renderComponent.materials[i].setParameter(RB_MATPARAM_LIGHT_COLOR, Vector3(1.f));
 					renderComponent.materials[i].setParameter(RB_MATPARAM_AMBIENT, Vector3(0.f));
 					renderComponent.materials[i].setParameter(RB_MATPARAM_OUTLINED, 1.f);
-					setupMaterial(renderer, renderComponent.materials[i]);// renderComponent.materials[i].setup(renderer);
-					renderer.drawVAO(renderComponent.VAOs[i]);
+#ifdef REBORN_OPENGL
+					GLRenderer& glRenderer = static_cast<GLRenderer&>(renderer);
+					GLSetupMaterial(glRenderer, renderComponent.materials[i]);// renderComponent.materials[i].setup(renderer);
+					glRenderer.drawVAO(renderComponent.VAOs[i]);
+#endif // REBORN_OPENGL
 				}
 			}
 		};
-#endif // REBORN_OPENGL
 
 	private:
 
 
 #ifdef REBORN_OPENGL
-		void setupMaterial(GLRenderer& renderer, const Material& material) const
+		void GLSetupMaterial(GLRenderer& renderer, const Material& material) const
 		{
 			using Reborn::MaterialParameter;
 
