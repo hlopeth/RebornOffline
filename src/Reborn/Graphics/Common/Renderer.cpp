@@ -35,7 +35,7 @@ namespace Reborn
 		return viewportSize;
 	}
 
-	const Vector2& Renderer::getViewportSize(const Vector2& newSize)
+	const Vector2& Renderer::setViewportSize(const Vector2& newSize)
 	{
 		return viewportSize;
 	}

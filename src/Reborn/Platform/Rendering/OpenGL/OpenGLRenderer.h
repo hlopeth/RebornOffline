@@ -9,8 +9,9 @@ namespace Reborn {
 		virtual void init(Window& window) override;
 		virtual void beginFrame() override;
 		virtual void endFrame() override;
-		virtual void create(ShaderProgram& program) override;
 		virtual void create(BufferObject& buf) override;
+
+		
 
 		virtual void setUniform(const ShaderProgram& program, const GLchar* name, const int& value) override;
 		virtual void setUniform(const ShaderProgram& program, const GLchar* name, const float& value) override;

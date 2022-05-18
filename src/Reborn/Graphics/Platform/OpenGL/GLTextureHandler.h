@@ -22,6 +22,7 @@ namespace Reborn
 	class GLTextureHandler: TextureHandler
 	{
 	public:
+		GLTextureHandler() : TextureHandler(0, API_TYPE) {};
 		GLTextureHandler(const Vector2& _size) : TextureHandler(_size, API_TYPE) {};
 
 		void addParameter(const GLTextureParemeter& parameter) {

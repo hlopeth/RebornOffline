@@ -15,22 +15,17 @@ namespace Reborn
 		emptyAttachment = 0
 	};
 
-	union GLFramebufferAttachmentValue 
+	union GLFramebufferAttachmentTarget 
 	{
-		TextureHandler texture;
-		Renderbuffer renderbuffer;
-		GLFramebufferAttachmentValue() 
-		{ 
-			memset(this, 0, sizeof(GLFramebufferAttachmentValue)); 
-		}
+		GLTextureHandler texture;
+		GLRenderbuffer renderbuffer;
 	};
 
 	struct GLFramebufferAttachment 
 	{
-
-		EnumValue type = 0; //GL_TEXTURE_2D or GL_RENDERBUFFER
+		EnumValue targetType = 0; //GL_TEXTURE_2D or GL_RENDERBUFFER
 		GLFramebufferAttachmentType attachment = GLFramebufferAttachmentType::emptyAttachment; //GL_COLOR_ATTACHMENTX or GL_DEPTH_STENCIL_ATTACHMENT or GL_EMPLTY_ATTACHMENT
-		GLFramebufferAttachmentValue value;
+		GLFramebufferAttachmentTarget target;
 	};
 
 
@@ -41,21 +36,21 @@ namespace Reborn
 
 		void useAttachment(GLFramebufferAttachmentType attachment, GLTextureHandler texture) 
 		{
-			GLFramebufferAttachmentValue value;
+			GLFramebufferAttachmentTarget value{};
 			value.texture = texture;
 			useAttachment(attachment, value, REBORN_TEXTURE_2D);
 		};
 
 		void useAttachment(GLFramebufferAttachmentType attachment, GLRenderbuffer renderbuffer) 
 		{
-			GLFramebufferAttachmentValue value;
+			GLFramebufferAttachmentTarget value{};
 			value.renderbuffer = renderbuffer;
 			useAttachment(attachment, value, REBORN_RENDERBUFFER);
 		};
 
 		void useAttachment(
 			GLFramebufferAttachmentType attachment,
-			GLFramebufferAttachmentValue value, 
+			GLFramebufferAttachmentTarget value, 
 			EnumValue type
 		) 
 		{
@@ -83,14 +78,22 @@ namespace Reborn
 				break;
 			}
 
-			initializedAttachment->type = type;
-			initializedAttachment->value = value;
+			initializedAttachment->targetType= type;
+			if (type == GL_RENDERBUFFER) {
+				initializedAttachment->target.renderbuffer = value.renderbuffer;
+			}
+			else if(type == GL_TEXTURE_2D) {
+				initializedAttachment->target.texture = value.texture;
+			}
+			else {
+				LOG_ERROR << "Framebuffer::useAttachment uncnown target type " << attachment;
+			}
 		};
 
-		GLFramebufferAttachment colorAttachment0;
-		GLFramebufferAttachment colorAttachment1;
-		GLFramebufferAttachment colorAttachment2;
-		GLFramebufferAttachment depthStensilAttachment;
+		GLFramebufferAttachment colorAttachment0{};
+		GLFramebufferAttachment colorAttachment1{};
+		GLFramebufferAttachment colorAttachment2{};
+		GLFramebufferAttachment depthStensilAttachment{};
 		UIntValue id;
 	};
 }

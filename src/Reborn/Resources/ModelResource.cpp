@@ -1,6 +1,6 @@
 #include "Core.h"
 #include "ModelResource.h"
-#include "GLSLShaderResource.h"
+#include "ShaderResource.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -41,11 +41,11 @@ void loadMesh(Reborn::Model* model, const aiMesh* assimpMesh) {
 
 void loadMaterial(Reborn::Model* model, const aiMaterial* assimpMaterial) {
 	const auto& resManager = Reborn::Application::get()->resourceManager();
-	const Reborn::GLSLShaderResouce* defaultShaderResource = resManager.getDefaultResource<Reborn::GLSLShaderResouce>();
+	const Reborn::ShaderResouce* defaultShaderResource = resManager.getDefaultResource<Reborn::ShaderResouce>();
 	if (defaultShaderResource == nullptr)
 		return;
 
-	const Reborn::ShaderProgram& defaultProgram = defaultShaderResource->getProgram();
+	const Reborn::ShaderProgram* defaultProgram = &defaultShaderResource->getProgram();
 	Reborn::Material material(defaultProgram);
 	aiColor3D diffuseColor;
 	assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);

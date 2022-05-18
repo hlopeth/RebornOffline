@@ -29,10 +29,10 @@
 #include "Event/MouseEvents.h"
 
 #include "Resources/TextResource.h"
-#include "Resources/GLSLShaderResource.h"
+#include "Resources/ShaderResource.h"
 #include "Resources/ModelResource.h"
 
-#include "Graphics/Mesh.h"
+#include "Graphics/Common/Mesh.h"
 
 #include "Utils.h"
 

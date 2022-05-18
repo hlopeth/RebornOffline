@@ -41,7 +41,7 @@ set(SOURCE_FILES
 	"Graphics/RendererImpl/RendererDirectX11.cpp"
 	"Resources/ResourceManager.cpp" 
 	"Resources/TextResource.cpp" 
-	"Resources/GLSLShaderResouce.cpp"
+	"Resources/ShaderResouce.cpp"
 	"Math/MathUtils.cpp"
 	"Graphics/Common/Camera.cpp" 
 	"Resources/ModelResource.cpp"

@@ -1,6 +1,6 @@
 #pragma once
 #include "Window.h"
-#include "Graphics/Renderer.h"
+#include "Graphics/Common/Renderer.h"
 #include <ECS/EntitySystem.h>
 #include <Event/EventDispatcher.h>
 #include <Resources/ResourceManager.h>

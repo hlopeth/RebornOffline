@@ -12,7 +12,7 @@
 #include <Systems/RenderSystem.h>
 #include <Systems/TickSystem.h>
 
-#include <Resources/GLSLShaderResource.h>
+#include <Resources/ShaderResource.h>
 
 SDL_Event evt;
 
@@ -61,10 +61,12 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 	_eventDispatcher.subscribe(ApplicationShouldCloseEvent::TYPE(), &closeHandler);
 
 	//Default resources
-	Reborn::ShaderProgram defaultProgram = Reborn::ShaderProgram(defaultVertex, defaultFragment);
-	_renderer->create(defaultProgram);
-	Reborn::GLSLShaderResouce* defaultShaderResource = new Reborn::GLSLShaderResouce(defaultProgram);
-	_resourceManager.addDefaultResource<Reborn::GLSLShaderResouce>(defaultShaderResource);
+#if REBORN_OPENGL
+	GLRenderer& glRenderer = static_cast<GLRenderer&>(*_renderer);
+	Reborn::ShaderProgram defaultProgram = glRenderer.create(defaultVertex, defaultFragment);
+	Reborn::ShaderResouce* defaultShaderResource = new Reborn::ShaderResouce(defaultProgram);
+	_resourceManager.addDefaultResource<Reborn::ShaderResouce>(defaultShaderResource);
+#endif
 }
 
 bool Reborn::Application::internalInit(Reborn::Application* (createApplication)())
@@ -110,9 +112,14 @@ void Reborn::Application::Run()
 
 		window->Update();
 
-		_renderer->beginFrame();
+#if REBORN_OPENGL
+		GLRenderer& glRenderer = static_cast<GLRenderer&>(*_renderer);
+		glRenderer.beginFrame();
+#endif
 		static_cast<RenderSystem*>(rendererSystem)->process(*_renderer);
-		_renderer->endFrame(_imguiManager);
+#if REBORN_OPENGL
+		glRenderer.endFrame(_imguiManager);
+#endif
 	}
 
 }

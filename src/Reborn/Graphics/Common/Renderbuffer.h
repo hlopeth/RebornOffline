@@ -6,6 +6,7 @@ namespace Reborn
 {
 	class Renderbuffer : GrahicsResource
 	{
+	public:
 		Renderbuffer(
 			const Vector2& _size,
 			APIType apiType

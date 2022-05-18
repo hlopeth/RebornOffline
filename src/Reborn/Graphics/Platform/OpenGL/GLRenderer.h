@@ -52,7 +52,7 @@ namespace Reborn
 		bool create(GLFramebufferAttachment& fboAttachment);
 		void attach(GLFramebuffer& fbo, GLFramebufferAttachment& fboAttachment);
 		RenderingContext context;
-		VertexArrayObject screenQuadVAO;
+		GLVertexArrayObject screenQuadVAO;
 		ShaderProgram postprocessPropgram;
 		GLFramebuffer sceneFraimbuffer;
 		GLFramebuffer postprocessFramebuffer;

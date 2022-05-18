@@ -18,7 +18,7 @@ namespace Reborn
 		const Vector3& getClearColor() const;
 
 		const Vector2& getViewportSize() const;
-		const Vector2& getViewportSize(const Vector2& newSize);
+		const Vector2& setViewportSize(const Vector2& newSize);
 
 		APIType getAPIType() const;
 	private:

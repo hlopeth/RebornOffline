@@ -104,29 +104,29 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
         Transform transformCopy = entityManager.getComponent<Transform3DComponent>(mainEntity).getTransform();
         entityManager.removeEntity(mainEntity);
         mainEntity = NoEntity;
-        const GLSLShaderResouce* shaderResource = resourceManager.getResourceOrCreate<GLSLShaderResouce>("shaders/lowpoly");
+        const ShaderResouce* shaderResource = resourceManager.getResourceOrCreate<ShaderResouce>("shaders/lowpoly");
         
         const std::string& filename = model_paths[model_item_current];
         auto* modelResource = resourceManager.getResourceOrCreate<ModelResource>(filename);
         createModelEntity(mainEntity, modelResource->getModel());
         entityManager.getComponent<Transform3DComponent>(mainEntity).setTransform(transformCopy);
     }
-    ImGui::ColorPicker4("Outline color", (float*)&renderer.outlineColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
+    //ImGui::ColorPicker4("Outline color", (float*)&renderer.outlineColor, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_PickerHueWheel | ImGuiColorEditFlags_NoInputs);
 
     static Vector4 mainMaterialColor = Vector4(1.f, 1.f, 1.f, 1.f);
 
     ImGui::End();
 
     //renderer.setClearColor(Vector3(color.x, color.y, color.z));
-    renderer.lightColor = Vector3(lightColor.x, lightColor.y, lightColor.z);
-    renderer.ambientColor = Vector3(ambientColor.x, ambientColor.y, ambientColor.z);
-    renderer.lightStr = lightStr;
+    //renderer.lightColor = Vector3(lightColor.x, lightColor.y, lightColor.z);
+    //renderer.ambientColor = Vector3(ambientColor.x, ambientColor.y, ambientColor.z);
+    //renderer.lightStr = lightStr;
 }
 
 void drawMainScene(Entity cameraControllerEntity, ImGuiComponent& _this) {
     bool p_open = true;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
-    const TextureHandler& sceneTexture = Application::get()->renderer().getSceneTexture();
+    /*const TextureHandler& sceneTexture = Application::get()->renderer().getSceneTexture();
     if (p_open) {
         ImGui::Begin("Scene View", &p_open, window_flags);
         ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -138,8 +138,7 @@ void drawMainScene(Entity cameraControllerEntity, ImGuiComponent& _this) {
         Application::get()->renderer().getCamera().setAspect(viewprtSize.x / viewprtSize.y);
         ImGui::Image((void*)(intptr_t)(sceneTexture.id), viewprtSize);
         ImGui::End();
-    }
-
+    }*/
 }
 
 class EditorApp : public Reborn::Application 
@@ -149,7 +148,7 @@ public:
     }
 
     void Start() override {
-        renderer().setSceneFramebufferSize(Vector2(1024, 1024));
+        renderer().setViewportSize(Vector2(1024, 1024));
         setupResourceManager();
         auto& entityMng = entityManager();
 
@@ -162,7 +161,7 @@ public:
         Entity sceneViewEntity = entityMng.createEntity();
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
-        const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/lowpoly");
+        const ShaderResouce* shaderResource = resourceManager().getResourceOrCreate<ShaderResouce>("shaders/lowpoly");
         lowPolyMaterial = std::make_shared<Material>(shaderResource->getProgram());
         const ModelResource* modelResource = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolywolf/wolf.fbx");
 
@@ -188,8 +187,9 @@ private:
     }
 
     bool createTriangleEntity(Entity& triangleEntity) {
-        const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/simple_triangle");
-        static Material material(shaderResource->getProgram());
+        const ShaderResouce* shaderResource = resourceManager().getResourceOrCreate<ShaderResouce>("shaders/simple_triangle");
+        const ShaderProgram* program = &shaderResource->getProgram();
+        static Material material(program);
 
         const Vector3 vertices[3] = {
             Vector3(-0.5f, -0.5f, 0.0f), // left  
@@ -208,8 +208,9 @@ private:
     }
 
     bool createCubeEntity(Entity& cubeEntity) {
-        const GLSLShaderResouce* shaderResource = resourceManager().getResourceOrCreate<GLSLShaderResouce>("shaders/simple_triangle");
-        static Material material(shaderResource->getProgram());
+        const ShaderResouce* shaderResource = resourceManager().getResourceOrCreate<ShaderResouce>("shaders/simple_triangle");
+        const ShaderProgram* program = &shaderResource->getProgram();
+        static Material material(program);
 
         const Vector3 vertices[] = {
             Vector3(-1.f, -1.f, -1.f),
