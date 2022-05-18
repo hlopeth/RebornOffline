@@ -1,4 +1,5 @@
 #pragma once
+#include <Platform.h>
 #include "Window.h"
 #include "Graphics/Common/Renderer.h"
 #include <ECS/EntitySystem.h>
@@ -6,6 +7,11 @@
 #include <Resources/ResourceManager.h>
 #include <ECS/EntityManager.h>
 #include "ImGuiManager.h"
+
+#ifdef REBORN_OPENGL
+#include <Graphics/Platform/OpenGL/GLRenderer.h>
+#endif // REBORN_OPENGL
+
 
 namespace Reborn {
 	class Application
