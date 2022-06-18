@@ -1,7 +1,8 @@
 #include <Core.h>
 #include "ImGuiManager.h"
 #include <backends/imgui_impl_sdl.h>
-#include <Graphics/Renderer.h>
+#include <Graphics/Common/Renderer.h>
+#include <Platform.h>
 
 void Reborn::ImGuiManager::init(Renderer* renderer, Window* window)
 {
@@ -16,6 +17,7 @@ void Reborn::ImGuiManager::init(Renderer* renderer, Window* window)
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+
 	_initialized = renderer->initImGui(&window->getSDLWindow());
 }
 

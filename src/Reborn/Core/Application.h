@@ -13,6 +13,7 @@
 #endif // REBORN_OPENGL
 
 
+
 namespace Reborn {
 	class Application
 	{

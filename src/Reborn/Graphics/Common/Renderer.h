@@ -5,6 +5,8 @@
 #include "APIType.h"
 #include "Camera.h"
 
+struct ImDrawData;
+
 namespace Reborn
 {
 	class Renderer
@@ -21,6 +23,11 @@ namespace Reborn
 		const Vector2& setViewportSize(const Vector2& newSize);
 
 		APIType getAPIType() const;
+
+		virtual bool initImGui(SDL_Window* window);
+		virtual void newImGuiFrame();
+		virtual void destroyImGui();
+		virtual void drawImGui(ImDrawData* drawData);
 	private:
 		Vector2 viewportSize;
 		Camera camera;

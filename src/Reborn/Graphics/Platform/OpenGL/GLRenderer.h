@@ -4,6 +4,8 @@
 #include "GLShaderProgram.h"
 #include "GLTextureHandler.h"
 #include "GLFramebuffer.h"
+#include "GLVertexArrayObject.h"
+#include <Math/Matrix.h>
 
 struct ImDrawData;
 
@@ -28,7 +30,7 @@ namespace Reborn
 		void setUniform(const GLShaderProgram& program, const CharValue* name, const Matrix4& value, bool transpose = true);
 
 		GLShaderProgram create(const std::string& vertexSource, const std::string fragmentSource);
-		void create(VertexArrayObject& vao);
+		void create(GLVertexArrayObject& vao);
 		void create(GLTextureHandler& texture);
 		void upload(BufferObject& buf, EnumValue usage = REBORN_STATIC_DRAW);
 		void upload(GLTextureHandler& texture, void* data, UIntValue mipLevel = 0);
@@ -37,7 +39,7 @@ namespace Reborn
 		void setFramebufferTexture(GLFramebuffer& fbo, GLTextureHandler& texture, EnumValue attachment);
 		void setFramebufferRenderbuffer(GLFramebuffer& fbo, GLRenderbuffer& rbo, EnumValue attachment);
 		void bind(const BufferObject& buf);
-		void bind(const VertexArrayObject& vao);
+		void bind(const GLVertexArrayObject& vao);
 		void bind(const GLFramebuffer& fbo);
 		void bindMainFramebuffer();
 		void bind(GLTextureHandler& texture);
@@ -45,9 +47,14 @@ namespace Reborn
 		bool isFramebufferComplete(GLFramebuffer& fbo);
 		void destroy(GLFramebuffer& fbo);
 		void destroy(ShaderProgram& program);
-		void destroy(VertexArrayObject& vao);
+		void destroy(GLVertexArrayObject& vao);
 		void useProgram(const ShaderProgram& program);
 		const GLTextureHandler& getSceneTexture();
+
+		virtual bool initImGui(SDL_Window* window) override;
+		virtual void newImGuiFrame() override;
+		virtual void destroyImGui() override;
+		virtual void drawImGui(ImDrawData* drawData) override;
 	private:
 		bool create(GLFramebufferAttachment& fboAttachment);
 		void attach(GLFramebuffer& fbo, GLFramebufferAttachment& fboAttachment);

@@ -1,3 +1,4 @@
+#include "Renderer.h"
 #include <Core.h>
 #include "Renderer.h"
 
@@ -43,5 +44,21 @@ namespace Reborn
 	APIType Reborn::Renderer::getAPIType() const
 	{
 		return apiType;
+	}
+	bool Renderer::initImGui(SDL_Window* window)
+	{
+		return false;
+	}
+
+	void Reborn::Renderer::newImGuiFrame()
+	{
+	}
+
+	void Reborn::Renderer::destroyImGui()
+	{
+	}
+
+	void Reborn::Renderer::drawImGui(ImDrawData* drawData)
+	{
 	}
 }

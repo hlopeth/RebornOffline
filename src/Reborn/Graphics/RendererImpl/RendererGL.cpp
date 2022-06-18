@@ -1,4 +1,4 @@
-﻿#pragma once
+﻿/*#pragma once
 #include "Core.h"
 #include <glad/glad.h>
 #include "../Renderer.h"
@@ -621,4 +621,4 @@ GLuint compileShader(const std::string& source, GLenum type)
 		LOG_ERROR << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog;
 	}
 	return shader;
-}
+}*/

@@ -16,7 +16,7 @@
 SDL_Event evt;
 
 #ifdef REBORN_OPENGL
-#include <Resources/GLSLShaderResource.h>
+#include <Resources/ShaderResource.h>
 
 std::string defaultVertex =
 #include <Graphics/shaders/lowpoly/vertex.glsl>
@@ -44,10 +44,11 @@ Reborn::Application::Application(WindowConfiguration windowConfig):
 		shouldClose = true;
 	}
 	else {
+		Vector2 viewportSize = Vector2(window->width(), window->height());
 #ifdef REBORN_OPENGL
-		_renderer = std::make_unique<GLRenderer>(static_cast<Window&>(*window));
+		_renderer = std::make_unique<GLRenderer>(static_cast<Window&>(*window), viewportSize);
 #else
-		_renderer = std::make_unique<Renderer>(static_cast<Window&>(*window));
+		_renderer = std::make_unique<Renderer>(static_cast<Window&>(*window), viewportSize, APIType::NONE);
 #endif // REBORN_OPENGL
 
 	}

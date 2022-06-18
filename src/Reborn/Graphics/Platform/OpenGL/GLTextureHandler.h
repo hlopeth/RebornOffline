@@ -19,7 +19,7 @@ namespace Reborn
 		GLTextureParemeterValue value;
 	};
 
-	class GLTextureHandler: TextureHandler
+	class GLTextureHandler: public TextureHandler
 	{
 	public:
 		GLTextureHandler() : TextureHandler(0, API_TYPE) {};

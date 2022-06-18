@@ -13,12 +13,10 @@ namespace Reborn
 			id(0) {}
 		GLRenderbuffer(
 			const Vector2& _size,
-			EnumValue _internalFormat,
-			UIntValue _id
+			EnumValue _internalFormat
 		) :
 			Renderbuffer(_size, API_TYPE),
-			internalFormat(_internalFormat),
-			id(_id)
+			internalFormat(_internalFormat)
 		{};
 
 		EnumValue internalFormat;

@@ -1,6 +1,5 @@
-add_subdirectory(thirdParty)
+ add_subdirectory(thirdParty)
 project(Reborn VERSION 0.1.0)
-find_package(OpenGL REQUIRED)
 
 include_directories(${SDL2_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include)
 set(ELPP_SOURCE_DIR thirdParty/easyloggingpp)
@@ -13,47 +12,66 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
+set(REBORN_GRAPHICS_PLATFORM "OpenGL")
+
+if(REBORN_GRAPHICS_PLATFORM MATCHES "OpenGL")
+	find_package(OpenGL REQUIRED)
+	add_compile_definitions(REBORN_OPENGL)
+	set(GRAPHICS_PLATFORM_SOURCES
+		"Graphics/Platform/OpenGL/GLRenderer.cpp" 
+	)
+else()
+	MESSAGE_ERROR("aaaa")
+endif()
+
 set(SOURCE_FILES
 	"Reborn.h"
+	"EntryPoint.h"
+	"Log.h"
+	"Core.h"
+	"KeyCodes.h"
+	"SDLUtils.h"
+	"SDLUtils.cpp"
+	"Utils.cpp" 
 	 
 	"Core/Application.h" 
 	"Core/Application.cpp" 
 	"Core/ImGuiManager.cpp" 
-	"EntryPoint.h"
-	"ECS/EntitySystem.h" 
-	 
-	"Event/IEvent.h"  
-	 
 	"Core/Window.h"  
 	"Core/Window.cpp"
-	${ELPP_SOURCE_DIR}/easylogging++.h
-	${ELPP_SOURCE_DIR}/easylogging++.cc
+
+	"Graphics/Common/Camera.cpp" 
+	"Graphics/Common/Mesh.cpp" 
+	"Graphics/Common/VertexAttribute.cpp"
+	"Graphics/Common/Transform.cpp"
+	"Graphics/Common/Material.cpp"
+
+	"ECS/EntitySystem.h" 
+	"Components/Transform3DComponent.cpp"
+	"Components/RenderComponent.cpp"
+	 
+	"Event/IEvent.h"  
 	"Event/EventDispatcher.cpp" 
 	"Event/ApplicationShouldCloseEvent.h" 
-	"Log.h"
-	"Core.h"
 	"Event/KeyPressedEvent.h" 
-	"KeyCodes.h"
-	"SDLUtils.h"
-	"SDLUtils.cpp"
-	#"Graphics/RendererImpl/RendererGL.cpp"
-	#W"Graphics/RendererImpl/RendererStub.cpp"
-	"Graphics/RendererImpl/RendererDirectX11.cpp"
+	 
 	"Resources/ResourceManager.cpp" 
 	"Resources/TextResource.cpp" 
 	"Resources/ShaderResouce.cpp"
-	"Math/MathUtils.cpp"
-	"Graphics/Common/Camera.cpp" 
 	"Resources/ModelResource.cpp"
-	"Graphics/Common/Mesh.cpp" 
-	"Graphics/Common/VertexAttribute.cpp"
-	"Components/Transform3DComponent.cpp"
-	"Components/RenderComponent.cpp"
-	"Graphics/Common/Transform.cpp"
-	"Utils.cpp" 
- "Graphics/Common/Material.cpp")
 
-add_library(Reborn ${SOURCE_FILES} )
+	"Math/MathUtils.cpp"
+
+	${ELPP_SOURCE_DIR}/easylogging++.h
+	${ELPP_SOURCE_DIR}/easylogging++.cc
+	#"Graphics/RendererImpl/RendererGL.cpp"
+	#W"Graphics/RendererImpl/RendererStub.cpp"
+	#"Graphics/RendererImpl/RendererDirectX11.cpp"
+	${GRAPHICS_PLATFORM_SOURCES}
+)
+ 
+
+add_library(Reborn ${SOURCE_FILES})
 target_precompile_headers(
 	Reborn
 	PRIVATE
@@ -68,7 +86,7 @@ target_precompile_headers(
 	<functional>
 )
 
-add_compile_definitions(REBORN_OPENGL)
+
 
 find_library(D3D11_LIBRARY d3d11.lib     PATHS     "$ENV{DXSDK_DIR}/Lib/x86" "C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86"     DOC "The directory where d3d11.lib resides")  
 find_library(D3DX11_LIBRARY d3dx11.lib     PATHS     "$ENV{DXSDK_DIR}/Lib/x86" "C:/Program Files (x86)/Microsoft DirectX SDK/Lib/x86"     DOC "The directory where d3dx11.lib resides")

@@ -162,7 +162,7 @@ public:
         entityMng.addComponent<ImGuiComponent>(sceneViewEntity, std::function(drawMainScene));
 
         const ShaderResouce* shaderResource = resourceManager().getResourceOrCreate<ShaderResouce>("shaders/lowpoly");
-        lowPolyMaterial = std::make_shared<Material>(shaderResource->getProgram());
+        lowPolyMaterial = std::make_shared<Material>(&shaderResource->getProgram());
         const ModelResource* modelResource = resourceManager().getResourceOrCreate<ModelResource>("models/lowpolywolf/wolf.fbx");
 
 

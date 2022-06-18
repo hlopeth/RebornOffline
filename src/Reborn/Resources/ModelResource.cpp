@@ -143,18 +143,18 @@ bool Reborn::ModelResource::tryLoad(const std::string& path)
 
 	loadModel(&(this->model), scene);
 
-	for (auto& mesh : model.meshes) {
+	/*for (auto& mesh : model.meshes) {
 		Application::get()->renderer().create(mesh.getVAO());
-	}
+	}*/
 	
 	return true;
 }
 
 bool Reborn::ModelResource::unload()
 {
-	for (Mesh& mesh : model.meshes) {
+	/*for (Mesh& mesh : model.meshes) {
 		Application::get()->renderer().destroy(mesh.getVAO());
-	}
+	}*/
 	loaded = false;
 	return true;
 }

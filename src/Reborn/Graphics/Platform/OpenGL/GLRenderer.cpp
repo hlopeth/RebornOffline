@@ -1,6 +1,6 @@
 #include <Core.h>
-#include "GLRenderer.h"
 #include <glad/glad.h>
+#include "GLRenderer.h"
 #include "backends/imgui_impl_opengl3.h"
 #include <backends/imgui_impl_sdl.h>
 #include <Math/MathUtils.h>
@@ -8,11 +8,11 @@
 GLuint compileShader(const std::string& source, GLenum type);
 
 std::string postprocessVertex =
-#include "../shaders/postprocess/postprocessVertex.glsl"
+#include "Graphics/shaders/postprocess/postprocessVertex.glsl"
 ;
 
 std::string postprocessFragment =
-#include "../shaders/postprocess/postprocessFragment.glsl"
+#include "Graphics/shaders/postprocess/postprocessFragment.glsl"
 ;
 
 void GLAPIENTRY glMessageCallback(
@@ -34,7 +34,7 @@ void GLAPIENTRY glMessageCallback(
 
 namespace Reborn
 {
-	GLRenderer::GLRenderer(Window& :window, const Vector2& sceneFraimbufferSize) :
+	GLRenderer::GLRenderer(Window& window, const Vector2& sceneFraimbufferSize) :
 		Renderer(window, sceneFraimbufferSize, API_TYPE),
 		context(window.createRenderingContext())
 	{
@@ -51,9 +51,7 @@ namespace Reborn
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(glMessageCallback, 0);
 
-		GLTextureHandler colorAttachmentTexture;
-		colorAttachmentTexture.width = sceneFraimbufferSize.x;
-		colorAttachmentTexture.height = sceneFraimbufferSize.y;
+		GLTextureHandler colorAttachmentTexture(sceneFraimbufferSize);
 		colorAttachmentTexture.textureType = GL_TEXTURE_2D;
 		colorAttachmentTexture.internalFromat = GL_RGB;
 		colorAttachmentTexture.texelFormat = GL_RGB;
@@ -62,11 +60,9 @@ namespace Reborn
 		colorAttachmentTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		colorAttachmentTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		colorAttachmentTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, colorAttachmentTexture);
+		sceneFraimbuffer.useAttachment(GLFramebufferAttachmentType::colorAttachment0, colorAttachmentTexture);
 
-		GLTextureHandler outlinedGeomTexture;
-		outlinedGeomTexture.width = sceneFraimbufferSize.x;
-		outlinedGeomTexture.height = sceneFraimbufferSize.y;
+		GLTextureHandler outlinedGeomTexture(sceneFraimbufferSize);
 		outlinedGeomTexture.textureType = GL_TEXTURE_2D;
 		outlinedGeomTexture.internalFromat = GL_RGB;
 		outlinedGeomTexture.texelFormat = GL_RGB;
@@ -75,22 +71,20 @@ namespace Reborn
 		outlinedGeomTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		outlinedGeomTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		outlinedGeomTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment1, outlinedGeomTexture);
+		sceneFraimbuffer.useAttachment(GLFramebufferAttachmentType::colorAttachment1, outlinedGeomTexture);
 
-		GLRenderbuffer depthStencilRenderbuffer;
-		depthStencilRenderbuffer.width = sceneFraimbufferSize.x;
-		depthStencilRenderbuffer.height = sceneFraimbufferSize.y;
-		depthStencilRenderbuffer.internalFormat = GL_DEPTH24_STENCIL8;
-		sceneFraimbuffer.useAttachment(FramebufferAttachmentType::depthStensilAttachment, depthStencilRenderbuffer);
+		GLRenderbuffer depthStencilRenderbuffer(sceneFraimbufferSize, GL_DEPTH24_STENCIL8);
+		//depthStencilRenderbuffer.width = sceneFraimbufferSize.x;
+		//depthStencilRenderbuffer.height = sceneFraimbufferSize.y;
+		//depthStencilRenderbuffer.internalFormat = GL_DEPTH24_STENCIL8;
+		sceneFraimbuffer.useAttachment(GLFramebufferAttachmentType::depthStensilAttachment, depthStencilRenderbuffer);
 
 		create(sceneFraimbuffer);
 		if (!isFramebufferComplete(sceneFraimbuffer)) {
 			LOG_ERROR << "scene framebuffer is not complete";
 		}
 
-		GLTextureHandler postprocessTexture;
-		postprocessTexture.width = sceneFraimbufferSize.x;
-		postprocessTexture.height = sceneFraimbufferSize.y;
+		GLTextureHandler postprocessTexture(sceneFraimbufferSize);
 		postprocessTexture.textureType = GL_TEXTURE_2D;
 		postprocessTexture.internalFromat = GL_RGB;
 		postprocessTexture.texelFormat = GL_RGB;
@@ -236,4 +230,27 @@ void Reborn::GLRenderer::setUniform(const GLShaderProgram& program, const GLchar
 {
 	GLuint location = glGetUniformLocation(program.id, name);
 	glUniformMatrix4fv(location, 1, transpose, value._d);
+}
+
+
+bool Reborn::Renderer::initImGui(SDL_Window* window) {
+	ImGui_ImplSDL2_InitForOpenGL(window, _context);
+	const char* glsl_version = "#version 130";
+	ImGui_ImplOpenGL3_Init(glsl_version);
+	return true;
+}
+
+void Reborn::Renderer::newImGuiFrame()
+{
+	ImGui_ImplOpenGL3_NewFrame();
+}
+
+void Reborn::Renderer::drawImGui(ImDrawData* drawData)
+{
+	ImGui_ImplOpenGL3_RenderDrawData(drawData);
+}
+
+void Reborn::Renderer::destroyImGui()
+{
+	ImGui_ImplOpenGL3_Shutdown();
 }
