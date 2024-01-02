@@ -10,6 +10,8 @@
 #include <Math/Vector.h>
 #include "Mesh.h"
 #include "Camera.h"
+#include "Backends/RenderBackend_GL.h"
+#include "HandleAllocator.h"
 
 namespace Reborn {
 	class Renderer {
@@ -19,7 +21,7 @@ namespace Reborn {
 		void endFrame();
 		void drawVAO(const VertexArrayObject& vao, GLuint offset = 0);
 		void drawMesh(const Mesh& mesh);
-		const SDL_GLContext& getContext();
+		RenderBackend& getRenderBackend();
 		Camera& getCamera();
 		const Camera& getCamera() const;
 
@@ -36,6 +38,9 @@ namespace Reborn {
 		void create(BufferObject& buf);
 		void create(Framebuffer& fbo);
 		void create(Renderbuffer& rbo);
+		//!!! don't do data copy at the moment. expects data ptr to be valid !!!
+		Handler createVertexBuffer(void* data, std::size_t sizeInBytes);
+		Handler createIndexBuffer(void* data, std::size_t sizeInBytes);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);
@@ -81,5 +86,6 @@ namespace Reborn {
 		Camera _camera;
 		VertexArrayObject screenQuadVAO;
 		GLSLProgram postprocessPropgram;
+		RenderBackend* renderBackend;
 	};
 }

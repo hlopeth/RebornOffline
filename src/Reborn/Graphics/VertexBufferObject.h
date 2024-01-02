@@ -1,5 +1,5 @@
 #pragma once
-#include <SDL_opengl.h>
+#include "Backends/RenderBackendTypes.h"
 
 namespace Reborn {
 	struct BufferObject {
@@ -29,4 +29,33 @@ namespace Reborn {
 		{};
 		size_t size = 0;
 	};
+
+
+	enum BufferObject_Type {
+		ARRAY_BUFFER,
+		INDEX_BUFFER
+	};
+
+	struct BufferObject1 {
+		BufferObject1(size_t _sizeInBytes, BufferObject_Type _type) :
+			sizeInBytes(_sizeInBytes),
+			type(_type)
+		{};
+		size_t sizeInBytes = 0;
+		BufferObject_Type type;
+		BufferObject_Handler id;
+	};
+
+	struct VertexBufferObject1 : BufferObject1 {
+		VertexBufferObject1(size_t sizeInBytes) :
+			BufferObject1(sizeInBytes, BufferObject_Type::ARRAY_BUFFER)
+		{};
+	};
+
+	struct ElementBufferObject1 : BufferObject1 {
+		ElementBufferObject1(size_t sizeInBytes) :
+			BufferObject1(sizeInBytes, BufferObject_Type::INDEX_BUFFER)
+		{};
+	};
+
 }

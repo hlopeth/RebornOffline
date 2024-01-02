@@ -6,6 +6,9 @@
 #include "backends/imgui_impl_opengl3.h"
 #include <Math/MathUtils.h>
 
+Reborn::HandleAllocator<Reborn::MAX_VERTEX_BUFFERS> vertexBufferHandlers;
+Reborn::HandleAllocator<Reborn::MAX_INDEX_BUFFERS> indexBufferHandlers;
+
 GLuint compileShader(const std::string& source, GLenum type);
 
 std::string postprocessVertex =
@@ -17,22 +20,112 @@ std::string postprocessFragment =
 ;
 
 
-void GLAPIENTRY glMessageCallback(
-	GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar* message,
-	const void* userParam
-) {
-	if (type == GL_DEBUG_TYPE_ERROR) {
-		LOG_ERROR << "GL ERROR: type = " << type << ", severity = " << severity << ", message = " << message;
+//TEMP RenderBackend_GL.cpp
+namespace Reborn {
+
+	GLuint gl_vertexBuffers[MAX_VERTEX_BUFFERS];
+	GLuint gl_indexBuffers[MAX_INDEX_BUFFERS];
+
+	void GLAPIENTRY glMessageCallback(
+		GLenum source,
+		GLenum type,
+		GLuint id,
+		GLenum severity,
+		GLsizei length,
+		const GLchar* message,
+		const void* userParam
+	) {
+		if (type == GL_DEBUG_TYPE_ERROR) {
+			LOG_ERROR << "GL ERROR: type = " << type << ", severity = " << severity << ", message = " << message;
+		}
+		else {
+			//LOG_DEBUG << "GL CALLBACK: type = " << type << ", severity = " << severity << ", message = " << message;
+		}
 	}
-	else {
-		//LOG_DEBUG << "GL CALLBACK: type = " << type << ", severity = " << severity << ", message = " << message;
+
+
+	RenderBackend_GL::RenderBackend_GL(SDL_GLContext& _context) :
+		context(_context),
+		RenderBackend(BackendType::OPEN_GL)
+	{
+
+	}
+
+	void RenderBackend_GL::processComandBuffer()
+	{
+		CommandBuffer::CommandType cmd;
+		while (!_commandBuffer.empty()) {
+			_commandBuffer.read(cmd);
+			switch (cmd)
+			{
+			case CommandBuffer::CommandType::INIT_BACKEND:
+				init();
+				break;
+			case CommandBuffer::CommandType::CREATE_VERTEX_BUFFER: {
+				Handler handler;
+				std::size_t sizeInBytes;
+				void* data;
+				auto usage = GL_STATIC_DRAW; // pass through command buffer
+				_commandBuffer
+					.read(handler)
+					.read(sizeInBytes)
+					.read(data);
+
+				glGenBuffers(1, &gl_vertexBuffers[handler]);
+				glBindBuffer(GL_ARRAY_BUFFER, gl_vertexBuffers[handler]);
+				glBufferData(GL_ARRAY_BUFFER, sizeInBytes, data, usage);
+				break;
+			}
+			case CommandBuffer::CommandType::CREATE_INDEX_BUFFER: {
+				Handler handler;
+				std::size_t sizeInBytes;
+				void* data;
+				auto usage = GL_STATIC_DRAW; // pass through command buffer
+				_commandBuffer
+					.read(handler)
+					.read(sizeInBytes)
+					.read(data);
+
+				glGenBuffers(1, &gl_indexBuffers[handler]);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_indexBuffers[handler]);
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, data, usage);
+				break;
+			}
+			default:
+
+				break;
+			}
+		}
+	}
+
+	const RenderContext_Handler RenderBackend_GL::getContext() {
+		RenderContext_Handler handler;
+		handler.OpenGL_Handler = context;
+		return handler;
+	}
+	void RenderBackend_GL::init()
+	{
+		auto glVersion = glGetString(GL_VERSION);
+		auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+		LOG_INFO << "using OpenGL " << glVersion;
+
+		glEnable(GL_DEBUG_OUTPUT);
+		//glDebugMessageCallback(glMessageCallback, 0);
 	}
 }
+
+
+
+
+//END TEMP RenderBackend_GL.cpp
+
+
+
+
+
+
+
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
 	_context(window.createGLContext()),
@@ -41,15 +134,24 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	_camera(Reborn::toRadians(60), 1, 100, 1)
 {
 	initImGui(&window.getSDLWindow());
+	renderBackend = new RenderBackend_GL(_context);
+	auto& cbuffer = renderBackend->commandBuffer();
+	renderBackend->commandBuffer().write(CommandBuffer::CommandType::INIT_BACKEND);
+	//TEST ZONE
+	Vector3 vertices2[] = {
+		Vector3(-1,-1, 0),
+		Vector3(1,-1, 0),
+		Vector3(1, 1, 0),
+		Vector3(-1, 1, 0)
+	};
+	uint32_t indices2[] = { 0, 1, 2, 0, 2, 3 };
+	Handler vbo = createVertexBuffer(vertices2, sizeof(Vector3) * 4);
+	Handler ebo = createIndexBuffer(indices2, sizeof(uint32_t) * 6);
 
-	auto glVersion = glGetString(GL_VERSION);
-	auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+	//TEST ZONE END
+	renderBackend->processComandBuffer();
 
-	LOG_INFO << "using OpenGL " << glVersion;
 
-	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(glMessageCallback, 0);
-	
 	GLTexture colorAttachmentTexture;
 	colorAttachmentTexture.width = sceneFraimbufferSize.x;
 	colorAttachmentTexture.height = sceneFraimbufferSize.y;
@@ -186,9 +288,9 @@ void Reborn::Renderer::drawMesh(const Mesh& mesh)
 	drawVAO(mesh.getVAO());
 }
 
-const SDL_GLContext& Reborn::Renderer::getContext()
+Reborn::RenderBackend& Reborn::Renderer::getRenderBackend()
 {
-	return _context;
+	return *renderBackend;
 }
 
 Reborn::Camera& Reborn::Renderer::getCamera()
@@ -271,13 +373,35 @@ void Reborn::Renderer::create(GLSLProgram& program)
 	program.id = shaderProgram;
 }
 
-void Reborn::Renderer::create(BufferObject& buf)
-{
+Reborn::Handler Reborn::Renderer::createVertexBuffer(void* data, std::size_t sizeInBytes) {
+	Reborn::Handler vertexBufferHandler = vertexBufferHandlers.allocate();
+	if (vertexBufferHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CREATE_VERTEX_BUFFER)
+			.write(vertexBufferHandler)
+			.write(sizeInBytes)
+			.write(data);
+	}
+	return vertexBufferHandler;
+}
+
+Reborn::Handler Reborn::Renderer::createIndexBuffer(void* data, std::size_t sizeInBytes) {
+	Reborn::Handler indexBufferHandler = indexBufferHandlers.allocate();
+	if (indexBufferHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CREATE_INDEX_BUFFER)
+			.write(indexBufferHandler)
+			.write(sizeInBytes)
+			.write(data);
+	}
+	return indexBufferHandler;
+}
+
+void Reborn::Renderer::create(BufferObject& buf) {
 	glGenBuffers(1, &(buf.id));
 }
 
-void Reborn::Renderer::create(Framebuffer& fbo)
-{
+void Reborn::Renderer::create(Framebuffer& fbo) {
 	glGenFramebuffers(1, &(fbo.id));
 	bind(fbo);
 	std::vector<GLenum> drawAttachments;
@@ -531,6 +655,7 @@ void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
 
 Reborn::Renderer::~Renderer()
 {
+	delete renderBackend;
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
