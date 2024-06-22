@@ -49,7 +49,7 @@ set(SOURCE_FILES
 	"Utils.cpp" 
     "Graphics/Material.cpp" 
 	"Graphics/Backends/RenderBackend_GL.cpp" 
-	"Graphics/Backends/CommandBuffer.cpp")
+	"Graphics/Backends/CommandBuffer.cpp" "Graphics/VertexLayout.cpp")
 
 add_library(Reborn ${SOURCE_FILES} )
 target_precompile_headers(
@@ -64,6 +64,7 @@ target_precompile_headers(
 	<string>
 	<fstream>
 	<functional>
+	<cassert>
 )
 
 target_link_libraries(Reborn ${OPENGL_LIBRARIES})

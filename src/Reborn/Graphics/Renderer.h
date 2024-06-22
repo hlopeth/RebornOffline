@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Backends/RenderBackend_GL.h"
 #include "HandleAllocator.h"
+#include "VertexLayout.h"
 
 namespace Reborn {
 	class Renderer {
@@ -41,6 +42,7 @@ namespace Reborn {
 		//!!! don't do data copy at the moment. expects data ptr to be valid !!!
 		Handler createVertexBuffer(void* data, std::size_t sizeInBytes);
 		Handler createIndexBuffer(void* data, std::size_t sizeInBytes);
+		Handler createVertexArray(const Handler& vbo, const Handler& ebo, const VertexLayout& layout);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);

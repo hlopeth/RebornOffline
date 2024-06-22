@@ -8,6 +8,7 @@
 
 Reborn::HandleAllocator<Reborn::MAX_VERTEX_BUFFERS> vertexBufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_INDEX_BUFFERS> indexBufferHandlers;
+Reborn::HandleAllocator<Reborn::MAX_VERTEX_ARRAY_OBJECTS> vertexArrayObjectHandlers;
 
 GLuint compileShader(const std::string& source, GLenum type);
 
@@ -25,6 +26,22 @@ namespace Reborn {
 
 	GLuint gl_vertexBuffers[MAX_VERTEX_BUFFERS];
 	GLuint gl_indexBuffers[MAX_INDEX_BUFFERS];
+	GLuint gl_vertexArrayObjects[MAX_VERTEX_ARRAY_OBJECTS];
+
+	GLenum toGLType(AttributeType type) {
+		GLenum result = 0;
+		switch (type)
+		{
+		case Reborn::AttributeType::FLOAT:
+			result = GL_FLOAT;
+			break;
+		case Reborn::AttributeType::COUNT:
+		default:
+			assert("unknown type");
+			break;
+		}
+		return result;
+	}
 
 	void GLAPIENTRY glMessageCallback(
 		GLenum source,
@@ -91,8 +108,45 @@ namespace Reborn {
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, data, usage);
 				break;
 			}
-			default:
+			case CommandBuffer::CommandType::CREATE_VERTEX_ARRAY_OBJECT: {
+				Handler vaoHandler;
+				Handler vboHandler;
+				Handler eboHandler;
+				uint16_t numAttributes;
+				static std::vector<VertexLayout::VertexAttribute> attributes;
 
+				_commandBuffer
+					.read(vaoHandler)
+					.read(vboHandler)
+					.read(eboHandler)
+					.read(numAttributes);
+
+				attributes.resize(numAttributes);
+				for (uint16_t i = 0; i < numAttributes; i++) {
+					_commandBuffer.read(attributes[i]);
+				}
+
+				glGenVertexArrays(1, &gl_vertexArrayObjects[vaoHandler]);
+				glBindVertexArray(gl_vertexArrayObjects[vaoHandler]);
+				glBindBuffer(GL_ARRAY_BUFFER, gl_vertexBuffers[vboHandler]);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_indexBuffers[eboHandler]);
+
+				for (uint16_t i = 0; i < numAttributes; i++) {
+					const auto& attrib = attributes[i];
+					glEnableVertexAttribArray(attrib.index);
+					glVertexAttribPointer(
+						attrib.index,
+						attrib.size,
+						toGLType(attrib.type),
+						attrib.normalized,
+						attrib.strideBytes,
+						(void*)attrib.offsetBytes
+					);
+				}
+
+			}
+			default:
+				
 				break;
 			}
 		}
@@ -112,11 +166,8 @@ namespace Reborn {
 
 		glEnable(GL_DEBUG_OUTPUT);
 		//glDebugMessageCallback(glMessageCallback, 0);
-	}
 }
-
-
-
+}
 
 //END TEMP RenderBackend_GL.cpp
 
@@ -140,13 +191,19 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	//TEST ZONE
 	Vector3 vertices2[] = {
 		Vector3(-1,-1, 0),
-		Vector3(1,-1, 0),
-		Vector3(1, 1, 0),
+		Vector3( 1,-1, 0),
+		Vector3( 1, 1, 0),
 		Vector3(-1, 1, 0)
 	};
 	uint32_t indices2[] = { 0, 1, 2, 0, 2, 3 };
 	Handler vbo = createVertexBuffer(vertices2, sizeof(Vector3) * 4);
 	Handler ebo = createIndexBuffer(indices2, sizeof(uint32_t) * 6);
+	
+	VertexLayout layout;
+	layout.addAttribute(Attribute::POSITION, 3, AttributeType::FLOAT)
+		.build();
+
+	Handler vao = createVertexArray(vbo, ebo, layout);
 
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
@@ -233,7 +290,6 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	screenQuadVAO = screenQuad.getVAO();
 	uint32_t* p = (uint32_t*)screenQuadVAO.ebo.data;
 	create(screenQuadVAO);
-
 
 	postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
 	create(postprocessPropgram);
@@ -377,7 +433,7 @@ Reborn::Handler Reborn::Renderer::createVertexBuffer(void* data, std::size_t siz
 	Reborn::Handler vertexBufferHandler = vertexBufferHandlers.allocate();
 	if (vertexBufferHandler != Reborn::InvalidHandle) {
 		renderBackend->commandBuffer()
-			.write(Reborn::CommandBuffer::CREATE_VERTEX_BUFFER)
+			.write(Reborn::CommandBuffer::CommandType::CREATE_VERTEX_BUFFER)
 			.write(vertexBufferHandler)
 			.write(sizeInBytes)
 			.write(data);
@@ -389,12 +445,33 @@ Reborn::Handler Reborn::Renderer::createIndexBuffer(void* data, std::size_t size
 	Reborn::Handler indexBufferHandler = indexBufferHandlers.allocate();
 	if (indexBufferHandler != Reborn::InvalidHandle) {
 		renderBackend->commandBuffer()
-			.write(Reborn::CommandBuffer::CREATE_INDEX_BUFFER)
+			.write(Reborn::CommandBuffer::CommandType::CREATE_INDEX_BUFFER)
 			.write(indexBufferHandler)
 			.write(sizeInBytes)
 			.write(data);
 	}
 	return indexBufferHandler;
+}
+
+Reborn::Handler Reborn::Renderer::createVertexArray(
+	const Reborn::Handler& vertexBufferHandler,
+	const Reborn::Handler& indexBufferHandler,
+	const Reborn::VertexLayout& layout
+) {
+	Reborn::Handler vertexArrayHandler = vertexArrayObjectHandlers.allocate();
+	const uint16_t numAttributes = layout.getAttributes().size();
+	if (vertexArrayHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::CREATE_VERTEX_ARRAY_OBJECT)
+			.write(vertexArrayHandler)
+			.write(vertexBufferHandler)
+			.write(indexBufferHandler)
+			.write(numAttributes);
+		for (uint16_t i = 0; i < numAttributes; i++) {
+			renderBackend->commandBuffer().write(layout.getAttributes()[i]);
+		}
+	}
+	return vertexArrayHandler;
 }
 
 void Reborn::Renderer::create(BufferObject& buf) {

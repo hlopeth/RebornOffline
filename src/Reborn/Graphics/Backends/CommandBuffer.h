@@ -3,10 +3,12 @@
 namespace Reborn {
 	class CommandBuffer {
 	public:
-		enum CommandType {
+		enum class CommandType {
 			INIT_BACKEND,
 			CREATE_VERTEX_BUFFER,
 			CREATE_INDEX_BUFFER,
+			CREATE_VERTEX_ARRAY_OBJECT,
+			COUNT
 		};
 
 		CommandBuffer(size_t baseCapacity = 0);
