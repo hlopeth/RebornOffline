@@ -9,6 +9,7 @@ namespace Reborn {
 	enum class TextureFormat {
 		RGB,
 		RGBA,
+		DEPTH24_STENCIL8,
 		COUNT
 	};
 
@@ -41,6 +42,12 @@ namespace Reborn {
 		COUNT
 	};
 
+	struct RenderbufferDescriptor {
+		uint32_t width = 0;
+		uint32_t height = 0;
+		TextureFormat internalFormat;
+	};
+	
 	struct TextureDescriptor {
 		uint32_t width = 0;
 		uint32_t height = 0;

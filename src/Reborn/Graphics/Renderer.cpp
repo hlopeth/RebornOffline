@@ -10,6 +10,7 @@ Reborn::HandleAllocator<Reborn::MAX_VERTEX_BUFFERS> vertexBufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_INDEX_BUFFERS> indexBufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_VERTEX_ARRAY_OBJECTS> vertexArrayObjectHandlers;
 Reborn::HandleAllocator<Reborn::MAX_TEXTURES> textureHandlers;
+Reborn::HandleAllocator<Reborn::MAX_RENDERBUFFERS> renderbufferHandlers;
 
 GLuint compileShader(const std::string& source, GLenum type);
 
@@ -29,6 +30,7 @@ namespace Reborn {
 	GLuint gl_indexBuffers[MAX_INDEX_BUFFERS];
 	GLuint gl_vertexArrayObjects[MAX_VERTEX_ARRAY_OBJECTS];
 	GLuint gl_Textures[MAX_TEXTURES];
+	GLuint gl_Renderbuffers[MAX_RENDERBUFFERS];
 
 	GLenum toGLType(AttributeType type) {
 		GLenum result = 0;
@@ -69,6 +71,9 @@ namespace Reborn {
 			break;
 		case Reborn::TextureFormat::RGBA:
 			result = GL_RGBA;
+			break;
+		case Reborn::TextureFormat::DEPTH24_STENCIL8:
+			result = GL_DEPTH24_STENCIL8;
 			break;
 		case Reborn::TextureFormat::COUNT:
 		default:
@@ -285,6 +290,63 @@ namespace Reborn {
 				glTexParameteri(GLType, GL_TEXTURE_WRAP_T, toGLType(descriptor.wrapT));
 				break;
 			}
+			case CommandBuffer::CommandType::CREATE_RENDERBUFFER: {
+				Handler renderbufferHandler;
+				RenderbufferDescriptor descriptor;
+
+				_commandBuffer
+					.read(renderbufferHandler)
+					.read(descriptor);
+
+				glGenRenderbuffers(1, &gl_Renderbuffers[renderbufferHandler]);
+				break;
+			}
+			case CommandBuffer::CommandType::ALLOCATE_TEXTURE: {
+				Handler textureHandler;
+				TextureDescriptor descriptor;
+				uint16_t mipLevel;
+				void* data;
+
+
+				_commandBuffer
+					.read(textureHandler)
+					.read(descriptor)
+					.read(mipLevel)
+					.read(data);
+
+				assert(!data, "I cannot test data upload for now");
+
+				glBindTexture(toGLType(descriptor.type), gl_Textures[textureHandler]);
+				glTexImage2D(
+					toGLType(descriptor.type),
+					mipLevel, 
+					toGLType(descriptor.internalFormat),
+					descriptor.width,
+					descriptor.height,
+					0,
+					toGLType(descriptor.pixelFormat),
+					toGLType(descriptor.texelType),
+					data
+				);
+				break;
+			}
+			case CommandBuffer::CommandType::ALLOCATE_RENDERBUFFER: {
+				Handler renderbufferHandler;
+				RenderbufferDescriptor descriptor;
+
+				_commandBuffer
+					.read(renderbufferHandler)
+					.read(descriptor);
+
+				glBindRenderbuffer(GL_RENDERBUFFER, gl_Renderbuffers[renderbufferHandler]);
+				glRenderbufferStorage(
+					GL_RENDERBUFFER, 
+					toGLType(descriptor.internalFormat), 
+					descriptor.width, 
+					descriptor.height
+				);
+				break;
+			}
 			default:
 				
 				break;
@@ -365,6 +427,14 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	textureDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
 	textureDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
 	Handler textureHandler = createTexture(textureDescriptor);
+	allocateTexture(textureHandler, textureDescriptor, 0);
+
+	RenderbufferDescriptor depthStensilDescriptor;
+	depthStensilDescriptor.width = sceneFraimbufferSize.x;
+	depthStensilDescriptor.height = sceneFraimbufferSize.y;
+	depthStensilDescriptor.internalFormat = TextureFormat::DEPTH24_STENCIL8;
+	Handler depthStensilHandler = createRenderBuffer(depthStensilDescriptor);
+	allocateRenderbuffer(depthStensilHandler, depthStensilDescriptor);
 
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
@@ -652,6 +722,42 @@ Reborn::Handler Reborn::Renderer::createTexture(const Reborn::TextureDescriptor&
 			.write(descriptor);
 	}
 	return textureHandler;
+}
+
+Reborn::Handler Reborn::Renderer::createRenderBuffer(const Reborn::RenderbufferDescriptor& descriptor) {
+	Reborn::Handler renderbufferHandler = renderbufferHandlers.allocate();
+	if (renderbufferHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::CREATE_RENDERBUFFER)
+			.write(renderbufferHandler)
+			.write(descriptor);
+	}
+	return renderbufferHandler;
+}
+
+void Reborn::Renderer::allocateTexture(
+	Handler textureHandler, 
+	const Reborn::TextureDescriptor& descriptor, 
+	uint16_t mipLevel,
+	void* data
+) {
+	if (textureHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::ALLOCATE_TEXTURE)
+			.write(textureHandler)
+			.write(descriptor)
+			.write(mipLevel)
+			.write(data);
+	}
+}
+
+void Reborn::Renderer::allocateRenderbuffer(Reborn::Handler handler, const Reborn::RenderbufferDescriptor& descriptor) {
+	if (handler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::ALLOCATE_RENDERBUFFER)
+			.write(handler)
+			.write(descriptor);
+	}
 }
 
 

@@ -45,6 +45,9 @@ namespace Reborn {
 		Handler createIndexBuffer(void* data, std::size_t sizeInBytes);
 		Handler createVertexArray(const Handler& vbo, const Handler& ebo, const VertexLayout& layout);
 		Handler createTexture(const TextureDescriptor& descriptor);
+		Handler createRenderBuffer(const RenderbufferDescriptor& descriptor);
+		void allocateTexture(Handler handler, const TextureDescriptor& descriptor, uint16_t mipLevel, void* data = nullptr);
+		void allocateRenderbuffer(Handler handler, const RenderbufferDescriptor& descriptor);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);
