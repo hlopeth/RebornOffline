@@ -16,6 +16,7 @@ namespace Reborn {
 		attrib.normalized = normalaized;
 		attrib.offsetBytes = INVALID_ATTRIBUTE_OFFSET;
 		attrib.strideBytes = INVELID_ATTRIBUTE_STRIDE;
+		attrib.type = type;
 		attributes.push_back(attrib);
 		return *this;
 	}
@@ -63,7 +64,7 @@ namespace Reborn {
 			break;
 		case Reborn::AttributeType::COUNT:
 		default:
-			assert("unexpected attribute type");
+			assert(0, "unexpected attribute type");
 			break;
 		}
 		return result;

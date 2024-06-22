@@ -13,6 +13,7 @@
 #include "Backends/RenderBackend_GL.h"
 #include "HandleAllocator.h"
 #include "VertexLayout.h"
+#include "TextureDescriptor.h"
 
 namespace Reborn {
 	class Renderer {
@@ -43,6 +44,7 @@ namespace Reborn {
 		Handler createVertexBuffer(void* data, std::size_t sizeInBytes);
 		Handler createIndexBuffer(void* data, std::size_t sizeInBytes);
 		Handler createVertexArray(const Handler& vbo, const Handler& ebo, const VertexLayout& layout);
+		Handler createTexture(const TextureDescriptor& descriptor);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);

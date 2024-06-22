@@ -9,6 +9,7 @@
 Reborn::HandleAllocator<Reborn::MAX_VERTEX_BUFFERS> vertexBufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_INDEX_BUFFERS> indexBufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_VERTEX_ARRAY_OBJECTS> vertexArrayObjectHandlers;
+Reborn::HandleAllocator<Reborn::MAX_TEXTURES> textureHandlers;
 
 GLuint compileShader(const std::string& source, GLenum type);
 
@@ -27,6 +28,7 @@ namespace Reborn {
 	GLuint gl_vertexBuffers[MAX_VERTEX_BUFFERS];
 	GLuint gl_indexBuffers[MAX_INDEX_BUFFERS];
 	GLuint gl_vertexArrayObjects[MAX_VERTEX_ARRAY_OBJECTS];
+	GLuint gl_Textures[MAX_TEXTURES];
 
 	GLenum toGLType(AttributeType type) {
 		GLenum result = 0;
@@ -37,7 +39,127 @@ namespace Reborn {
 			break;
 		case Reborn::AttributeType::COUNT:
 		default:
-			assert("unknown type");
+			assert(0,"unknown type");
+			break;
+		}
+		return result;
+	}
+
+	GLenum toGLType(TextureType type) {
+		GLenum result = 0;
+		switch (type)
+		{
+		case Reborn::TextureType::TEXTURE_2D:
+			result = GL_TEXTURE_2D;
+			break;
+		case Reborn::TextureType::COUNT:
+		default:
+			assert(0,"unknown type");
+			break;
+		}
+		return result;
+	}
+
+	GLenum toGLType(TextureFormat type) {
+		GLenum result = 0;
+		switch (type)
+		{
+		case Reborn::TextureFormat::RGB:
+			result = GL_RGB;
+			break;
+		case Reborn::TextureFormat::RGBA:
+			result = GL_RGBA;
+			break;
+		case Reborn::TextureFormat::COUNT:
+		default:
+			assert(0, "unknown type");
+			break;
+		}
+		return result;
+	}
+
+	GLenum toGLType(PixelFormat type) {
+		GLenum result = 0;
+		switch (type)
+		{
+		case Reborn::PixelFormat::RGB:
+			result = GL_RGB;
+			break;
+		case Reborn::PixelFormat::RGBA:
+			result = GL_RGBA;
+			break;
+		case Reborn::PixelFormat::COUNT:
+		default:
+			assert(0, "unknown type");
+			break;
+		}
+		return result;
+	}
+
+	GLenum toGLType(TexelType type) {
+		GLenum result = 0;
+		switch (type)
+		{
+		case Reborn::TexelType::UNSIGNED_BYTE:
+			result = GL_UNSIGNED_BYTE;
+			break;
+		case Reborn::TexelType::COUNT:
+		default:
+			assert(0, "unknown type");
+			break;
+		}
+		return result;
+	}
+
+	GLenum toGLType(TextureFilter type) {
+		GLenum result = 0;
+		switch (type)
+		{
+		case Reborn::TextureFilter::NEAREST:
+			result = GL_NEAREST;
+			break;
+		case Reborn::TextureFilter::LINEAR:
+			result = GL_LINEAR;
+			break;
+		case Reborn::TextureFilter::NEAREST_MIPMAP_NEAREST:
+			result = GL_NEAREST_MIPMAP_NEAREST;
+			break;
+		case Reborn::TextureFilter::LINEAR_MIPMAP_NEAREST:
+			result = GL_LINEAR_MIPMAP_NEAREST;
+			break;
+		case Reborn::TextureFilter::LINEAR_MIPMAP_LINEAR:
+			result = GL_LINEAR_MIPMAP_LINEAR;
+			break;
+		case Reborn::TextureFilter::COUNT:
+		default:
+			assert(0, "unknown type");
+			break;
+		}
+		return result;
+	}
+
+	GLenum toGLType(TextureWrapping type) {
+		GLenum result = 0;
+		switch (type)
+		{
+		case Reborn::TextureWrapping::CLAMP_TO_EDGE:
+			result = GL_CLAMP_TO_EDGE;
+			break;
+		case Reborn::TextureWrapping::CLAMP_TO_BORDER:
+			result = GL_CLAMP_TO_BORDER;
+			break;
+		case Reborn::TextureWrapping::MIRRORED_REPEAT:
+			result = GL_MIRRORED_REPEAT;
+			break;
+		case Reborn::TextureWrapping::REPEAT:
+			result = GL_REPEAT;
+			break;
+		case Reborn::TextureWrapping::MIRROR_CLAMP_TO_EDGE:
+			result = GL_MIRROR_CLAMP_TO_EDGE;
+			break;
+		case Reborn::TextureWrapping::COUNT:
+		default:
+			assert(0, "unknown type");
 			break;
 		}
 		return result;
@@ -143,7 +265,25 @@ namespace Reborn {
 						(void*)attrib.offsetBytes
 					);
 				}
+				break;
 
+			}
+			case CommandBuffer::CommandType::CREATE_TEXTURE: {
+				Handler textureHandler;
+				TextureDescriptor descriptor;
+
+				_commandBuffer
+					.read(textureHandler)
+					.read(descriptor);
+
+				glGenTextures(1, &gl_Textures[textureHandler]);
+				GLenum GLType = toGLType(descriptor.type);
+				glBindTexture(GLType, gl_Textures[textureHandler]);
+				glTexParameteri(GLType, GL_TEXTURE_MIN_FILTER, toGLType(descriptor.minFilter));
+				glTexParameteri(GLType, GL_TEXTURE_MAG_FILTER, toGLType(descriptor.magFilter));
+				glTexParameteri(GLType, GL_TEXTURE_WRAP_S, toGLType(descriptor.wrapS));
+				glTexParameteri(GLType, GL_TEXTURE_WRAP_T, toGLType(descriptor.wrapT));
+				break;
 			}
 			default:
 				
@@ -189,21 +329,42 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	auto& cbuffer = renderBackend->commandBuffer();
 	renderBackend->commandBuffer().write(CommandBuffer::CommandType::INIT_BACKEND);
 	//TEST ZONE
-	Vector3 vertices2[] = {
-		Vector3(-1,-1, 0),
-		Vector3( 1,-1, 0),
-		Vector3( 1, 1, 0),
-		Vector3(-1, 1, 0)
+	struct ScreenQuadVertex
+	{
+		Vector3 pos;
+		Vector2 uv;
+	};
+	ScreenQuadVertex vertices3[] = {
+		{ Vector3(-1,-1, 0), Vector2( 0, 0) },
+		{ Vector3( 1,-1, 0), Vector2( 1, 0) },
+		{ Vector3( 1, 1, 0), Vector2( 1, 1) },
+		{ Vector3(-1, 1, 0), Vector2( 0, 1) }
 	};
 	uint32_t indices2[] = { 0, 1, 2, 0, 2, 3 };
-	Handler vbo = createVertexBuffer(vertices2, sizeof(Vector3) * 4);
+
+	Handler vbo = createVertexBuffer(vertices3, sizeof(ScreenQuadVertex) * 4);
 	Handler ebo = createIndexBuffer(indices2, sizeof(uint32_t) * 6);
 	
 	VertexLayout layout;
-	layout.addAttribute(Attribute::POSITION, 3, AttributeType::FLOAT)
+	layout
+		.addAttribute(Attribute::POSITION, 3, AttributeType::FLOAT)
+		.addAttribute(Attribute::UV1, 2, AttributeType::FLOAT)
 		.build();
 
 	Handler vao = createVertexArray(vbo, ebo, layout);
+
+	TextureDescriptor textureDescriptor;
+	textureDescriptor.width = sceneFraimbufferSize.x;
+	textureDescriptor.height = sceneFraimbufferSize.y;
+	textureDescriptor.type = TextureType::TEXTURE_2D;
+	textureDescriptor.internalFormat = TextureFormat::RGB;
+	textureDescriptor.pixelFormat = PixelFormat::RGB;
+	textureDescriptor.texelType = TexelType::UNSIGNED_BYTE;
+	textureDescriptor.minFilter = TextureFilter::LINEAR;
+	textureDescriptor.magFilter = TextureFilter::LINEAR;
+	textureDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
+	textureDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
+	Handler textureHandler = createTexture(textureDescriptor);
 
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
@@ -266,6 +427,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	bindMainFramebuffer();
 
+#if 0 //test code
 	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
 	Vector3 vertices[] = {
 		Vector3(-1,-1, 0),
@@ -290,6 +452,13 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	screenQuadVAO = screenQuad.getVAO();
 	uint32_t* p = (uint32_t*)screenQuadVAO.ebo.data;
 	create(screenQuadVAO);
+#else
+	screenQuadVAO = VertexArrayObject();
+	screenQuadVAO.vbo.id = gl_vertexBuffers[vbo];
+	screenQuadVAO.ebo.id = gl_indexBuffers[ebo];
+	screenQuadVAO.ebo.size = 6;
+	screenQuadVAO.id = gl_vertexArrayObjects[vao]; 
+#endif
 
 	postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
 	create(postprocessPropgram);
@@ -473,6 +642,18 @@ Reborn::Handler Reborn::Renderer::createVertexArray(
 	}
 	return vertexArrayHandler;
 }
+
+Reborn::Handler Reborn::Renderer::createTexture(const Reborn::TextureDescriptor& descriptor) {
+	Reborn::Handler textureHandler = textureHandlers.allocate();
+	if (textureHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::CREATE_TEXTURE)
+			.write(textureHandler)
+			.write(descriptor);
+	}
+	return textureHandler;
+}
+
 
 void Reborn::Renderer::create(BufferObject& buf) {
 	glGenBuffers(1, &(buf.id));
