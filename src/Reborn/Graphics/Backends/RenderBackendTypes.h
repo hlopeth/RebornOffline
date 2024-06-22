@@ -14,6 +14,7 @@ namespace Reborn {
 	const size_t MAX_VERTEX_ARRAY_OBJECTS = 2048;
 	const size_t MAX_TEXTURES = 2048;
 	const size_t MAX_RENDERBUFFERS = 64;
+	const size_t MAX_FRAMEBUFFERS = 16;
 
 	enum BackendType {
 		OPEN_GL,

@@ -4,7 +4,7 @@
 #include "Renderbuffer.h"
 
 namespace Reborn {
-	enum FramebufferAttachmentType {
+	enum class FramebufferAttachmentType {
 		colorAttachment0 = GL_COLOR_ATTACHMENT0,
 		colorAttachment1 = GL_COLOR_ATTACHMENT1,
 		colorAttachment2 = GL_COLOR_ATTACHMENT2,
@@ -64,7 +64,7 @@ namespace Reborn {
 				initializedAttachment->attachment = FramebufferAttachmentType::depthStensilAttachment;
 				break;
 			default:
-				LOG_ERROR << "Framebuffer::useAttachment uncnown attachment type " << attachment;
+				LOG_ERROR << "Framebuffer::useAttachment uncnown attachment type " << (int)attachment;
 				break;
 			}
 

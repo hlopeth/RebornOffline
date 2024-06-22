@@ -11,6 +11,7 @@ Reborn::HandleAllocator<Reborn::MAX_INDEX_BUFFERS> indexBufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_VERTEX_ARRAY_OBJECTS> vertexArrayObjectHandlers;
 Reborn::HandleAllocator<Reborn::MAX_TEXTURES> textureHandlers;
 Reborn::HandleAllocator<Reborn::MAX_RENDERBUFFERS> renderbufferHandlers;
+Reborn::HandleAllocator<Reborn::MAX_FRAMEBUFFERS> framebufferHandlers;
 
 GLuint compileShader(const std::string& source, GLenum type);
 
@@ -31,6 +32,7 @@ namespace Reborn {
 	GLuint gl_vertexArrayObjects[MAX_VERTEX_ARRAY_OBJECTS];
 	GLuint gl_Textures[MAX_TEXTURES];
 	GLuint gl_Renderbuffers[MAX_RENDERBUFFERS];
+	GLuint gl_Framebuffers[MAX_FRAMEBUFFERS];
 
 	GLenum toGLType(AttributeType type) {
 		GLenum result = 0;
@@ -42,6 +44,30 @@ namespace Reborn {
 		case Reborn::AttributeType::COUNT:
 		default:
 			assert(0,"unknown type");
+			break;
+		}
+		return result;
+	}
+
+	GLenum toGLType(FramebufferAttachmentType attachmentType) {
+		GLenum result = 0;
+		switch (attachmentType)
+		{
+		case Reborn::FramebufferAttachmentType::colorAttachment0:
+			result = GL_COLOR_ATTACHMENT0;
+			break;
+		case Reborn::FramebufferAttachmentType::colorAttachment1:
+			result = GL_COLOR_ATTACHMENT1;
+			break;
+		case Reborn::FramebufferAttachmentType::colorAttachment2:
+			result = GL_COLOR_ATTACHMENT2;
+			break;
+		case Reborn::FramebufferAttachmentType::depthStensilAttachment:
+			result = GL_DEPTH_STENCIL_ATTACHMENT;
+			break;
+		case Reborn::FramebufferAttachmentType::emptyAttachment:
+		default:
+			assert(0, "wtf");
 			break;
 		}
 		return result;
@@ -301,6 +327,15 @@ namespace Reborn {
 				glGenRenderbuffers(1, &gl_Renderbuffers[renderbufferHandler]);
 				break;
 			}
+			case CommandBuffer::CommandType::CREATE_FRAMEBUFFER: {
+				Handler framebufferHandler;
+
+				_commandBuffer
+					.read(framebufferHandler);
+
+				glGenFramebuffers(1, &gl_Framebuffers[framebufferHandler]);
+				break;
+			}
 			case CommandBuffer::CommandType::ALLOCATE_TEXTURE: {
 				Handler textureHandler;
 				TextureDescriptor descriptor;
@@ -347,8 +382,71 @@ namespace Reborn {
 				);
 				break;
 			}
+			case CommandBuffer::CommandType::ATTACH_TEXTURE_TO_FRAMEBUFFER: {
+				Handler framebufferHandler;
+				Handler textureHandler;
+				TextureDescriptor textureDescriptor;
+				FramebufferAttachmentType attachment;
+
+				_commandBuffer
+					.read(framebufferHandler)
+					.read(textureHandler)
+					.read(textureDescriptor)
+					.read(attachment);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, gl_Framebuffers[framebufferHandler]);
+				glBindTexture(toGLType(textureDescriptor.type), gl_Textures[textureHandler]);
+				glFramebufferTexture2D(
+					GL_FRAMEBUFFER,
+					toGLType(attachment),
+					toGLType(textureDescriptor.type),
+					gl_Textures[textureHandler],
+					0
+				);
+				break;
+			}
+			case CommandBuffer::CommandType::ATTACH_RENDERBUFFER_TO_FRAMEBUFFER: {
+				Handler framebufferHandler;
+				Handler renderbufferHandler;
+				FramebufferAttachmentType attachment;
+
+				_commandBuffer
+					.read(framebufferHandler)
+					.read(renderbufferHandler)
+					.read(attachment);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, gl_Framebuffers[framebufferHandler]);
+				glBindRenderbuffer(GL_RENDERBUFFER, gl_Renderbuffers[renderbufferHandler]);
+				glFramebufferRenderbuffer(
+					GL_FRAMEBUFFER, 
+					toGLType(attachment), 
+					GL_RENDERBUFFER, 
+					gl_Renderbuffers[renderbufferHandler]
+				);
+				break;
+			}
+			case CommandBuffer::CommandType::SET_FRAMEBUFFER_DRAWBUFFERS: {
+				Handler framebufferHandler;
+				uint8_t numAttachments;
+				GLenum attachments[3];
+
+				_commandBuffer
+					.read(framebufferHandler)
+					.read(numAttachments);
+
+				for (uint8_t i = 0; i < numAttachments; i++) {
+					FramebufferAttachmentType attachment;
+					_commandBuffer.read(attachment);
+					attachments[i] = toGLType(attachment);
+				}
+
+				glBindFramebuffer(GL_FRAMEBUFFER, gl_Framebuffers[framebufferHandler]);
+				glDrawBuffers(numAttachments, attachments);
+
+				break;
+			}
 			default:
-				
+				assert(0, "wtf");
 				break;
 			}
 		}
@@ -415,19 +513,34 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	Handler vao = createVertexArray(vbo, ebo, layout);
 
-	TextureDescriptor textureDescriptor;
-	textureDescriptor.width = sceneFraimbufferSize.x;
-	textureDescriptor.height = sceneFraimbufferSize.y;
-	textureDescriptor.type = TextureType::TEXTURE_2D;
-	textureDescriptor.internalFormat = TextureFormat::RGB;
-	textureDescriptor.pixelFormat = PixelFormat::RGB;
-	textureDescriptor.texelType = TexelType::UNSIGNED_BYTE;
-	textureDescriptor.minFilter = TextureFilter::LINEAR;
-	textureDescriptor.magFilter = TextureFilter::LINEAR;
-	textureDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
-	textureDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
-	Handler textureHandler = createTexture(textureDescriptor);
-	allocateTexture(textureHandler, textureDescriptor, 0);
+	TextureDescriptor colorAttachmentDescriptor;
+	colorAttachmentDescriptor.width = sceneFraimbufferSize.x;
+	colorAttachmentDescriptor.height = sceneFraimbufferSize.y;
+	colorAttachmentDescriptor.type = TextureType::TEXTURE_2D;
+	colorAttachmentDescriptor.internalFormat = TextureFormat::RGB;
+	colorAttachmentDescriptor.pixelFormat = PixelFormat::RGB;
+	colorAttachmentDescriptor.texelType = TexelType::UNSIGNED_BYTE;
+	colorAttachmentDescriptor.minFilter = TextureFilter::LINEAR;
+	colorAttachmentDescriptor.magFilter = TextureFilter::LINEAR;
+	colorAttachmentDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
+	colorAttachmentDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
+	Handler colorAttachmentHandler = createTexture(colorAttachmentDescriptor);
+	allocateTexture(colorAttachmentHandler, colorAttachmentDescriptor, 0);
+
+
+	TextureDescriptor outlinedGeomTextureDescriptor;
+	outlinedGeomTextureDescriptor.width = sceneFraimbufferSize.x;
+	outlinedGeomTextureDescriptor.height = sceneFraimbufferSize.y;
+	outlinedGeomTextureDescriptor.type = TextureType::TEXTURE_2D;
+	outlinedGeomTextureDescriptor.internalFormat = TextureFormat::RGB;
+	outlinedGeomTextureDescriptor.pixelFormat = PixelFormat::RGB;
+	outlinedGeomTextureDescriptor.texelType = TexelType::UNSIGNED_BYTE;
+	outlinedGeomTextureDescriptor.minFilter = TextureFilter::LINEAR;
+	outlinedGeomTextureDescriptor.magFilter = TextureFilter::LINEAR;
+	outlinedGeomTextureDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
+	outlinedGeomTextureDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
+	Handler outlinedGeomAttachmentHandler = createTexture(outlinedGeomTextureDescriptor);
+	allocateTexture(outlinedGeomAttachmentHandler, outlinedGeomTextureDescriptor, 0);
 
 	RenderbufferDescriptor depthStensilDescriptor;
 	depthStensilDescriptor.width = sceneFraimbufferSize.x;
@@ -435,6 +548,29 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	depthStensilDescriptor.internalFormat = TextureFormat::DEPTH24_STENCIL8;
 	Handler depthStensilHandler = createRenderBuffer(depthStensilDescriptor);
 	allocateRenderbuffer(depthStensilHandler, depthStensilDescriptor);
+
+	Handler framebufferHandler = createFrameBuffer();
+	attachTextureToFramebuffer(
+		framebufferHandler, 
+		colorAttachmentHandler, 
+		colorAttachmentDescriptor,
+		FramebufferAttachmentType::colorAttachment0
+	);
+	attachTextureToFramebuffer(
+		framebufferHandler, 
+		outlinedGeomAttachmentHandler,
+		outlinedGeomTextureDescriptor,
+		FramebufferAttachmentType::colorAttachment1
+	);
+	attachRenderbufferToFramebuffer(
+		framebufferHandler, 
+		depthStensilHandler, 
+		FramebufferAttachmentType::depthStensilAttachment
+	);
+	FramebufferAttachmentType attachments[3] = { FramebufferAttachmentType::colorAttachment0 };
+	setFramebufferDrawbuffers(framebufferHandler, 1, attachments);
+
+		//glDrawBuffers(drawAttachments.size(), drawAttachments.data());
 
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
@@ -495,6 +631,13 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 		LOG_ERROR << "postprocess framebuffer is not complete";
 	}
 
+#if 0 //test stuff
+	sceneFraimbuffer.colorAttachment0.value.texture.id = gl_Textures[colorAttachmentHandler];
+	sceneFraimbuffer.colorAttachment1.value.texture.id = gl_Textures[outlinedGeomAttachmentHandler];
+	sceneFraimbuffer.depthStensilAttachment.value.texture.id = gl_Renderbuffers[depthStensilHandler];
+	sceneFraimbuffer.id = gl_Framebuffers[framebufferHandler];
+#endif
+
 	bindMainFramebuffer();
 
 #if 0 //test code
@@ -528,6 +671,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	screenQuadVAO.ebo.id = gl_indexBuffers[ebo];
 	screenQuadVAO.ebo.size = 6;
 	screenQuadVAO.id = gl_vertexArrayObjects[vao]; 
+
 #endif
 
 	postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
@@ -735,6 +879,16 @@ Reborn::Handler Reborn::Renderer::createRenderBuffer(const Reborn::RenderbufferD
 	return renderbufferHandler;
 }
 
+Reborn::Handler Reborn::Renderer::createFrameBuffer() {
+	Reborn::Handler framebufferHandler = framebufferHandlers.allocate();
+	if (framebufferHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::CREATE_FRAMEBUFFER)
+			.write(framebufferHandler);
+	}
+	return framebufferHandler;
+}
+
 void Reborn::Renderer::allocateTexture(
 	Handler textureHandler, 
 	const Reborn::TextureDescriptor& descriptor, 
@@ -757,6 +911,52 @@ void Reborn::Renderer::allocateRenderbuffer(Reborn::Handler handler, const Rebor
 			.write(Reborn::CommandBuffer::CommandType::ALLOCATE_RENDERBUFFER)
 			.write(handler)
 			.write(descriptor);
+	}
+}
+
+void Reborn::Renderer::attachTextureToFramebuffer(
+	Reborn::Handler framebufferHandler, 
+	Reborn::Handler textureHandler, 
+	const Reborn::TextureDescriptor& textureDescriptor,
+	const Reborn::FramebufferAttachmentType& attachment) {
+	if (framebufferHandler != Reborn::InvalidHandle && textureHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::ATTACH_TEXTURE_TO_FRAMEBUFFER)
+			.write(framebufferHandler)
+			.write(textureHandler)
+			.write(textureDescriptor)
+			.write(attachment);
+	}
+}
+
+void Reborn::Renderer::attachRenderbufferToFramebuffer(
+	Reborn::Handler framebufferHandler, 
+	Reborn::Handler renderbufferHandler, 
+	const Reborn::FramebufferAttachmentType& attachment) {
+	if (framebufferHandler != Reborn::InvalidHandle && renderbufferHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::ATTACH_RENDERBUFFER_TO_FRAMEBUFFER)
+			.write(framebufferHandler)
+			.write(renderbufferHandler)
+			.write(attachment);
+	}
+}
+
+void Reborn::Renderer::setFramebufferDrawbuffers(
+	Reborn::Handler framebufferHandler, 
+	uint8_t numAttachments, 
+	Reborn::FramebufferAttachmentType attachments[3]
+) {
+	assert(numAttachments <=3, "don't expect more than 3 attachments");
+	if (framebufferHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_FRAMEBUFFER_DRAWBUFFERS)
+			.write(framebufferHandler)
+			.write(numAttachments);
+
+		for (uint8_t i = 0; i < numAttachments; i++) {
+			renderBackend->commandBuffer().write(attachments[i]);
+		}
 	}
 }
 
@@ -1046,7 +1246,7 @@ bool Reborn::Renderer::create(FramebufferAttachment& fboAttachment)
 		return true;
 	}
 	else {
-		LOG_ERROR << "Reborn::Renderer::create invalid attachment type " << fboAttachment.type;
+		LOG_ERROR << "Reborn::Renderer::create invalid attachment type " << (int)fboAttachment.type;
 		return false;
 	}
 
@@ -1059,13 +1259,13 @@ void Reborn::Renderer::attach(Framebuffer& fbo, FramebufferAttachment& fboAttach
 	}
 	bind(fbo);
 	if (fboAttachment.type == GL_TEXTURE_2D) {
-		setFramebufferTexture(fbo, fboAttachment.value.texture, fboAttachment.attachment);
+		setFramebufferTexture(fbo, fboAttachment.value.texture, toGLType(fboAttachment.attachment));
 	}
 	else if (fboAttachment.type == GL_RENDERBUFFER) {
-		setFramebufferRenderbuffer(fbo, fboAttachment.value.renderbuffer, fboAttachment.attachment);
+		setFramebufferRenderbuffer(fbo, fboAttachment.value.renderbuffer, toGLType(fboAttachment.attachment));
 	}
 	else {
-		LOG_ERROR << "Reborn::Renderer::attach invalid attachment type " << fboAttachment.type;
+		LOG_ERROR << "Reborn::Renderer::attach invalid attachment type " << (int)fboAttachment.type;
 	}
 }
 

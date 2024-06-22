@@ -46,8 +46,12 @@ namespace Reborn {
 		Handler createVertexArray(const Handler& vbo, const Handler& ebo, const VertexLayout& layout);
 		Handler createTexture(const TextureDescriptor& descriptor);
 		Handler createRenderBuffer(const RenderbufferDescriptor& descriptor);
+		Handler createFrameBuffer();
 		void allocateTexture(Handler handler, const TextureDescriptor& descriptor, uint16_t mipLevel, void* data = nullptr);
 		void allocateRenderbuffer(Handler handler, const RenderbufferDescriptor& descriptor);
+		void attachTextureToFramebuffer(Handler framebufferHandler, Handler textureHandler, const TextureDescriptor& textureDescriptor, const FramebufferAttachmentType& attachment);
+		void attachRenderbufferToFramebuffer(Handler framebufferHandler, Handler renderbufferHandler, const FramebufferAttachmentType& attachment);
+		void setFramebufferDrawbuffers(Handler framebufferHandler, uint8_t numAttachments, FramebufferAttachmentType attachments[3]);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);
