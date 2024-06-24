@@ -55,6 +55,16 @@ namespace Reborn {
 		void setFramebufferDrawbuffers(Handler framebufferHandler, uint8_t numAttachments, FramebufferAttachmentType attachments[3]);
 		void bindFramebuffer(Handler framebuffer = InvalidHandle);
 		void bindTexture(Handler texture, const TextureDescriptor& descriptor);
+		void bindShaderProgram(Handler shaderProgramHandler);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const int& value);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const float& value);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const Vector2& value);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const Vector3& value);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const Vector4& value);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const Matrix2& value, bool transpose = true);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const Matrix3& value, bool transpose = true);
+		void setUniform(Handler shaderProgramHandler, const std::string& name, const Matrix4& value, bool transpose = true);
+		void activateTexture(int attachmentIndex);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);
@@ -99,7 +109,7 @@ namespace Reborn {
 		//Framebuffer postprocessFramebuffer;
 		Camera _camera;
 		VertexArrayObject screenQuadVAO;
-		GLSLProgram postprocessPropgram;
+		//GLSLProgram postprocessPropgram;
 		RenderBackend* renderBackend;
 	};
 }

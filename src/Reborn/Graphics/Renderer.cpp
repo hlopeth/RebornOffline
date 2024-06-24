@@ -215,6 +215,18 @@ namespace Reborn {
 		}
 	}
 
+	enum struct UniformValueType {
+		INT,
+		FLOAT,
+		VECTOR2F,
+		VECTOR3F,
+		VECTOR4F,
+		MATRIX2F,
+		MATRIX3F,
+		MATRIX4F,
+		COUNT
+	};
+
 
 	RenderBackend_GL::RenderBackend_GL(SDL_GLContext& _context) :
 		context(_context),
@@ -506,6 +518,81 @@ namespace Reborn {
 				glBindTexture(toGLType(descriptor.type), gl_Textures[textureHandler]);
 				break;
 			}
+			case CommandBuffer::CommandType::BIND_SHADER_PROGRAM: {
+				Handler shaderProgramHandler;
+
+				_commandBuffer
+					.read(shaderProgramHandler);
+
+				glUseProgram(gl_ShaderPrograms[shaderProgramHandler]);
+				break;
+			}
+			case CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE: {
+				Handler shaderProgramHandler;
+				size_t paramNameLength;
+				std::string paramName;
+				UniformValueType paramType;
+
+				_commandBuffer
+					.read(shaderProgramHandler)
+					.read(paramNameLength);
+				paramName.resize(paramNameLength, '%');
+				_commandBuffer
+					.read(paramName.data(), paramNameLength)
+					.read(paramType);
+
+
+				GLuint location = glGetUniformLocation(gl_ShaderPrograms[shaderProgramHandler], paramName.c_str());
+
+				switch (paramType)
+				{
+				case Reborn::UniformValueType::INT: {
+					int value;
+					_commandBuffer.read(value);
+					glUniform1i(location, value);
+					break;
+				}
+				case Reborn::UniformValueType::FLOAT:
+					assert(0, "wtf");
+					break;
+				case Reborn::UniformValueType::VECTOR2F: {
+					Vector2 value;
+					_commandBuffer.read(value);
+					glUniform2f(location, value.x, value.y);
+					break;
+				}
+				case Reborn::UniformValueType::VECTOR3F: {
+					Vector3 value;
+					_commandBuffer.read(value);
+					glUniform3f(location, value.x, value.y, value.z);
+					break;
+				}
+				case Reborn::UniformValueType::VECTOR4F:
+					assert(0, "wtf");
+					break;
+				case Reborn::UniformValueType::MATRIX2F:
+					assert(0, "wtf");
+					break;
+				case Reborn::UniformValueType::MATRIX3F:
+					assert(0, "wtf");
+					break;
+				case Reborn::UniformValueType::MATRIX4F:
+					assert(0, "wtf");
+					break;
+				case Reborn::UniformValueType::COUNT:
+					assert(0, "wtf");
+					break;
+				default:
+					break;
+				}
+				break;
+			}
+			case CommandBuffer::CommandType::ACTIVATE_TEXTURE: {
+				int attachmentIndex;
+				_commandBuffer.read(attachmentIndex);
+				glActiveTexture(GL_TEXTURE0 + attachmentIndex);
+				break;
+			}
 			default:
 				assert(0, "wtf");
 				break;
@@ -547,6 +634,8 @@ Reborn::Handler depthStensilHandler = Reborn::InvalidHandle;
 Reborn::Handler postprocessFramebufferHandler = Reborn::InvalidHandle;
 Reborn::TextureDescriptor postprocessTextureDescriptor;
 Reborn::Handler postprocessTextureHandler = Reborn::InvalidHandle;
+
+Reborn::Handler postprocessProgrammHandler = Reborn::InvalidHandle;
 
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
@@ -667,7 +756,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	};
 	setFramebufferDrawbuffers(postprocessFramebufferHandler, 1, attachments1);
 
-	Handler postprocessProgrammHandler = createShaderProgram(postprocessVertex, postprocessFragment);
+	postprocessProgrammHandler = createShaderProgram(postprocessVertex, postprocessFragment);
 
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
@@ -771,11 +860,11 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 #endif
 
-	postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
-	create(postprocessPropgram);
-#if 0
-	postprocessPropgram.id = gl_ShaderPrograms[postprocessProgrammHandler];
-#endif
+	//postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
+	//create(postprocessPropgram);
+//#if 0
+//	postprocessPropgram.id = gl_ShaderPrograms[postprocessProgrammHandler];
+//#endif
 }
 
 void Reborn::Renderer::beginFrame()
@@ -796,25 +885,21 @@ bool p_open = true;
 
 void Reborn::Renderer::endFrame()
 {
-	//bind(postprocessFramebuffer);
 	bindFramebuffer(postprocessFramebufferHandler);
-	renderBackend->processComandBuffer();
 
-	useProgram(postprocessPropgram);
-	glActiveTexture(GL_TEXTURE0);
-	//bind(sceneFraimbuffer.colorAttachment1.value.texture);
+	bindShaderProgram(postprocessProgrammHandler);
+	activateTexture(0);
 	bindTexture(outlinedGeomAttachmentHandler, outlinedGeomTextureDescriptor);
-	renderBackend->processComandBuffer();
-	setUniform(postprocessPropgram, "uTexture", 0);
-	glActiveTexture(GL_TEXTURE1);
-	//bind(sceneFraimbuffer.colorAttachment0.value.texture);
+	setUniform(postprocessProgrammHandler, "uTexture", 0);
+
+	activateTexture(1);
 	bindTexture(colorAttachmentHandler, colorAttachmentDescriptor);
-	renderBackend->processComandBuffer();
-	setUniform(postprocessPropgram, "uScreenTexture", 1);
-	//Vector2 textureSize(sceneFraimbuffer.colorAttachment1.value.texture.width, sceneFraimbuffer.colorAttachment1.value.texture.height);
+	setUniform(postprocessProgrammHandler, "uScreenTexture", 1);
 	Vector2 textureSize(colorAttachmentDescriptor.width, colorAttachmentDescriptor.height);
-	setUniform(postprocessPropgram, "uTexelSize", Vector2(1.0, 1.0)/textureSize*2.0);
-	setUniform(postprocessPropgram, "uOutlineColor", outlineColor);
+	setUniform(postprocessProgrammHandler, "uTexelSize", Vector2(1.0, 1.0)/textureSize*2.0);
+	setUniform(postprocessProgrammHandler, "uOutlineColor", outlineColor);
+	
+	renderBackend->processComandBuffer();
 	drawVAO(screenQuadVAO);
 	
 	bindMainFramebuffer();
@@ -1101,6 +1186,153 @@ void Reborn::Renderer::bindTexture(Reborn::Handler textureHandler, const Reborn:
 	}
 }
 
+void Reborn::Renderer::bindShaderProgram(Reborn::Handler shaderProgramHandler) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::BIND_SHADER_PROGRAM)
+			.write(shaderProgramHandler);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const int& value
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::INT)
+			.write(value);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const float& value
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::FLOAT)
+			.write(value);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const Reborn::Vector2& value
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::VECTOR2F)
+			.write(value);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const Vector3& value
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::VECTOR3F)
+			.write(value);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const Vector4& value
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::VECTOR4F)
+			.write(value);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const Matrix2& value,
+	bool transpose
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::MATRIX2F)
+			.write(value)
+			.write(transpose);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const Matrix3& value,
+	bool transpose
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::MATRIX3F)
+			.write(value)
+			.write(transpose);
+	}
+}
+
+void Reborn::Renderer::setUniform(
+	Reborn::Handler shaderProgramHandler, 
+	const std::string& name, 
+	const Matrix4& value,
+	bool transpose
+) {
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::SET_NAMED_UNIFORM_VALUE)
+			.write(shaderProgramHandler)
+			.write(name.length())
+			.write(name.data(), name.length())
+			.write(UniformValueType::MATRIX4F)
+			.write(value)
+			.write(transpose);
+	}
+}
+
+void Reborn::Renderer::activateTexture(int attachmentIndex) {
+	renderBackend->commandBuffer()
+		.write(Reborn::CommandBuffer::CommandType::ACTIVATE_TEXTURE)
+		.write(attachmentIndex);
+}
 
 void Reborn::Renderer::create(BufferObject& buf) {
 	glGenBuffers(1, &(buf.id));
