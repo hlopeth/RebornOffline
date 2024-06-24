@@ -47,6 +47,7 @@ namespace Reborn {
 		Handler createTexture(const TextureDescriptor& descriptor);
 		Handler createRenderBuffer(const RenderbufferDescriptor& descriptor);
 		Handler createFrameBuffer();
+		Handler createShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
 		void allocateTexture(Handler handler, const TextureDescriptor& descriptor, uint16_t mipLevel, void* data = nullptr);
 		void allocateRenderbuffer(Handler handler, const RenderbufferDescriptor& descriptor);
 		void attachTextureToFramebuffer(Handler framebufferHandler, Handler textureHandler, const TextureDescriptor& textureDescriptor, const FramebufferAttachmentType& attachment);

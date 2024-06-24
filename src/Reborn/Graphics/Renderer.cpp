@@ -12,6 +12,7 @@ Reborn::HandleAllocator<Reborn::MAX_VERTEX_ARRAY_OBJECTS> vertexArrayObjectHandl
 Reborn::HandleAllocator<Reborn::MAX_TEXTURES> textureHandlers;
 Reborn::HandleAllocator<Reborn::MAX_RENDERBUFFERS> renderbufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_FRAMEBUFFERS> framebufferHandlers;
+Reborn::HandleAllocator<Reborn::MAX_SHADERPROGRAMS> shaderprogramHandlers;
 
 GLuint compileShader(const std::string& source, GLenum type);
 
@@ -33,6 +34,7 @@ namespace Reborn {
 	GLuint gl_Textures[MAX_TEXTURES];
 	GLuint gl_Renderbuffers[MAX_RENDERBUFFERS];
 	GLuint gl_Framebuffers[MAX_FRAMEBUFFERS];
+	GLuint gl_ShaderPrograms[MAX_SHADERPROGRAMS];
 
 	GLenum toGLType(AttributeType type) {
 		GLenum result = 0;
@@ -336,6 +338,44 @@ namespace Reborn {
 				glGenFramebuffers(1, &gl_Framebuffers[framebufferHandler]);
 				break;
 			}
+			case CommandBuffer::CommandType::CREATE_SHADER_PROGRAM: {
+				Handler shaderProgramHandler;
+				size_t vertexSourceLength;
+				std::string vertexSource;
+				size_t fragmentSourceLength;
+				std::string fragmentSource;
+				
+				_commandBuffer.read(shaderProgramHandler);
+
+				_commandBuffer.read(vertexSourceLength);
+				vertexSource.resize(vertexSourceLength, '%');
+				_commandBuffer.read(vertexSource.data(), vertexSourceLength);
+
+				_commandBuffer.read(fragmentSourceLength);
+				fragmentSource.resize(fragmentSourceLength, '%');
+				_commandBuffer.read(fragmentSource.data(), fragmentSourceLength);
+
+				GLuint vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
+				GLuint fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
+
+				const GLuint shaderProgram = glCreateProgram();
+				glAttachShader(shaderProgram, vertexShader);
+				glAttachShader(shaderProgram, fragmentShader);
+				glLinkProgram(shaderProgram);
+				GLint success;
+				char infoLog[512];
+				glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+				if (success != GL_TRUE) {
+					glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+					LOG_ERROR << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog;
+				}
+
+				glDeleteShader(vertexShader);
+				glDeleteShader(fragmentShader);
+				gl_ShaderPrograms[shaderProgramHandler] = shaderProgram;
+
+				break;
+			}
 			case CommandBuffer::CommandType::ALLOCATE_TEXTURE: {
 				Handler textureHandler;
 				TextureDescriptor descriptor;
@@ -627,6 +667,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	};
 	setFramebufferDrawbuffers(postprocessFramebufferHandler, 1, attachments1);
 
+	Handler postprocessProgrammHandler = createShaderProgram(postprocessVertex, postprocessFragment);
 
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
@@ -732,6 +773,9 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
 	create(postprocessPropgram);
+#if 0
+	postprocessPropgram.id = gl_ShaderPrograms[postprocessProgrammHandler];
+#endif
 }
 
 void Reborn::Renderer::beginFrame()
@@ -952,6 +996,23 @@ Reborn::Handler Reborn::Renderer::createFrameBuffer() {
 			.write(framebufferHandler);
 	}
 	return framebufferHandler;
+}
+
+Reborn::Handler Reborn::Renderer::createShaderProgram(
+	const std::string& vertexSource, 
+	const std::string& fragmentSource
+) {
+	Reborn::Handler shaderProgramHandler = shaderprogramHandlers.allocate();
+	if (shaderProgramHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::CREATE_SHADER_PROGRAM)
+			.write(shaderProgramHandler)
+			.write(vertexSource.length())
+			.write(vertexSource.data(), vertexSource.length())
+			.write(fragmentSource.length())
+			.write(fragmentSource.data(), fragmentSource.length());
+	}
+	return shaderProgramHandler;
 }
 
 void Reborn::Renderer::allocateTexture(
