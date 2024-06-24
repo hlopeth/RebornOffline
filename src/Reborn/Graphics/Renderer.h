@@ -52,6 +52,8 @@ namespace Reborn {
 		void attachTextureToFramebuffer(Handler framebufferHandler, Handler textureHandler, const TextureDescriptor& textureDescriptor, const FramebufferAttachmentType& attachment);
 		void attachRenderbufferToFramebuffer(Handler framebufferHandler, Handler renderbufferHandler, const FramebufferAttachmentType& attachment);
 		void setFramebufferDrawbuffers(Handler framebufferHandler, uint8_t numAttachments, FramebufferAttachmentType attachments[3]);
+		void bindFramebuffer(Handler framebuffer = InvalidHandle);
+		void bindTexture(Handler texture, const TextureDescriptor& descriptor);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);
@@ -92,8 +94,8 @@ namespace Reborn {
 		SDL_GLContext _context;
 		Window& _window;
 		Vector2 sceneFraimbufferSize;
-		Framebuffer sceneFraimbuffer;
-		Framebuffer postprocessFramebuffer;
+		//Framebuffer sceneFraimbuffer;
+		//Framebuffer postprocessFramebuffer;
 		Camera _camera;
 		VertexArrayObject screenQuadVAO;
 		GLSLProgram postprocessPropgram;

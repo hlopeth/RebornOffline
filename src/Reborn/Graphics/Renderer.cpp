@@ -445,6 +445,27 @@ namespace Reborn {
 
 				break;
 			}
+			case CommandBuffer::CommandType::BIND_FRAMEBUFFER: {
+				Handler framebufferHandler;
+
+				_commandBuffer
+					.read(framebufferHandler);
+
+				GLuint id = framebufferHandler == InvalidHandle ? 0 : gl_Framebuffers[framebufferHandler];
+				glBindFramebuffer(GL_FRAMEBUFFER, id);
+				break;
+			}
+			case CommandBuffer::CommandType::BIND_TEXTURE: {
+				Handler textureHandler;
+				TextureDescriptor descriptor;
+
+				_commandBuffer
+					.read(textureHandler)
+					.read(descriptor);
+
+				glBindTexture(toGLType(descriptor.type), gl_Textures[textureHandler]);
+				break;
+			}
 			default:
 				assert(0, "wtf");
 				break;
@@ -457,16 +478,16 @@ namespace Reborn {
 		handler.OpenGL_Handler = context;
 		return handler;
 	}
-	void RenderBackend_GL::init()
-	{
+
+	void RenderBackend_GL::init() {
 		auto glVersion = glGetString(GL_VERSION);
 		auto glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 
 		LOG_INFO << "using OpenGL " << glVersion;
 
 		glEnable(GL_DEBUG_OUTPUT);
-		//glDebugMessageCallback(glMessageCallback, 0);
-}
+		glDebugMessageCallback(glMessageCallback, 0);
+	}
 }
 
 //END TEMP RenderBackend_GL.cpp
@@ -475,7 +496,17 @@ namespace Reborn {
 
 
 
+Reborn::Handler framebufferHandler = Reborn::InvalidHandle;
+Reborn::TextureDescriptor colorAttachmentDescriptor;
+Reborn::Handler colorAttachmentHandler = Reborn::InvalidHandle;
+Reborn::TextureDescriptor outlinedGeomTextureDescriptor;
+Reborn::Handler outlinedGeomAttachmentHandler = Reborn::InvalidHandle;
+Reborn::RenderbufferDescriptor depthStensilDescriptor;
+Reborn::Handler depthStensilHandler = Reborn::InvalidHandle;
 
+Reborn::Handler postprocessFramebufferHandler = Reborn::InvalidHandle;
+Reborn::TextureDescriptor postprocessTextureDescriptor;
+Reborn::Handler postprocessTextureHandler = Reborn::InvalidHandle;
 
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
@@ -513,7 +544,6 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	Handler vao = createVertexArray(vbo, ebo, layout);
 
-	TextureDescriptor colorAttachmentDescriptor;
 	colorAttachmentDescriptor.width = sceneFraimbufferSize.x;
 	colorAttachmentDescriptor.height = sceneFraimbufferSize.y;
 	colorAttachmentDescriptor.type = TextureType::TEXTURE_2D;
@@ -524,11 +554,10 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	colorAttachmentDescriptor.magFilter = TextureFilter::LINEAR;
 	colorAttachmentDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
 	colorAttachmentDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
-	Handler colorAttachmentHandler = createTexture(colorAttachmentDescriptor);
+	colorAttachmentHandler = createTexture(colorAttachmentDescriptor);
 	allocateTexture(colorAttachmentHandler, colorAttachmentDescriptor, 0);
 
 
-	TextureDescriptor outlinedGeomTextureDescriptor;
 	outlinedGeomTextureDescriptor.width = sceneFraimbufferSize.x;
 	outlinedGeomTextureDescriptor.height = sceneFraimbufferSize.y;
 	outlinedGeomTextureDescriptor.type = TextureType::TEXTURE_2D;
@@ -539,17 +568,16 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	outlinedGeomTextureDescriptor.magFilter = TextureFilter::LINEAR;
 	outlinedGeomTextureDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
 	outlinedGeomTextureDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
-	Handler outlinedGeomAttachmentHandler = createTexture(outlinedGeomTextureDescriptor);
+	outlinedGeomAttachmentHandler = createTexture(outlinedGeomTextureDescriptor);
 	allocateTexture(outlinedGeomAttachmentHandler, outlinedGeomTextureDescriptor, 0);
 
-	RenderbufferDescriptor depthStensilDescriptor;
 	depthStensilDescriptor.width = sceneFraimbufferSize.x;
 	depthStensilDescriptor.height = sceneFraimbufferSize.y;
 	depthStensilDescriptor.internalFormat = TextureFormat::DEPTH24_STENCIL8;
-	Handler depthStensilHandler = createRenderBuffer(depthStensilDescriptor);
+	depthStensilHandler = createRenderBuffer(depthStensilDescriptor);
 	allocateRenderbuffer(depthStensilHandler, depthStensilDescriptor);
 
-	Handler framebufferHandler = createFrameBuffer();
+	framebufferHandler = createFrameBuffer();
 	attachTextureToFramebuffer(
 		framebufferHandler, 
 		colorAttachmentHandler, 
@@ -567,16 +595,44 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 		depthStensilHandler, 
 		FramebufferAttachmentType::depthStensilAttachment
 	);
-	FramebufferAttachmentType attachments[3] = { FramebufferAttachmentType::colorAttachment0 };
-	setFramebufferDrawbuffers(framebufferHandler, 1, attachments);
+	FramebufferAttachmentType attachments[3] = { 
+		FramebufferAttachmentType::colorAttachment0,
+		FramebufferAttachmentType::colorAttachment1
+	};
+	setFramebufferDrawbuffers(framebufferHandler, 2, attachments);
 
-		//glDrawBuffers(drawAttachments.size(), drawAttachments.data());
+
+	postprocessTextureDescriptor.width = sceneFraimbufferSize.x;
+	postprocessTextureDescriptor.height = sceneFraimbufferSize.y;
+	postprocessTextureDescriptor.type = TextureType::TEXTURE_2D;
+	postprocessTextureDescriptor.internalFormat = TextureFormat::RGB;
+	postprocessTextureDescriptor.pixelFormat = PixelFormat::RGB;
+	postprocessTextureDescriptor.texelType = TexelType::UNSIGNED_BYTE;
+	postprocessTextureDescriptor.minFilter = TextureFilter::LINEAR;
+	postprocessTextureDescriptor.magFilter = TextureFilter::LINEAR;
+	postprocessTextureDescriptor.wrapS = TextureWrapping::CLAMP_TO_EDGE;
+	postprocessTextureDescriptor.wrapT = TextureWrapping::CLAMP_TO_EDGE;
+	postprocessTextureHandler = createTexture(postprocessTextureDescriptor);
+	allocateTexture(postprocessTextureHandler, postprocessTextureDescriptor, 0);
+
+	postprocessFramebufferHandler = createFrameBuffer();
+	attachTextureToFramebuffer(
+		postprocessFramebufferHandler,
+		postprocessTextureHandler,
+		postprocessTextureDescriptor,
+		FramebufferAttachmentType::colorAttachment0
+	);
+	FramebufferAttachmentType attachments1[3] = {
+		FramebufferAttachmentType::colorAttachment0
+	};
+	setFramebufferDrawbuffers(postprocessFramebufferHandler, 1, attachments1);
+
 
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
 
 
-	GLTexture colorAttachmentTexture;
+	/*GLTexture colorAttachmentTexture;
 	colorAttachmentTexture.width = sceneFraimbufferSize.x;
 	colorAttachmentTexture.height = sceneFraimbufferSize.y;
 	colorAttachmentTexture.textureType = GL_TEXTURE_2D;
@@ -611,25 +667,25 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	create(sceneFraimbuffer);
 	if (!isFramebufferComplete(sceneFraimbuffer)) {
 		LOG_ERROR << "scene framebuffer is not complete";
-	}
+	}*/
 
-	GLTexture postprocessTexture;
-	postprocessTexture.width = sceneFraimbufferSize.x;
-	postprocessTexture.height = sceneFraimbufferSize.y;
-	postprocessTexture.textureType = GL_TEXTURE_2D;
-	postprocessTexture.internalFromat = GL_RGB;
-	postprocessTexture.texelFormat = GL_RGB;
-	postprocessTexture.texelType = GL_UNSIGNED_BYTE;
-	postprocessTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	postprocessTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	postprocessTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	postprocessTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	postprocessFramebuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, postprocessTexture);
+	//GLTexture postprocessTexture;
+	//postprocessTexture.width = sceneFraimbufferSize.x;
+	//postprocessTexture.height = sceneFraimbufferSize.y;
+	//postprocessTexture.textureType = GL_TEXTURE_2D;
+	//postprocessTexture.internalFromat = GL_RGB;
+	//postprocessTexture.texelFormat = GL_RGB;
+	//postprocessTexture.texelType = GL_UNSIGNED_BYTE;
+	//postprocessTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//postprocessTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//postprocessTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//postprocessTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//postprocessFramebuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, postprocessTexture);
 
-	create(postprocessFramebuffer);
-	if (!isFramebufferComplete(postprocessFramebuffer)) {
-		LOG_ERROR << "postprocess framebuffer is not complete";
-	}
+	//create(postprocessFramebuffer);
+	//if (!isFramebufferComplete(postprocessFramebuffer)) {
+	//	LOG_ERROR << "postprocess framebuffer is not complete";
+	//}
 
 #if 0 //test stuff
 	sceneFraimbuffer.colorAttachment0.value.texture.id = gl_Textures[colorAttachmentHandler];
@@ -680,7 +736,9 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 void Reborn::Renderer::beginFrame()
 {
-	bind(sceneFraimbuffer);
+	//bind(sceneFraimbuffer);
+	bindFramebuffer(framebufferHandler);
+	renderBackend->processComandBuffer();
 	glViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
 	Vector4 clearColor0( 0.2, 0.2, 0.2, 1);
 	glClearBufferfv(GL_COLOR, 0, clearColor0.d);
@@ -694,16 +752,23 @@ bool p_open = true;
 
 void Reborn::Renderer::endFrame()
 {
-	bind(postprocessFramebuffer);
+	//bind(postprocessFramebuffer);
+	bindFramebuffer(postprocessFramebufferHandler);
+	renderBackend->processComandBuffer();
 
 	useProgram(postprocessPropgram);
 	glActiveTexture(GL_TEXTURE0);
-	bind(sceneFraimbuffer.colorAttachment1.value.texture);
+	//bind(sceneFraimbuffer.colorAttachment1.value.texture);
+	bindTexture(outlinedGeomAttachmentHandler, outlinedGeomTextureDescriptor);
+	renderBackend->processComandBuffer();
 	setUniform(postprocessPropgram, "uTexture", 0);
 	glActiveTexture(GL_TEXTURE1);
-	bind(sceneFraimbuffer.colorAttachment0.value.texture);
+	//bind(sceneFraimbuffer.colorAttachment0.value.texture);
+	bindTexture(colorAttachmentHandler, colorAttachmentDescriptor);
+	renderBackend->processComandBuffer();
 	setUniform(postprocessPropgram, "uScreenTexture", 1);
-	Vector2 textureSize(sceneFraimbuffer.colorAttachment1.value.texture.width, sceneFraimbuffer.colorAttachment1.value.texture.height);
+	//Vector2 textureSize(sceneFraimbuffer.colorAttachment1.value.texture.width, sceneFraimbuffer.colorAttachment1.value.texture.height);
+	Vector2 textureSize(colorAttachmentDescriptor.width, colorAttachmentDescriptor.height);
 	setUniform(postprocessPropgram, "uTexelSize", Vector2(1.0, 1.0)/textureSize*2.0);
 	setUniform(postprocessPropgram, "uOutlineColor", outlineColor);
 	drawVAO(screenQuadVAO);
@@ -960,6 +1025,21 @@ void Reborn::Renderer::setFramebufferDrawbuffers(
 	}
 }
 
+void Reborn::Renderer::bindFramebuffer(Handler framebufferHandler) {
+	renderBackend->commandBuffer()
+		.write(Reborn::CommandBuffer::CommandType::BIND_FRAMEBUFFER)
+		.write(framebufferHandler);
+}
+
+void Reborn::Renderer::bindTexture(Reborn::Handler textureHandler, const Reborn::TextureDescriptor& descriptor) {
+	if (textureHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::BIND_TEXTURE)
+			.write(textureHandler)
+			.write(descriptor);
+	}
+}
+
 
 void Reborn::Renderer::create(BufferObject& buf) {
 	glGenBuffers(1, &(buf.id));
@@ -1177,13 +1257,20 @@ void Reborn::Renderer::useProgram(const GLSLProgram& program)
 
 const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()
 {
-	return postprocessFramebuffer.colorAttachment0.value.texture;
+	//return postprocessFramebuffer.colorAttachment0.value.texture;
+	static GLTexture res = GLTexture();
+	res.width = postprocessTextureDescriptor.width;
+	res.height = postprocessTextureDescriptor.height;
+	res.id = gl_Textures[postprocessTextureHandler];
+	return res;
 }
 
 void Reborn::Renderer::setClearColor(const Vector3& color)
 {
 	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
-	bind(sceneFraimbuffer);
+	//bind(sceneFraimbuffer);
+	bindFramebuffer(framebufferHandler);
+	renderBackend->processComandBuffer();
 	GLfloat clearColor[] = { color.r, color.g, color.b, 1.0f };
 	glClearBufferfv(GL_COLOR, 0, clearColor);
 }
@@ -1196,25 +1283,44 @@ const Reborn::Vector2& Reborn::Renderer::getSceneFraimbufferSize()
 void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
 {
 	sceneFraimbufferSize = newSize;
-	sceneFraimbuffer.colorAttachment0.value.texture.width = newSize.x;
-	sceneFraimbuffer.colorAttachment0.value.texture.height = newSize.y;
-	bind(sceneFraimbuffer.colorAttachment0.value.texture);
-	upload(sceneFraimbuffer.colorAttachment0.value.texture, nullptr);
+	colorAttachmentDescriptor.width = newSize.x;
+	colorAttachmentDescriptor.height = newSize.y;
+	bindTexture(colorAttachmentHandler, colorAttachmentDescriptor);  
+	allocateTexture(colorAttachmentHandler, colorAttachmentDescriptor, 0);
 
-	sceneFraimbuffer.colorAttachment1.value.texture.width = newSize.x;
-	sceneFraimbuffer.colorAttachment1.value.texture.height = newSize.y;
-	bind(sceneFraimbuffer.colorAttachment1.value.texture);
-	upload(sceneFraimbuffer.colorAttachment1.value.texture, nullptr);
+	outlinedGeomTextureDescriptor.width = newSize.x;
+	outlinedGeomTextureDescriptor.height = newSize.y;
+	bindTexture(outlinedGeomAttachmentHandler, outlinedGeomTextureDescriptor);
+	allocateTexture(outlinedGeomAttachmentHandler, outlinedGeomTextureDescriptor, 0);
 
-	sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.width = newSize.x;
-	sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.height = newSize.y;
-	bind(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
-	upload(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
+	depthStensilDescriptor.width = newSize.x;
+	depthStensilDescriptor.height = newSize.y;
+	allocateRenderbuffer(depthStensilHandler, depthStensilDescriptor);
 
-	postprocessFramebuffer.colorAttachment0.value.texture.width = newSize.x;
-	postprocessFramebuffer.colorAttachment0.value.texture.height = newSize.y;
-	bind(postprocessFramebuffer.colorAttachment0.value.texture);
-	upload(postprocessFramebuffer.colorAttachment0.value.texture, nullptr);
+	postprocessTextureDescriptor.width = newSize.x;
+	postprocessTextureDescriptor.height = newSize.y;
+	allocateTexture(postprocessTextureHandler, postprocessTextureDescriptor, 0);
+	renderBackend->processComandBuffer();
+
+	//sceneFraimbuffer.colorAttachment0.value.texture.width = newSize.x;
+	//sceneFraimbuffer.colorAttachment0.value.texture.height = newSize.y;
+	//bind(sceneFraimbuffer.colorAttachment0.value.texture);
+	//upload(sceneFraimbuffer.colorAttachment0.value.texture, nullptr);
+
+	//sceneFraimbuffer.colorAttachment1.value.texture.width = newSize.x;
+	//sceneFraimbuffer.colorAttachment1.value.texture.height = newSize.y;
+	//bind(sceneFraimbuffer.colorAttachment1.value.texture);
+	//upload(sceneFraimbuffer.colorAttachment1.value.texture, nullptr);
+
+	//sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.width = newSize.x;
+	//sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.height = newSize.y;
+	//bind(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
+	//upload(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
+
+	//postprocessFramebuffer.colorAttachment0.value.texture.width = newSize.x;
+	//postprocessFramebuffer.colorAttachment0.value.texture.height = newSize.y;
+	//bind(postprocessFramebuffer.colorAttachment0.value.texture);
+	//upload(postprocessFramebuffer.colorAttachment0.value.texture, nullptr);
 }
 
 Reborn::Renderer::~Renderer()
