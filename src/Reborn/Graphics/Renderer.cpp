@@ -593,6 +593,58 @@ namespace Reborn {
 				glActiveTexture(GL_TEXTURE0 + attachmentIndex);
 				break;
 			}
+			case CommandBuffer::CommandType::RENDER_VAO: {
+				Handler vaoHandler;
+				uint32_t size;
+				uint32_t offset;
+
+				_commandBuffer
+					.read(vaoHandler)
+					.read(size)
+					.read(offset);
+
+
+				glBindVertexArray(gl_vertexArrayObjects[vaoHandler]);
+				glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, (void*)offset);
+				break;
+			}
+			case CommandBuffer::CommandType::SET_VIEWPORT: {
+				uint16_t x;
+				uint16_t y;
+				uint16_t with;
+				uint16_t height;
+
+				_commandBuffer
+					.read(x)
+					.read(y)
+					.read(with)
+					.read(height);
+
+				glViewport(x, y, with, height);
+				break;
+			}
+			case CommandBuffer::CommandType::CLEAR_VIEWPORT: {
+				FramebufferAttachmentType bufferToClear;
+				bool shouldClearColor;
+				bool shouldClearDepth;
+				Vector4 clearColor;
+
+				_commandBuffer
+					.read(bufferToClear)
+					.read(shouldClearColor)
+					.read(shouldClearDepth)
+					.read(clearColor);
+
+				if (shouldClearColor) {
+					GLuint t = GLuint(bufferToClear) - GLuint(FramebufferAttachmentType::colorAttachment0);
+					glClearBufferfv(GL_COLOR, t, clearColor.d);
+				}
+				if (shouldClearDepth) {
+					glClear(GL_DEPTH_BUFFER_BIT);
+				}
+
+				break;
+			}
 			default:
 				assert(0, "wtf");
 				break;
@@ -637,6 +689,8 @@ Reborn::Handler postprocessTextureHandler = Reborn::InvalidHandle;
 
 Reborn::Handler postprocessProgrammHandler = Reborn::InvalidHandle;
 
+Reborn::Handler screenQuadVAOHandler = Reborn::InvalidHandle;
+
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
 	_context(window.createGLContext()),
@@ -671,7 +725,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 		.addAttribute(Attribute::UV1, 2, AttributeType::FLOAT)
 		.build();
 
-	Handler vao = createVertexArray(vbo, ebo, layout);
+	screenQuadVAOHandler = createVertexArray(vbo, ebo, layout);
 
 	colorAttachmentDescriptor.width = sceneFraimbufferSize.x;
 	colorAttachmentDescriptor.height = sceneFraimbufferSize.y;
@@ -758,6 +812,8 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 	postprocessProgrammHandler = createShaderProgram(postprocessVertex, postprocessFragment);
 
+	bindFramebuffer();
+
 	//TEST ZONE END
 	renderBackend->processComandBuffer();
 
@@ -824,7 +880,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	sceneFraimbuffer.id = gl_Framebuffers[framebufferHandler];
 #endif
 
-	bindMainFramebuffer();
+	//bindMainFramebuffer();
 
 #if 0 //test code
 	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
@@ -852,11 +908,11 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	uint32_t* p = (uint32_t*)screenQuadVAO.ebo.data;
 	create(screenQuadVAO);
 #else
-	screenQuadVAO = VertexArrayObject();
-	screenQuadVAO.vbo.id = gl_vertexBuffers[vbo];
-	screenQuadVAO.ebo.id = gl_indexBuffers[ebo];
-	screenQuadVAO.ebo.size = 6;
-	screenQuadVAO.id = gl_vertexArrayObjects[vao]; 
+	//screenQuadVAO = VertexArrayObject();
+	//screenQuadVAO.vbo.id = gl_vertexBuffers[vbo];
+	//screenQuadVAO.ebo.id = gl_indexBuffers[ebo];
+	//screenQuadVAO.ebo.size = 6;
+	//screenQuadVAO.id = gl_vertexArrayObjects[vao]; 
 
 #endif
 
@@ -869,15 +925,20 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 
 void Reborn::Renderer::beginFrame()
 {
+	
 	//bind(sceneFraimbuffer);
 	bindFramebuffer(framebufferHandler);
+	setViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
+	//glViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
+	Vector4 clearColor0( 0.2, 1, 0.2, 1);
+	//glClearBufferfv(GL_COLOR, 0, clearColor0.d);
+	Vector4 clearColor1( 1, 0, 0, 1 );
+	//glClearBufferfv(GL_COLOR, 1, clearColor1.d);
+	//glClear(GL_DEPTH_BUFFER_BIT);
+
+	clear(FramebufferAttachmentType::colorAttachment0, true, true, clearColor);
+	clear(FramebufferAttachmentType::colorAttachment1, true, true, {0, 0, 0, 1});
 	renderBackend->processComandBuffer();
-	glViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
-	Vector4 clearColor0( 0.2, 0.2, 0.2, 1);
-	glClearBufferfv(GL_COLOR, 0, clearColor0.d);
-	Vector4 clearColor1( 0, 0, 0, 1 );
-	glClearBufferfv(GL_COLOR, 1, clearColor1.d);
-	glClear(GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 }
 
@@ -899,12 +960,16 @@ void Reborn::Renderer::endFrame()
 	setUniform(postprocessProgrammHandler, "uTexelSize", Vector2(1.0, 1.0)/textureSize*2.0);
 	setUniform(postprocessProgrammHandler, "uOutlineColor", outlineColor);
 	
-	renderBackend->processComandBuffer();
-	drawVAO(screenQuadVAO);
+	renderVAO(screenQuadVAOHandler, 6);
+	bindFramebuffer();
+	//drawVAO(screenQuadVAO);
 	
-	bindMainFramebuffer();
-	glViewport(0, 0, _window.width(), _window.height());
-	glClear(GL_COLOR_BUFFER_BIT);
+	//bindMainFramebuffer();
+	setViewport(0,0,_window.width(), _window.height());
+	//glViewport(0, 0, _window.width(), _window.height());
+	//clear(FramebufferAttachmentType::colorAttachment0, true, false, this->clearColor);
+	renderBackend->processComandBuffer();
+	//glClear(GL_COLOR_BUFFER_BIT);
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
@@ -1334,6 +1399,40 @@ void Reborn::Renderer::activateTexture(int attachmentIndex) {
 		.write(attachmentIndex);
 }
 
+void Reborn::Renderer::renderVAO(Handler vaoHandler, uint32_t size, uint32_t offset) {
+	if (vaoHandler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::RENDER_VAO)
+			.write(vaoHandler)
+			.write(size)
+			.write(offset);
+	}
+}
+
+void Reborn::Renderer::setViewport(uint16_t x, uint16_t y, uint16_t with, uint16_t height) {
+	renderBackend->commandBuffer()
+		.write(Reborn::CommandBuffer::CommandType::SET_VIEWPORT)
+		.write(x)
+		.write(y)
+		.write(with)
+		.write(height);
+}
+
+void Reborn::Renderer::clear(
+	FramebufferAttachmentType bufferToClear,
+	bool clearColor,
+	bool cleatDepth, 
+	Vector4 color
+) {
+	renderBackend->commandBuffer()
+		.write(Reborn::CommandBuffer::CommandType::CLEAR_VIEWPORT)
+		.write(bufferToClear)
+		.write(clearColor)
+		.write(cleatDepth)
+		.write(color);
+		
+}
+
 void Reborn::Renderer::create(BufferObject& buf) {
 	glGenBuffers(1, &(buf.id));
 }
@@ -1558,14 +1657,15 @@ const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()
 	return res;
 }
 
-void Reborn::Renderer::setClearColor(const Vector3& color)
+void Reborn::Renderer::setClearColor(const Vector3& _clearColor)
 {
+	this->clearColor = Vector4(_clearColor.xyz, 1);
 	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
 	//bind(sceneFraimbuffer);
-	bindFramebuffer(framebufferHandler);
-	renderBackend->processComandBuffer();
-	GLfloat clearColor[] = { color.r, color.g, color.b, 1.0f };
-	glClearBufferfv(GL_COLOR, 0, clearColor);
+	//bindFramebuffer(framebufferHandler);
+	//renderBackend->processComandBuffer();
+	//GLfloat clearColor[] = { color.r, color.g, color.b, 1.0f };
+	//glClearBufferfv(GL_COLOR, 0, clearColor);
 }
 
 const Reborn::Vector2& Reborn::Renderer::getSceneFraimbufferSize()

@@ -65,6 +65,9 @@ namespace Reborn {
 		void setUniform(Handler shaderProgramHandler, const std::string& name, const Matrix3& value, bool transpose = true);
 		void setUniform(Handler shaderProgramHandler, const std::string& name, const Matrix4& value, bool transpose = true);
 		void activateTexture(int attachmentIndex);
+		void renderVAO(Handler vaoHandler, uint32_t size, uint32_t offset = 0);
+		void setViewport(uint16_t x, uint16_t y, uint16_t with, uint16_t height);
+		void clear(FramebufferAttachmentType bufferToClear, bool color, bool depth, Vector4 clearColor);
 		//creates VertexAttayObject and it's VertexBufferObject
 		void create(VertexArrayObject& vao);
 		void create(GLTexture& texture);
@@ -108,8 +111,9 @@ namespace Reborn {
 		//Framebuffer sceneFraimbuffer;
 		//Framebuffer postprocessFramebuffer;
 		Camera _camera;
-		VertexArrayObject screenQuadVAO;
+		//VertexArrayObject screenQuadVAO;
 		//GLSLProgram postprocessPropgram;
 		RenderBackend* renderBackend;
+		Vector4 clearColor = { 0, 0, 0, 1 };
 	};
 }

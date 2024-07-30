@@ -117,7 +117,7 @@ void drawPropertyView(Entity cameraControllerEntity, ImGuiComponent& _this) {
 
     ImGui::End();
 
-    //renderer.setClearColor(Vector3(color.x, color.y, color.z));
+    renderer.setClearColor(Vector3(0.2, 0.2, 0.2));
     renderer.lightColor = Vector3(lightColor.x, lightColor.y, lightColor.z);
     renderer.ambientColor = Vector3(ambientColor.x, ambientColor.y, ambientColor.z);
     renderer.lightStr = lightStr;
