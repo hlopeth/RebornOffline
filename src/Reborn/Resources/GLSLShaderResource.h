@@ -7,13 +7,13 @@ namespace Reborn {
 	class GLSLShaderResouce : public AbstractResource {
 	public:
 		GLSLShaderResouce();
-		GLSLShaderResouce(const Reborn::GLSLProgram& _program);
+		GLSLShaderResouce(const Reborn::Handler _handle);
 		virtual bool tryLoad(const std::string& path) override;
 		virtual bool unload() override;
 		virtual const char* getTypeStr() override;
-		const GLSLProgram& getProgram() const;
+		const Handler getProgram() const;
 	protected:
-		GLSLProgram program;
+		Handler handle;
 	};
 
 }

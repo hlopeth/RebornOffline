@@ -45,7 +45,7 @@ void loadMaterial(Reborn::Model* model, const aiMaterial* assimpMaterial) {
 	if (defaultShaderResource == nullptr)
 		return;
 
-	const Reborn::GLSLProgram& defaultProgram = defaultShaderResource->getProgram();
+	const Reborn::Handler defaultProgram = defaultShaderResource->getProgram();
 	Reborn::Material material(defaultProgram);
 	aiColor3D diffuseColor;
 	assimpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor);

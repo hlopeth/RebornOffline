@@ -9,10 +9,10 @@ Reborn::GLSLShaderResouce::GLSLShaderResouce():
 }
 
 Reborn::GLSLShaderResouce::GLSLShaderResouce(
-	const Reborn::GLSLProgram& _program
+	const Reborn::Handler _handle
 ):
 	AbstractResource(0x78fd24ec),
-	program(_program)
+	handle(_handle)
 {
 }
 
@@ -21,6 +21,8 @@ bool Reborn::GLSLShaderResouce::tryLoad(const std::string& path)
 	std::ifstream inFile;
 	const std::string vertexFilename = path + '/' + "vertex.glsl";
 	inFile.open(vertexFilename);
+	std::string vertexSource;
+	std::string fragmentSource;
 	if (!inFile.is_open()) {
 		LOG_ERROR << "GLSLShaderResouce::tryLoad feiled to open vertex shader " << vertexFilename;
 		inFile.close();
@@ -29,7 +31,7 @@ bool Reborn::GLSLShaderResouce::tryLoad(const std::string& path)
 	else {
 		std::stringstream buffer;
 		buffer << inFile.rdbuf();
-		program.vertexSource = buffer.str();
+		vertexSource = buffer.str();
 	}
 	inFile.close();
 
@@ -43,23 +45,21 @@ bool Reborn::GLSLShaderResouce::tryLoad(const std::string& path)
 	else {
 		std::stringstream buffer;
 		buffer << inFile.rdbuf();
-		program.fragmentSource = buffer.str();
+		fragmentSource = buffer.str();
 	}
 	inFile.close();
 
 	loaded = true;
 
 	Reborn::Renderer& renderer = Application::get()->renderer();
-	renderer.create(program);
+	this->handle = renderer.createShaderProgram(vertexSource, fragmentSource);
 	return true;
 }
 
 bool Reborn::GLSLShaderResouce::unload()
 {
-	program.vertexSource = "";
- 	program.fragmentSource = "";
 	loaded = false;
-	Application::get()->renderer().destroy(program);
+	Application::get()->renderer().deleteSharerProgram(handle	);
 	return true;
 }
 
@@ -68,7 +68,7 @@ const char* Reborn::GLSLShaderResouce::getTypeStr()
 	return "GLSLShaderResouce";
 }
 
-const Reborn::GLSLProgram& Reborn::GLSLShaderResouce::getProgram() const
+const Reborn::Handler Reborn::GLSLShaderResouce::getProgram() const
 {
-	return program;
+	return handle;
 }

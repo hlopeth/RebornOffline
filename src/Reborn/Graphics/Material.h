@@ -62,7 +62,7 @@ namespace Reborn {
 	class Material {
 	public:
 		Material() = delete;
-		Material(const GLSLProgram& _program);
+		Material(const Handler _programHandler);
 		void setup(Renderer& renderer) const;
 		const MaterialParameter& getParameter(const std::string& paramName) const;
 		void setParameter(const std::string& paramName, float value);
@@ -73,9 +73,9 @@ namespace Reborn {
 		void setParameter(const std::string& paramName, Matrix2 value);
 		void setParameter(const std::string& paramName, Matrix3 value);
 		void setParameter(const std::string& paramName, Matrix4 value);
-		const GLSLProgram& getProgram() const;
+		const Handler getProgram() const;
 	private:
-		const GLSLProgram& program;
+		const Handler programHandler = InvalidHandle;
 		MaterialParameters parameters;
 	};
 }

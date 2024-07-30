@@ -388,6 +388,15 @@ namespace Reborn {
 
 				break;
 			}
+			case CommandBuffer::CommandType::DELETE_SHADER_PROGRAM: {
+				Handler shaderPrograamHandler;
+				_commandBuffer.read(shaderPrograamHandler);
+
+				GLuint& gl_shaderProgram = gl_ShaderPrograms[shaderPrograamHandler];
+				glDeleteProgram(gl_shaderProgram);
+				gl_shaderProgram = 0;
+				break;
+			}
 			case CommandBuffer::CommandType::ALLOCATE_TEXTURE: {
 				Handler textureHandler;
 				TextureDescriptor descriptor;
@@ -541,8 +550,11 @@ namespace Reborn {
 					.read(paramName.data(), paramNameLength)
 					.read(paramType);
 
+				assert(shaderProgramHandler != InvalidHandle);
 
-				GLuint location = glGetUniformLocation(gl_ShaderPrograms[shaderProgramHandler], paramName.c_str());
+				GLuint gl_ShaderProgram = gl_ShaderPrograms[shaderProgramHandler];
+				glUseProgram(gl_ShaderProgram);
+				GLuint location = glGetUniformLocation(gl_ShaderProgram, paramName.c_str());
 
 				switch (paramType)
 				{
@@ -552,9 +564,12 @@ namespace Reborn {
 					glUniform1i(location, value);
 					break;
 				}
-				case Reborn::UniformValueType::FLOAT:
-					assert(0, "wtf");
+				case Reborn::UniformValueType::FLOAT: {
+					float value;
+					_commandBuffer.read(value);
+					glUniform1f(location, value);
 					break;
+				}
 				case Reborn::UniformValueType::VECTOR2F: {
 					Vector2 value;
 					_commandBuffer.read(value);
@@ -567,18 +582,36 @@ namespace Reborn {
 					glUniform3f(location, value.x, value.y, value.z);
 					break;
 				}
-				case Reborn::UniformValueType::VECTOR4F:
-					assert(0, "wtf");
+				case Reborn::UniformValueType::VECTOR4F: {
+					Vector4 value;
+					_commandBuffer.read(value);
+					glUniform4f(location, value.x, value.y, value.z, value.w);
 					break;
-				case Reborn::UniformValueType::MATRIX2F:
-					assert(0, "wtf");
+				}
+				case Reborn::UniformValueType::MATRIX2F: {
+					Matrix2 value;
+					bool transpose;
+					_commandBuffer.read(value);
+					_commandBuffer.read(transpose);
+					glUniformMatrix2fv(location, 1, transpose, value._d);
 					break;
-				case Reborn::UniformValueType::MATRIX3F:
-					assert(0, "wtf");
+				}
+				case Reborn::UniformValueType::MATRIX3F: {
+					Matrix3 value;
+					bool transpose;
+					_commandBuffer.read(value);
+					_commandBuffer.read(transpose);
+					glUniformMatrix3fv(location, 1, transpose, value._d);
 					break;
-				case Reborn::UniformValueType::MATRIX4F:
-					assert(0, "wtf");
+				}
+				case Reborn::UniformValueType::MATRIX4F: {
+					Matrix4 value;
+					bool transpose;
+					_commandBuffer.read(value);
+					_commandBuffer.read(transpose);
+					glUniformMatrix4fv(location, 1, transpose, value._d);
 					break;
+				}
 				case Reborn::UniformValueType::COUNT:
 					assert(0, "wtf");
 					break;
@@ -670,27 +703,6 @@ namespace Reborn {
 }
 
 //END TEMP RenderBackend_GL.cpp
-
-
-
-
-
-Reborn::Handler framebufferHandler = Reborn::InvalidHandle;
-Reborn::TextureDescriptor colorAttachmentDescriptor;
-Reborn::Handler colorAttachmentHandler = Reborn::InvalidHandle;
-Reborn::TextureDescriptor outlinedGeomTextureDescriptor;
-Reborn::Handler outlinedGeomAttachmentHandler = Reborn::InvalidHandle;
-Reborn::RenderbufferDescriptor depthStensilDescriptor;
-Reborn::Handler depthStensilHandler = Reborn::InvalidHandle;
-
-Reborn::Handler postprocessFramebufferHandler = Reborn::InvalidHandle;
-Reborn::TextureDescriptor postprocessTextureDescriptor;
-Reborn::Handler postprocessTextureHandler = Reborn::InvalidHandle;
-
-Reborn::Handler postprocessProgrammHandler = Reborn::InvalidHandle;
-
-Reborn::Handler screenQuadVAOHandler = Reborn::InvalidHandle;
-
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
 	_context(window.createGLContext()),
@@ -907,34 +919,16 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	screenQuadVAO = screenQuad.getVAO();
 	uint32_t* p = (uint32_t*)screenQuadVAO.ebo.data;
 	create(screenQuadVAO);
-#else
-	//screenQuadVAO = VertexArrayObject();
-	//screenQuadVAO.vbo.id = gl_vertexBuffers[vbo];
-	//screenQuadVAO.ebo.id = gl_indexBuffers[ebo];
-	//screenQuadVAO.ebo.size = 6;
-	//screenQuadVAO.id = gl_vertexArrayObjects[vao]; 
-
 #endif
-
-	//postprocessPropgram = GLSLProgram(postprocessVertex, postprocessFragment);
-	//create(postprocessPropgram);
-//#if 0
-//	postprocessPropgram.id = gl_ShaderPrograms[postprocessProgrammHandler];
-//#endif
 }
 
 void Reborn::Renderer::beginFrame()
 {
 	
-	//bind(sceneFraimbuffer);
 	bindFramebuffer(framebufferHandler);
 	setViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
-	//glViewport(0, 0, sceneFraimbufferSize.x, sceneFraimbufferSize.y);
 	Vector4 clearColor0( 0.2, 1, 0.2, 1);
-	//glClearBufferfv(GL_COLOR, 0, clearColor0.d);
 	Vector4 clearColor1( 1, 0, 0, 1 );
-	//glClearBufferfv(GL_COLOR, 1, clearColor1.d);
-	//glClear(GL_DEPTH_BUFFER_BIT);
 
 	clear(FramebufferAttachmentType::colorAttachment0, true, true, clearColor);
 	clear(FramebufferAttachmentType::colorAttachment1, true, true, {0, 0, 0, 1});
@@ -962,14 +956,10 @@ void Reborn::Renderer::endFrame()
 	
 	renderVAO(screenQuadVAOHandler, 6);
 	bindFramebuffer();
-	//drawVAO(screenQuadVAO);
 	
-	//bindMainFramebuffer();
 	setViewport(0,0,_window.width(), _window.height());
-	//glViewport(0, 0, _window.width(), _window.height());
 	//clear(FramebufferAttachmentType::colorAttachment0, true, false, this->clearColor);
 	renderBackend->processComandBuffer();
-	//glClear(GL_COLOR_BUFFER_BIT);
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
@@ -1001,75 +991,8 @@ const Reborn::Camera& Reborn::Renderer::getCamera() const
 	return _camera;
 }
 
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const int& value)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniform1i(location, value);
-}
 
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const float& value)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniform1f(location, value);
-}
 
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Vector2& value)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniform2f(location, value.x, value.y);
-}
-
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Vector3& value)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniform3f(location, value.x, value.y, value.z);
-}
-
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Vector4& value)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniform4f(location, value.x, value.y, value.z, value.w);
-}
-
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Matrix2& value, bool transpose)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniformMatrix2fv(location, 1, transpose, value._d);
-}
-
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Matrix3& value, bool transpose)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniformMatrix3fv(location, 1, transpose, value._d);
-}
-
-void Reborn::Renderer::setUniform(const GLSLProgram& program, const GLchar* name, const Matrix4& value, bool transpose)
-{
-	GLuint location = glGetUniformLocation(program.id, name);
-	glUniformMatrix4fv(location, 1, transpose, value._d);
-}
-
-void Reborn::Renderer::create(GLSLProgram& program)
-{
-	GLuint vertexShader = compileShader(program.vertexSource, GL_VERTEX_SHADER);
-	GLuint fragmentShader = compileShader(program.fragmentSource, GL_FRAGMENT_SHADER);
-
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	GLint success;
-	char infoLog[512];
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (success != GL_TRUE) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		LOG_ERROR << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog;
-	}
-
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-	program.id = shaderProgram;
-}
 
 Reborn::Handler Reborn::Renderer::createVertexBuffer(void* data, std::size_t sizeInBytes) {
 	Reborn::Handler vertexBufferHandler = vertexBufferHandlers.allocate();
@@ -1163,6 +1086,16 @@ Reborn::Handler Reborn::Renderer::createShaderProgram(
 			.write(fragmentSource.data(), fragmentSource.length());
 	}
 	return shaderProgramHandler;
+}
+
+void Reborn::Renderer::deleteSharerProgram(Handler handler)
+{
+	if (handler != Reborn::InvalidHandle) {
+		renderBackend->commandBuffer()
+			.write(Reborn::CommandBuffer::CommandType::DELETE_SHADER_PROGRAM)
+			.write(handler);
+		shaderprogramHandlers.free(handler);
+	}
 }
 
 void Reborn::Renderer::allocateTexture(
@@ -1642,11 +1575,6 @@ void Reborn::Renderer::destroy(VertexArrayObject& vao)
 	glDeleteVertexArrays(1, &vao.id);
 }
 
-void Reborn::Renderer::useProgram(const GLSLProgram& program)
-{
-	glUseProgram(program.id);
-}
-
 const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()
 {
 	//return postprocessFramebuffer.colorAttachment0.value.texture;
@@ -1660,12 +1588,6 @@ const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()
 void Reborn::Renderer::setClearColor(const Vector3& _clearColor)
 {
 	this->clearColor = Vector4(_clearColor.xyz, 1);
-	//glDrawBuffer(GL_COLOR_ATTACHMENT0);
-	//bind(sceneFraimbuffer);
-	//bindFramebuffer(framebufferHandler);
-	//renderBackend->processComandBuffer();
-	//GLfloat clearColor[] = { color.r, color.g, color.b, 1.0f };
-	//glClearBufferfv(GL_COLOR, 0, clearColor);
 }
 
 const Reborn::Vector2& Reborn::Renderer::getSceneFraimbufferSize()
@@ -1694,26 +1616,6 @@ void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
 	postprocessTextureDescriptor.height = newSize.y;
 	allocateTexture(postprocessTextureHandler, postprocessTextureDescriptor, 0);
 	renderBackend->processComandBuffer();
-
-	//sceneFraimbuffer.colorAttachment0.value.texture.width = newSize.x;
-	//sceneFraimbuffer.colorAttachment0.value.texture.height = newSize.y;
-	//bind(sceneFraimbuffer.colorAttachment0.value.texture);
-	//upload(sceneFraimbuffer.colorAttachment0.value.texture, nullptr);
-
-	//sceneFraimbuffer.colorAttachment1.value.texture.width = newSize.x;
-	//sceneFraimbuffer.colorAttachment1.value.texture.height = newSize.y;
-	//bind(sceneFraimbuffer.colorAttachment1.value.texture);
-	//upload(sceneFraimbuffer.colorAttachment1.value.texture, nullptr);
-
-	//sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.width = newSize.x;
-	//sceneFraimbuffer.depthStensilAttachment.value.renderbuffer.height = newSize.y;
-	//bind(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
-	//upload(sceneFraimbuffer.depthStensilAttachment.value.renderbuffer);
-
-	//postprocessFramebuffer.colorAttachment0.value.texture.width = newSize.x;
-	//postprocessFramebuffer.colorAttachment0.value.texture.height = newSize.y;
-	//bind(postprocessFramebuffer.colorAttachment0.value.texture);
-	//upload(postprocessFramebuffer.colorAttachment0.value.texture, nullptr);
 }
 
 Reborn::Renderer::~Renderer()

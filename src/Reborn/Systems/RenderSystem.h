@@ -37,6 +37,7 @@ namespace Reborn {
 					renderComponent.materials[i].setParameter(RB_MATPARAM_AMBIENT, renderer.ambientColor);
 					renderComponent.materials[i].setParameter(RB_MATPARAM_OUTLINED, 1.f);
 					renderComponent.materials[i].setup(renderer);
+					renderer.getRenderBackend().processComandBuffer();
 					renderer.drawVAO(renderComponent.VAOs[i]);
 				}
 			}

@@ -27,16 +27,6 @@ namespace Reborn {
 		Camera& getCamera();
 		const Camera& getCamera() const;
 
-		void setUniform(const GLSLProgram& program, const GLchar* name, const int& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const float& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector2& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector3& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Vector4& value);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix2& value, bool transpose = true);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix3& value, bool transpose = true);
-		void setUniform(const GLSLProgram& program, const GLchar* name, const Matrix4& value, bool transpose = true);
-
-		void create(GLSLProgram& program);
 		void create(BufferObject& buf);
 		void create(Framebuffer& fbo);
 		void create(Renderbuffer& rbo);
@@ -48,6 +38,7 @@ namespace Reborn {
 		Handler createRenderBuffer(const RenderbufferDescriptor& descriptor);
 		Handler createFrameBuffer();
 		Handler createShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
+		void deleteSharerProgram(Handler handler);
 		void allocateTexture(Handler handler, const TextureDescriptor& descriptor, uint16_t mipLevel, void* data = nullptr);
 		void allocateRenderbuffer(Handler handler, const RenderbufferDescriptor& descriptor);
 		void attachTextureToFramebuffer(Handler framebufferHandler, Handler textureHandler, const TextureDescriptor& textureDescriptor, const FramebufferAttachmentType& attachment);
@@ -87,7 +78,6 @@ namespace Reborn {
 		void destroy(Framebuffer& fbo);
 		void destroy(GLSLProgram& program);
 		void destroy(VertexArrayObject& vao);
-		void useProgram(const GLSLProgram& program);
 		const GLTexture& getSceneTexture();
 
 		void setClearColor(const Vector3& color);
@@ -108,12 +98,24 @@ namespace Reborn {
 		SDL_GLContext _context;
 		Window& _window;
 		Vector2 sceneFraimbufferSize;
-		//Framebuffer sceneFraimbuffer;
-		//Framebuffer postprocessFramebuffer;
 		Camera _camera;
-		//VertexArrayObject screenQuadVAO;
-		//GLSLProgram postprocessPropgram;
 		RenderBackend* renderBackend;
+		Reborn::Handler framebufferHandler = Reborn::InvalidHandle;
+		Reborn::TextureDescriptor colorAttachmentDescriptor;
+		Reborn::Handler colorAttachmentHandler = Reborn::InvalidHandle;
+		Reborn::TextureDescriptor outlinedGeomTextureDescriptor;
+		Reborn::Handler outlinedGeomAttachmentHandler = Reborn::InvalidHandle;
+		Reborn::RenderbufferDescriptor depthStensilDescriptor;
+		Reborn::Handler depthStensilHandler = Reborn::InvalidHandle;
+
+		Reborn::Handler postprocessFramebufferHandler = Reborn::InvalidHandle;
+		Reborn::TextureDescriptor postprocessTextureDescriptor;
+		Reborn::Handler postprocessTextureHandler = Reborn::InvalidHandle;
+
+		Reborn::Handler postprocessProgrammHandler = Reborn::InvalidHandle;
+
+		Reborn::Handler screenQuadVAOHandler = Reborn::InvalidHandle;
+
 		Vector4 clearColor = { 0, 0, 0, 1 };
 	};
 }
