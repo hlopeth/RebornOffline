@@ -310,6 +310,7 @@ namespace Reborn {
 						(void*)attrib.offsetBytes
 					);
 				}
+				glBindVertexArray(0);
 				break;
 
 			}
@@ -628,17 +629,18 @@ namespace Reborn {
 			}
 			case CommandBuffer::CommandType::RENDER_VAO: {
 				Handler vaoHandler;
-				uint32_t size;
+				uint32_t count;
 				uint32_t offset;
 
 				_commandBuffer
 					.read(vaoHandler)
-					.read(size)
+					.read(count)
 					.read(offset);
 
 
 				glBindVertexArray(gl_vertexArrayObjects[vaoHandler]);
-				glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, (void*)offset);
+				glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, (void*)offset);
+				glBindVertexArray(0);
 				break;
 			}
 			case CommandBuffer::CommandType::SET_VIEWPORT: {
@@ -714,22 +716,22 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	renderBackend = new RenderBackend_GL(_context);
 	auto& cbuffer = renderBackend->commandBuffer();
 	renderBackend->commandBuffer().write(CommandBuffer::CommandType::INIT_BACKEND);
-	//TEST ZONE
+	
 	struct ScreenQuadVertex
 	{
 		Vector3 pos;
 		Vector2 uv;
 	};
-	ScreenQuadVertex vertices3[] = {
+	static ScreenQuadVertex vertices[] = {
 		{ Vector3(-1,-1, 0), Vector2( 0, 0) },
 		{ Vector3( 1,-1, 0), Vector2( 1, 0) },
 		{ Vector3( 1, 1, 0), Vector2( 1, 1) },
 		{ Vector3(-1, 1, 0), Vector2( 0, 1) }
 	};
-	uint32_t indices2[] = { 0, 1, 2, 0, 2, 3 };
+	static uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
 
-	Handler vbo = createVertexBuffer(vertices3, sizeof(ScreenQuadVertex) * 4);
-	Handler ebo = createIndexBuffer(indices2, sizeof(uint32_t) * 6);
+	Handler vbo = createVertexBuffer(vertices, sizeof(ScreenQuadVertex) * 4);
+	Handler ebo = createIndexBuffer(indices, sizeof(uint32_t) * 6);
 	
 	VertexLayout layout;
 	layout
@@ -825,65 +827,7 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	postprocessProgrammHandler = createShaderProgram(postprocessVertex, postprocessFragment);
 
 	bindFramebuffer();
-
-	//TEST ZONE END
 	renderBackend->processComandBuffer();
-
-
-	/*GLTexture colorAttachmentTexture;
-	colorAttachmentTexture.width = sceneFraimbufferSize.x;
-	colorAttachmentTexture.height = sceneFraimbufferSize.y;
-	colorAttachmentTexture.textureType = GL_TEXTURE_2D;
-	colorAttachmentTexture.internalFromat = GL_RGB;
-	colorAttachmentTexture.texelFormat = GL_RGB;
-	colorAttachmentTexture.texelType = GL_UNSIGNED_BYTE;
-	colorAttachmentTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	colorAttachmentTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	colorAttachmentTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	colorAttachmentTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, colorAttachmentTexture);
-
-	GLTexture outlinedGeomTexture;
-	outlinedGeomTexture.width = sceneFraimbufferSize.x;
-	outlinedGeomTexture.height = sceneFraimbufferSize.y;
-	outlinedGeomTexture.textureType = GL_TEXTURE_2D;
-	outlinedGeomTexture.internalFromat = GL_RGB;
-	outlinedGeomTexture.texelFormat = GL_RGB;
-	outlinedGeomTexture.texelType = GL_UNSIGNED_BYTE;
-	outlinedGeomTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	outlinedGeomTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	outlinedGeomTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	outlinedGeomTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::colorAttachment1, outlinedGeomTexture);
-
-	Renderbuffer depthStencilRenderbuffer;
-	depthStencilRenderbuffer.width = sceneFraimbufferSize.x;
-	depthStencilRenderbuffer.height = sceneFraimbufferSize.y;
-	depthStencilRenderbuffer.internalFormat = GL_DEPTH24_STENCIL8;
-	sceneFraimbuffer.useAttachment(FramebufferAttachmentType::depthStensilAttachment, depthStencilRenderbuffer);
-
-	create(sceneFraimbuffer);
-	if (!isFramebufferComplete(sceneFraimbuffer)) {
-		LOG_ERROR << "scene framebuffer is not complete";
-	}*/
-
-	//GLTexture postprocessTexture;
-	//postprocessTexture.width = sceneFraimbufferSize.x;
-	//postprocessTexture.height = sceneFraimbufferSize.y;
-	//postprocessTexture.textureType = GL_TEXTURE_2D;
-	//postprocessTexture.internalFromat = GL_RGB;
-	//postprocessTexture.texelFormat = GL_RGB;
-	//postprocessTexture.texelType = GL_UNSIGNED_BYTE;
-	//postprocessTexture.addParameteri(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//postprocessTexture.addParameteri(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//postprocessTexture.addParameteri(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//postprocessTexture.addParameteri(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//postprocessFramebuffer.useAttachment(FramebufferAttachmentType::colorAttachment0, postprocessTexture);
-
-	//create(postprocessFramebuffer);
-	//if (!isFramebufferComplete(postprocessFramebuffer)) {
-	//	LOG_ERROR << "postprocess framebuffer is not complete";
-	//}
 
 #if 0 //test stuff
 	sceneFraimbuffer.colorAttachment0.value.texture.id = gl_Textures[colorAttachmentHandler];
@@ -892,7 +836,6 @@ Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize)
 	sceneFraimbuffer.id = gl_Framebuffers[framebufferHandler];
 #endif
 
-	//bindMainFramebuffer();
 
 #if 0 //test code
 	uint32_t indices[] = { 0, 1, 2, 0, 2, 3 };
@@ -963,17 +906,6 @@ void Reborn::Renderer::endFrame()
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
-}
-
-void Reborn::Renderer::drawVAO(const VertexArrayObject& vao, GLuint offset)
-{
-	bind(vao);
-	glDrawElements(GL_TRIANGLES, vao.ebo.size, GL_UNSIGNED_INT, (void*)offset);
-}
-
-void Reborn::Renderer::drawMesh(const Mesh& mesh)
-{
-	drawVAO(mesh.getVAO());
 }
 
 Reborn::RenderBackend& Reborn::Renderer::getRenderBackend()
@@ -1332,12 +1264,12 @@ void Reborn::Renderer::activateTexture(int attachmentIndex) {
 		.write(attachmentIndex);
 }
 
-void Reborn::Renderer::renderVAO(Handler vaoHandler, uint32_t size, uint32_t offset) {
+void Reborn::Renderer::renderVAO(Handler vaoHandler, uint32_t count, uint32_t offset) {
 	if (vaoHandler != Reborn::InvalidHandle) {
 		renderBackend->commandBuffer()
 			.write(Reborn::CommandBuffer::CommandType::RENDER_VAO)
 			.write(vaoHandler)
-			.write(size)
+			.write(count)
 			.write(offset);
 	}
 }
@@ -1364,10 +1296,6 @@ void Reborn::Renderer::clear(
 		.write(cleatDepth)
 		.write(color);
 		
-}
-
-void Reborn::Renderer::create(BufferObject& buf) {
-	glGenBuffers(1, &(buf.id));
 }
 
 void Reborn::Renderer::create(Framebuffer& fbo) {
@@ -1400,41 +1328,9 @@ void Reborn::Renderer::create(Renderbuffer& rbo)
 	glGenRenderbuffers(1, &(rbo.id));
 }
 
-void Reborn::Renderer::create(VertexArrayObject& vao)
-{
-	glGenVertexArrays(1, &(vao.id));
-	bind(vao);
-
-	create(vao.vbo);
-	bind(vao.vbo);
-	upload(vao.vbo);
-
-	create(vao.ebo);
-	bind(vao.ebo);
-	upload(vao.ebo);
-
-	for (int i = 0; i < vao.layout.size(); i++) {
-		auto& attrib = vao.layout[i];
-		glEnableVertexAttribArray(attrib.index);
-		glVertexAttribPointer(
-			attrib.index, 
-			attrib.size,
-			attrib.type, 
-			attrib.normalized,
-			attrib.stride, 
-			(void*)(attrib.offset * sizeof(float)));
-	}
-}
-
 void Reborn::Renderer::create(GLTexture& texture)
 {
 	glGenTextures(1, &(texture.id));
-}
-
-void Reborn::Renderer::upload(BufferObject& buf, GLenum usage)
-{
-	bind(buf);
-	glBufferData(buf.type, buf.byteSize, buf.data, usage);
 }
 
 void Reborn::Renderer::upload(GLTexture& texture, void* data, GLuint mipLevel)
@@ -1493,16 +1389,6 @@ void Reborn::Renderer::setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer
 	bind(fbo);
 	bind(rbo);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.id);
-}
-
-void Reborn::Renderer::bind(const BufferObject& buf)
-{
-	glBindBuffer(buf.type, buf.id);
-}
-
-void Reborn::Renderer::bind(const VertexArrayObject& vao)
-{
-	glBindVertexArray(vao.id);
 }
 
 void Reborn::Renderer::bind(const Framebuffer& fbo)
@@ -1567,12 +1453,6 @@ void Reborn::Renderer::destroy(GLSLProgram& program)
 {
 	glDeleteProgram(program.id);
 	program.id = -1;
-}
-
-void Reborn::Renderer::destroy(VertexArrayObject& vao)
-{
-	glDeleteBuffers(1, &vao.vbo.id);
-	glDeleteVertexArrays(1, &vao.id);
 }
 
 const Reborn::GLTexture& Reborn::Renderer::getSceneTexture()

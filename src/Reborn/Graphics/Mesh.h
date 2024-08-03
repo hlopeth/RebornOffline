@@ -1,55 +1,47 @@
 #pragma once
 #include <Math/Vector.h>
-#include "VertexArrayObject.h"
+#include "VertexLayout.h"
+#include "VertexFactory.h"
 
 namespace Reborn {
+	class VertexFactory;
+
+	struct MeshVertexType {
+		Reborn::Vector3 position;
+		Reborn::Vector3 normal;
+		Reborn::Vector2 UV1;
+	};
+
 	class Mesh {
 	public: 
+		
+
 		Mesh() = default;
 		Mesh(
 			size_t _indexCount,
 			const uint32_t* _indices,
 			size_t _vertexCount,
-			const Vector3* _positions,
-			const Vector3* _normals = nullptr,
-			const Vector2* _UV1 = nullptr
-			);
-		Mesh(
-			Mesh&& mesh
+			const MeshVertexType* _vertices
 		);
-		Mesh& operator=(const Mesh& mesh);
-		bool hasPositions() const;
-		bool hasNormals() const;
-		bool hasUV1() const;
-		bool hasIndices() const;
-		const VertexArrayObject& getVAO() const;
-		VertexArrayObject& getVAO();
-		Vector3* positions() const;
-		Vector3* normals() const;
-		Vector2* UV1() const;
+		Mesh(
+			size_t _indexCount,
+			const uint32_t* _indices,
+			VertexFactory& vertexFactory
+		);
+		MeshVertexType* vertices() const;
 		uint32_t* indices() const;
 		size_t vertexCount() const;
 		size_t indexCount() const;
-	public:
-		//prevent copy
-		Mesh(
-			const Mesh& mesh
-		);
+		const VertexLayout& getVertexLayout() const;
+		void getVertexBuffer(void*& outBuffer, size_t& outSize) const;
+		void getIndexBuffer(void*& outBuffer, size_t& outSize) const;
 	private:
-		int positionsOffset() const;
-		int normalsOffset() const;
-		int uv1Offset() const;
-		void createVAO();
 
 		size_t _vertexCount = 0;
 		size_t _indexCount = 0;
-		bool _hasPositions = false;
-		bool _hasNormals = false;
-		bool _hasUV1 = false;
-		bool _hasIndeces = false;
-		VertexArrayObject _vao = VertexArrayObject();
-		std::unique_ptr<float[]> _vertexData = nullptr;
+		std::unique_ptr<MeshVertexType[]> _vertexData = nullptr;
 		std::unique_ptr<uint32_t[]> _indexData = nullptr;
+		VertexLayout _vertexLayout;
 
 	};
 }

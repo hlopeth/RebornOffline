@@ -198,12 +198,13 @@ private:
         };
 
         const uint32_t indeces[] = { 0, 1 ,2 };
-        Mesh triangleMesh(3, indeces, 3, vertices);
 
+        DefaultVertexFactory vf = DefaultVertexFactory().setSize(3).setPositions(vertices);
+        static Mesh triangleMesh(3, indeces, vf);
 
         triangleEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(triangleEntity);
-        entityManager().addComponent<RenderComponent>(triangleEntity, std::move(triangleMesh), material);
+        entityManager().addComponent<RenderComponent>(triangleEntity, &triangleMesh, material);
         return true;
     }
 
@@ -269,12 +270,13 @@ private:
             30,31,32,
             33,34,35
         };
+        DefaultVertexFactory vf = DefaultVertexFactory().setSize(36).setPositions(vertices);
 
-        Mesh cubeMesh(36, indices, 36, vertices);
+        static Mesh cubeMesh(36, indices, vf);
 
         cubeEntity = entityManager().createEntity();
         entityManager().addComponent<Transform3DComponent>(cubeEntity);
-        entityManager().addComponent<RenderComponent>(cubeEntity, std::move(cubeMesh), material);
+        entityManager().addComponent<RenderComponent>(cubeEntity, &cubeMesh, material);
         return true;
     }
 

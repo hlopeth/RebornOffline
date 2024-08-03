@@ -8,7 +8,6 @@
 #include <Core/Application.h>
 #include <queue>
 
-
 void loadMesh(Reborn::Model* model, const aiMesh* assimpMesh) {
 	unsigned int numVertices = assimpMesh->mNumVertices;
 	uint32_t numIndices = assimpMesh->mNumFaces * 3;
@@ -21,22 +20,23 @@ void loadMesh(Reborn::Model* model, const aiMesh* assimpMesh) {
 		indices[3 * i + 2] = face.mIndices[2];
 	}
 
-	Reborn::Vector3* positions = new Reborn::Vector3[numVertices];
-	for (int i = 0; i < numVertices; i++) {
+	Reborn::MeshVertexType *vertices = new Reborn::MeshVertexType[numVertices];
+	for (uint32_t i = 0; i < numVertices; i++) {
 		aiVector3D v = assimpMesh->mVertices[i];
-		positions[i] = Reborn::Vector3(v.x, v.y, v.z);
-	}
+		vertices[i].position = Reborn::Vector3(v.x, v.y, v.z);
 
-	Reborn::Vector3* normals = nullptr;
-	if (assimpMesh->HasNormals()) {
-		normals = new Reborn::Vector3[numVertices];
-		for (int i = 0; i < numVertices; i++) {
+		if (assimpMesh->HasNormals()) {
 			aiVector3D n = assimpMesh->mNormals[i];
-			normals[i] = Reborn::Vector3(n.x, n.y, n.z);
+			vertices[i].normal = Reborn::Vector3(n.x, n.y, n.z);
+		}
+
+		if (assimpMesh->HasTextureCoords(0)) {
+			aiVector3D uv = assimpMesh->mTextureCoords[0][i];
+			vertices[i].UV1 = Reborn::Vector2(uv.x, uv.y);
 		}
 	}
 
-	model->meshes.emplace_back(numIndices, indices, numVertices, positions, normals);
+	model->meshes.emplace_back(numIndices, indices, numVertices, vertices);
 }
 
 void loadMaterial(Reborn::Model* model, const aiMaterial* assimpMaterial) {
@@ -143,18 +143,11 @@ bool Reborn::ModelResource::tryLoad(const std::string& path)
 
 	loadModel(&(this->model), scene);
 
-	for (auto& mesh : model.meshes) {
-		Application::get()->renderer().create(mesh.getVAO());
-	}
-	
 	return true;
 }
 
 bool Reborn::ModelResource::unload()
 {
-	for (Mesh& mesh : model.meshes) {
-		Application::get()->renderer().destroy(mesh.getVAO());
-	}
 	loaded = false;
 	return true;
 }
