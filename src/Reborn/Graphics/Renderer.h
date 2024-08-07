@@ -2,8 +2,6 @@
 #include <SDL_opengl.h>
 #include "Core/Window.h"
 #include "GLSLProgram.h"
-#include "Framebuffer.h"
-#include "Renderbuffer.h"
 #include "GLTexture.h"
 #include <Math/Matrix.h>
 #include <Math/Vector.h>
@@ -15,6 +13,14 @@
 #include "TextureDescriptor.h"
 
 namespace Reborn {
+	enum class FramebufferAttachmentType {
+		colorAttachment0 = GL_COLOR_ATTACHMENT0,
+		colorAttachment1 = GL_COLOR_ATTACHMENT1,
+		colorAttachment2 = GL_COLOR_ATTACHMENT2,
+		depthStensilAttachment = GL_DEPTH_STENCIL_ATTACHMENT,
+		emptyAttachment = 0
+	};
+
 	class Renderer {
 	public:
 		Renderer(Window& window, const Vector2& sceneFraimbufferSize = Vector2(500, 500));
@@ -24,8 +30,6 @@ namespace Reborn {
 		Camera& getCamera();
 		const Camera& getCamera() const;
 
-		void create(Framebuffer& fbo);
-		void create(Renderbuffer& rbo);
 		//!!! don't do data copy at the moment. expects data ptr to be valid !!!
 		Handler createVertexBuffer(void* data, std::size_t sizeInBytes);
 		Handler createIndexBuffer(void* data, std::size_t sizeInBytes);
@@ -57,16 +61,8 @@ namespace Reborn {
 		void clear(FramebufferAttachmentType bufferToClear, bool color, bool depth, Vector4 clearColor);
 		void create(GLTexture& texture);
 		void upload(GLTexture& texture, void* data, GLuint mipLevel = 0);
-		void upload(Renderbuffer& rbo);
 		void updateTextureParameters(GLTexture& texture);
-		void setFramebufferTexture(Framebuffer& fbo, GLTexture& texture, GLenum attachment);
-		void setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment);
-		void bind(const Framebuffer& fbo);
-		void bindMainFramebuffer();
 		void bind(GLTexture& texture);
-		void bind(Renderbuffer& rbo);
-		bool isFramebufferComplete(Framebuffer& fbo);
-		void destroy(Framebuffer& fbo);
 		void destroy(GLSLProgram& program);
 		const GLTexture& getSceneTexture();
 
@@ -82,8 +78,6 @@ namespace Reborn {
 		Vector3 ambientColor = Vector3(1.0);
 		Vector3 outlineColor = Vector3(1.0);
 	private:
-		bool create(FramebufferAttachment& fboAttachment);
-		void attach(Framebuffer& fbo, FramebufferAttachment& fboAttachment);
 		bool initImGui(SDL_Window* window);
 		SDL_GLContext _context;
 		Window& _window;

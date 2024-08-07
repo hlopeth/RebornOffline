@@ -14,8 +14,6 @@ Reborn::HandleAllocator<Reborn::MAX_RENDERBUFFERS> renderbufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_FRAMEBUFFERS> framebufferHandlers;
 Reborn::HandleAllocator<Reborn::MAX_SHADERPROGRAMS> shaderprogramHandlers;
 
-GLuint compileShader(const std::string& source, GLenum type);
-
 std::string postprocessVertex =
 #include "shaders/postprocess/postprocessVertex.glsl"
 ;
@@ -49,6 +47,26 @@ namespace Reborn {
 			break;
 		}
 		return result;
+	}
+
+	GLuint compileShader(const std::string& source, GLenum type)
+	{
+		GLuint shader = glCreateShader(type);
+
+		const GLchar* c_source = source.c_str();
+		glShaderSource(shader, 1, &c_source, NULL);
+		glCompileShader(shader);
+
+		GLint success;
+		char infoLog[512];
+
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+		if (success != GL_TRUE)
+		{
+			glGetShaderInfoLog(shader, 512, NULL, infoLog);
+			LOG_ERROR << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog;
+		}
+		return shader;
 	}
 
 	GLenum toGLType(FramebufferAttachmentType attachmentType) {
@@ -1298,36 +1316,6 @@ void Reborn::Renderer::clear(
 		
 }
 
-void Reborn::Renderer::create(Framebuffer& fbo) {
-	glGenFramebuffers(1, &(fbo.id));
-	bind(fbo);
-	std::vector<GLenum> drawAttachments;
-	drawAttachments.reserve(4);
-	if (create(fbo.colorAttachment0)) {
-		attach(fbo, fbo.colorAttachment0);		
-		drawAttachments.push_back(GL_COLOR_ATTACHMENT0);
-	}
-	if (create(fbo.colorAttachment1)) {
-		attach(fbo, fbo.colorAttachment1);
-		drawAttachments.push_back(GL_COLOR_ATTACHMENT1);
-	}
-	if (create(fbo.colorAttachment2)) {
-		attach(fbo, fbo.colorAttachment2);
-		drawAttachments.push_back(GL_COLOR_ATTACHMENT2);
-	}
-	if (create(fbo.depthStensilAttachment)) {
-		attach(fbo, fbo.depthStensilAttachment);
-	}
-
-	int s = drawAttachments.size();
-	glDrawBuffers(drawAttachments.size(), drawAttachments.data());
-}
-
-void Reborn::Renderer::create(Renderbuffer& rbo)
-{
-	glGenRenderbuffers(1, &(rbo.id));
-}
-
 void Reborn::Renderer::create(GLTexture& texture)
 {
 	glGenTextures(1, &(texture.id));
@@ -1345,12 +1333,6 @@ void Reborn::Renderer::upload(GLTexture& texture, void* data, GLuint mipLevel)
 		LOG_ERROR << "Renderer::upload unsuplorted texture type = " << texture.textureType;
 		break;
 	}
-}
-
-void Reborn::Renderer::upload(Renderbuffer& rbo)
-{
-	bind(rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, rbo.internalFormat, rbo.width, rbo.height);
 }
 
 void Reborn::Renderer::updateTextureParameters(GLTexture& texture)
@@ -1377,76 +1359,9 @@ void Reborn::Renderer::updateTextureParameters(GLTexture& texture)
 	}
 }
 
-void Reborn::Renderer::setFramebufferTexture(Framebuffer& fbo, GLTexture& texture, GLenum attachment)
-{
-	bind(fbo);
-	bind(texture);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture.id, 0);
-}
-
-void Reborn::Renderer::setFramebufferRenderbuffer(Framebuffer& fbo, Renderbuffer& rbo, GLenum attachment)
-{
-	bind(fbo);
-	bind(rbo);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, rbo.id);
-}
-
-void Reborn::Renderer::bind(const Framebuffer& fbo)
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo.id);
-}
-
-void Reborn::Renderer::bindMainFramebuffer()
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void Reborn::Renderer::bind(GLTexture& texture)
 {
 	glBindTexture(texture.textureType, texture.id);
-}
-
-void Reborn::Renderer::bind(Renderbuffer& rbo)
-{
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo.id);
-}
-
-bool Reborn::Renderer::isFramebufferComplete(Framebuffer& fbo)
-{
-	bind(fbo);
-	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status == GL_FRAMEBUFFER_UNDEFINED) {
-		LOG_ERROR << "GL_FRAMEBUFFER_UNDEFINED is returned if the specified framebuffer is the default read or draw framebuffer, but the default framebuffer does not exist.";
-	}
-	if (status == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
-		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT is returned if any of the framebuffer attachment points are framebuffer incomplete.";
-	}
-	if (status == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
-		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT is returned if the framebuffer does not have at least one image attached to it.";
-	}
-	if (status == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
-		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER is returned if the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for any color attachment point(s) named by GL_DRAW_BUFFERi.";
-	}
-	if (status == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
-		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER is returned if GL_READ_BUFFER is not GL_NONE and the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE for the color attachment point named by GL_READ_BUFFER.";
-	}
-	if (status == GL_FRAMEBUFFER_UNSUPPORTED) {
-		LOG_ERROR << "GL_FRAMEBUFFER_UNSUPPORTED is returned if the combination of internal formats of the attached images violates an implementation-dependent set of restrictions.";
-	}
-	if (status == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE) {
-		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE is returned if the value of GL_RENDERBUFFER_SAMPLES is not the same for all attached renderbuffers; if the value of GL_TEXTURE_SAMPLES is the not same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, the value of GL_RENDERBUFFER_SAMPLES does not match the value of GL_TEXTURE_SAMPLES.";
-		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE is also returned if the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not the same for all attached textures; or, if the attached images are a mix of renderbuffers and textures, the value of GL_TEXTURE_FIXED_SAMPLE_LOCATIONS is not GL_TRUE for all attached textures.";
-	}
-	if (status == GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS) {
-		LOG_ERROR << "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS is returned if any framebuffer attachment is layered, and any populated attachment is not layered, or if all populated color attachments are not from textures of the same target.";
-	}
-
-	return status == GL_FRAMEBUFFER_COMPLETE;
-}
-
-void Reborn::Renderer::destroy(Framebuffer& fbo)
-{
-	glDeleteFramebuffers(1, &(fbo.id));
 }
 
 void Reborn::Renderer::destroy(GLSLProgram& program)
@@ -1508,48 +1423,6 @@ Reborn::Renderer::~Renderer()
 	SDL_GL_DeleteContext(_context);
 }
 
-bool Reborn::Renderer::create(FramebufferAttachment& fboAttachment)
-{
-	if (fboAttachment.attachment == FramebufferAttachmentType::emptyAttachment) {
-		return false;
-	}
-
-	if (fboAttachment.type == GL_TEXTURE_2D) {
-		create(fboAttachment.value.texture);
-		bind(fboAttachment.value.texture);
-		upload(fboAttachment.value.texture, NULL);
-		updateTextureParameters(fboAttachment.value.texture);
-	}
-	else if(fboAttachment.type == GL_RENDERBUFFER) {
-		create(fboAttachment.value.renderbuffer);
-		bind(fboAttachment.value.renderbuffer);
-		upload(fboAttachment.value.renderbuffer);
-		return true;
-	}
-	else {
-		LOG_ERROR << "Reborn::Renderer::create invalid attachment type " << (int)fboAttachment.type;
-		return false;
-	}
-
-	return true;
-}
-
-void Reborn::Renderer::attach(Framebuffer& fbo, FramebufferAttachment& fboAttachment) {
-	if (fboAttachment.attachment == FramebufferAttachmentType::emptyAttachment) {
-		return;
-	}
-	bind(fbo);
-	if (fboAttachment.type == GL_TEXTURE_2D) {
-		setFramebufferTexture(fbo, fboAttachment.value.texture, toGLType(fboAttachment.attachment));
-	}
-	else if (fboAttachment.type == GL_RENDERBUFFER) {
-		setFramebufferRenderbuffer(fbo, fboAttachment.value.renderbuffer, toGLType(fboAttachment.attachment));
-	}
-	else {
-		LOG_ERROR << "Reborn::Renderer::attach invalid attachment type " << (int)fboAttachment.type;
-	}
-}
-
 bool Reborn::Renderer::initImGui(SDL_Window* window) {
 	if (!gladLoadGL()) {
 		LOG_ERROR << "ImGuiSystem::init Failed to init glad";
@@ -1564,24 +1437,4 @@ bool Reborn::Renderer::initImGui(SDL_Window* window) {
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	return true;
-}
-
-GLuint compileShader(const std::string& source, GLenum type)
-{
-	GLuint shader = glCreateShader(type);
-
-	const GLchar* c_source = source.c_str();
-	glShaderSource(shader, 1, &c_source, NULL);
-	glCompileShader(shader);
-
-	GLint success;
-	char infoLog[512];
-
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-	if (success != GL_TRUE)
-	{
-		glGetShaderInfoLog(shader, 512, NULL, infoLog);
-		LOG_ERROR << "ERROR::SHADER::COMPILATION_FAILED\n" << infoLog;
-	}
-	return shader;
 }
