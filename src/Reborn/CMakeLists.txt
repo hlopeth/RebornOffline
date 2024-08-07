@@ -12,28 +12,16 @@ include_directories(${ASSIMP_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+add_compile_definitions(-DREBORN_RENDER_BACKEND_OPENGL=1)
+
 
 set(SOURCE_FILES
-	"Reborn.h"
-	 
-	"Core/Application.h"
 	"Core/Application.cpp" 
-	"EntryPoint.h"
 	"ECS/EntitySystem.h" 
-	 
-	"Event/IEvent.h"  
-	 
-	"Core/Window.h"  
 	"Core/Window.cpp"
-	${ELPP_SOURCE_DIR}/easylogging++.h
+	#${ELPP_SOURCE_DIR}/easylogging++.h
 	${ELPP_SOURCE_DIR}/easylogging++.cc
 	"Event/EventDispatcher.cpp" 
-	"Event/ApplicationShouldCloseEvent.h" 
-	"Log.h"
-	"Core.h"
-	"Event/KeyPressedEvent.h" 
-	"KeyCodes.h"
-	"SDLUtils.h"
 	"SDLUtils.cpp"
 	"Graphics/Renderer.cpp"
 	"Resources/ResourceManager.cpp" 

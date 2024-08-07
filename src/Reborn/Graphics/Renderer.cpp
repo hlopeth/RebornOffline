@@ -3,7 +3,11 @@
 #include <glad/glad.h>
 #include "Renderer.h"
 #include "backends/imgui_impl_sdl.h"
+#if REBORN_RENDER_BACKEND_OPENGL
 #include "backends/imgui_impl_opengl3.h"
+#else 
+static_assert(0, "no render backend???");
+#endif
 #include <Math/MathUtils.h>
 
 Reborn::HandleAllocator<Reborn::MAX_VERTEX_BUFFERS> vertexBufferHandlers;
@@ -922,8 +926,18 @@ void Reborn::Renderer::endFrame()
 	//clear(FramebufferAttachmentType::colorAttachment0, true, false, this->clearColor);
 	renderBackend->processComandBuffer();
 
+#if REBORN_RENDER_BACKEND_OPENGL
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#else 
+	static_assert(0, "no render backend???");
+#endif
+
+
+#if REBORN_RENDER_BACKEND_OPENGL
 	SDL_GL_SwapWindow(&(_window.getSDLWindow()));
+#else 
+	static_assert(0, "no render backend???");
+#endif
 }
 
 Reborn::RenderBackend& Reborn::Renderer::getRenderBackend()
@@ -1416,7 +1430,11 @@ void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
 Reborn::Renderer::~Renderer()
 {
 	delete renderBackend;
+#if REBORN_RENDER_BACKEND_OPENGL
 	ImGui_ImplOpenGL3_Shutdown();
+#else 
+	static_assert(0, "no render backend???");
+#endif
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
@@ -1424,6 +1442,8 @@ Reborn::Renderer::~Renderer()
 }
 
 bool Reborn::Renderer::initImGui(SDL_Window* window) {
+
+
 	if (!gladLoadGL()) {
 		LOG_ERROR << "ImGuiSystem::init Failed to init glad";
 		return false;
@@ -1433,8 +1453,12 @@ bool Reborn::Renderer::initImGui(SDL_Window* window) {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+#if REBORN_RENDER_BACKEND_OPENGL
 	ImGui_ImplSDL2_InitForOpenGL(window, _context);
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
+#else 
+	static_assert(0, "no render backend???");
+#endif
 	return true;
 }
