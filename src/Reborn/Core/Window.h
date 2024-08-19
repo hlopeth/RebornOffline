@@ -15,7 +15,6 @@ namespace Reborn {
 	class Window {
 	public:
 		Window(SDL_Window* sdlWindow);
-		SDL_GLContext createGLContext();
 		SDL_Window& getSDLWindow();
 		const int width() const;
 		const int height() const;

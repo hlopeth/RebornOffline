@@ -80,7 +80,6 @@ namespace Reborn {
 		Vector3 outlineColor = Vector3(1.0);
 	private:
 		bool initImGui(SDL_Window* window);
-		SDL_GLContext _context;
 		Window& _window;
 		Vector2 sceneFraimbufferSize;
 		Camera _camera;

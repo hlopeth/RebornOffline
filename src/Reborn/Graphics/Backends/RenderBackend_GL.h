@@ -6,11 +6,12 @@
 #include "Math/Matrix.h"
 #include "Math/Vector.h"
 #include "array"
+#include "Core/Window.h"
 
 namespace Reborn {
 	class RenderBackend_GL : public RenderBackend {
 	public:
-		RenderBackend_GL(SDL_GLContext& context);
+		RenderBackend_GL(Window& window);
 		~RenderBackend_GL();
 		virtual void processComandBuffer();
 		virtual const RenderContext_Handler getContext();

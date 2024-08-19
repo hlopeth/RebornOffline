@@ -29,12 +29,11 @@ std::string postprocessFragment =
 
 
 Reborn::Renderer::Renderer(Window& window, const Vector2& _sceneFraimbufferSize):
-	_context(window.createGLContext()),
 	_window(window),
 	sceneFraimbufferSize(_sceneFraimbufferSize),
 	_camera(Reborn::toRadians(60), 1, 100, 1)
 {
-	renderBackend = new RenderBackend_GL(_context);
+	renderBackend = new RenderBackend_GL(window);
 	auto& cbuffer = renderBackend->commandBuffer();
 	renderBackend->commandBuffer().write(CommandBuffer::CommandType::INIT_BACKEND);
 	renderBackend->processComandBuffer();
@@ -731,7 +730,6 @@ void Reborn::Renderer::setSceneFramebufferSize(const Vector2& newSize)
 
 Reborn::Renderer::~Renderer()
 {
-	delete renderBackend;
 #if REBORN_RENDER_BACKEND_OPENGL
 	ImGui_ImplOpenGL3_Shutdown();
 #else 
@@ -739,8 +737,7 @@ Reborn::Renderer::~Renderer()
 #endif
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
-
-	SDL_GL_DeleteContext(_context);
+	delete renderBackend;
 }
 
 bool Reborn::Renderer::initImGui(SDL_Window* window) {
@@ -752,7 +749,7 @@ bool Reborn::Renderer::initImGui(SDL_Window* window) {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
 #if REBORN_RENDER_BACKEND_OPENGL
-	ImGui_ImplSDL2_InitForOpenGL(window, _context);
+	ImGui_ImplSDL2_InitForOpenGL(window, renderBackend->getContext().OpenGL_Handler);
 	const char* glsl_version = "#version 130";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 #else 

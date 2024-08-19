@@ -203,16 +203,28 @@ namespace Reborn {
 		}
 	}
 
-
-	RenderBackend_GL::RenderBackend_GL(SDL_GLContext& _context) :
-		RenderBackend(BackendType::OPEN_GL),
-		context(_context)
+	RenderBackend_GL::RenderBackend_GL(Window& window) :
+		RenderBackend(BackendType::OPEN_GL) 
 	{
+		SDL_Window& sdlWindow = window.getSDLWindow();
 
+		SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+		context = SDL_GL_CreateContext(&window.getSDLWindow());
+
+		if (!context) {
+			LOG_ERROR << "Failed to create context. \n" << SDL_GetError();
+			context = nullptr;
+		}
+
+		assert(context != nullptr, "Failed to create context.");
 	}
 
-	RenderBackend_GL::~RenderBackend_GL()
-	{
+	RenderBackend_GL::~RenderBackend_GL() {
+		SDL_GL_DeleteContext(context);
 	}
 
 	void RenderBackend_GL::processComandBuffer()
