@@ -2,6 +2,7 @@
 #include "Core.h"
 #include <bitset>
 #include <limits>
+#include "Backends/RenderBackendTypes.h"
 
 namespace Reborn {
 	const Handler InvalidHandle = UINT_MAX;

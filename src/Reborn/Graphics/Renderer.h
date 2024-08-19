@@ -7,19 +7,20 @@
 #include <Math/Vector.h>
 #include "Mesh.h"
 #include "Camera.h"
-#include "Backends/RenderBackend_GL.h"
 #include "HandleAllocator.h"
 #include "VertexLayout.h"
 #include "TextureDescriptor.h"
+#include "Backends/RenderBackendTypes.h"
+#include "Backends/RenderBackend.h"
+
+
+#if REBORN_RENDER_BACKEND_OPENGL
+#include "Backends/RenderBackend_GL.h"
+#else 
+static_assert(0, "no render backend???");
+#endif
 
 namespace Reborn {
-	enum class FramebufferAttachmentType {
-		colorAttachment0 = GL_COLOR_ATTACHMENT0,
-		colorAttachment1 = GL_COLOR_ATTACHMENT1,
-		colorAttachment2 = GL_COLOR_ATTACHMENT2,
-		depthStensilAttachment = GL_DEPTH_STENCIL_ATTACHMENT,
-		emptyAttachment = 0
-	};
 
 	class Renderer {
 	public:

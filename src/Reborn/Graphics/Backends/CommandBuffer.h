@@ -35,11 +35,13 @@ namespace Reborn {
 		CommandBuffer& write(const T& in) {
 			return write(reinterpret_cast<const char*>(&in), sizeof(T));
 		};
+		CommandBuffer& writeString(const std::string inStr);
 		CommandBuffer& read(void* data, size_t sizeInBytes);
 		template<typename T>
 		CommandBuffer& read(T& out) {
 			return read(reinterpret_cast<char*>(&out), sizeof(T));
 		}
+		CommandBuffer& readString(std::string& outStr);
 		bool empty();
 		~CommandBuffer();
 	private:

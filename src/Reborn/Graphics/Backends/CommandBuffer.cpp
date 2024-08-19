@@ -14,8 +14,7 @@ Reborn::CommandBuffer::CommandBuffer(size_t baseCapacity) :
 	realloc(baseCapacity);
 }
 
-Reborn::CommandBuffer& Reborn::CommandBuffer::write(const void* data, size_t sizeInBytes)
-{
+Reborn::CommandBuffer& Reborn::CommandBuffer::write(const void* data, size_t sizeInBytes) {
 	if (writeInx + sizeInBytes > bufferCapacity) {
 		size_t newCapacity = max(bufferCapacity * 2, sizeInBytes);
 		realloc(newCapacity);
@@ -28,8 +27,13 @@ Reborn::CommandBuffer& Reborn::CommandBuffer::write(const void* data, size_t siz
 }
 
 
-Reborn::CommandBuffer& Reborn::CommandBuffer::read(void* data, size_t sizeInBytes)
-{
+Reborn::CommandBuffer& Reborn::CommandBuffer::writeString(const std::string inStr) {
+	write(inStr.length());
+	write(inStr.data(), inStr.length());
+	return *this;
+}
+
+Reborn::CommandBuffer& Reborn::CommandBuffer::read(void* data, size_t sizeInBytes) {
 	if (readInx + sizeInBytes > writeInx) {
 		LOG_ERROR << "CommandBuffer: trying to read when not enouth data to be read";
 		return *this;
@@ -39,13 +43,19 @@ Reborn::CommandBuffer& Reborn::CommandBuffer::read(void* data, size_t sizeInByte
 	return *this;
 }
 
-bool Reborn::CommandBuffer::empty()
-{
+Reborn::CommandBuffer& Reborn::CommandBuffer::readString(std::string& outStr) {
+	size_t outStrLength;
+	read(outStrLength);
+	outStr.resize(outStrLength, '%');
+	read(outStr.data(), outStrLength);
+	return *this;
+}
+
+bool Reborn::CommandBuffer::empty() {
 	return readInx >= writeInx;
 }
 
-Reborn::CommandBuffer::~CommandBuffer()
-{
+Reborn::CommandBuffer::~CommandBuffer() {
 	delete[] buffer;
 }
 
